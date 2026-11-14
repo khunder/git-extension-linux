@@ -221,6 +221,34 @@ jobs:
           if-no-files-found: error
 
   # Install each package in a matching distribution image and check that the files exist and all native libraries resolve.
+  appimage:
+    needs: [meta, publish]
+    runs-on: ubuntu-latest
+    strategy:
+      matrix:
+        arch: [x64, arm64]
+    steps:
+      - uses: actions/checkout@v4
+      - uses: actions/download-artifact@v4
+        with:
+          name: publish-${{ matrix.arch }}
+          path: ${{ runner.temp }}/dl
+      - name: Build AppImage
+        env:
+          VERSION: ${{ needs.meta.outputs.version }}
+        run: |
+          set -euxo pipefail
+          mkdir -p "$RUNNER_TEMP/publish"
+          tar -xzpf "$RUNNER_TEMP/dl/publish-${{ matrix.arch }}.tar.gz" -C "$RUNNER_TEMP/publish"
+          case "${{ matrix.arch }}" in x64) image_arch=x86_64 ;; arm64) image_arch=aarch64 ;; esac
+          VERSION="$VERSION" ARCH="${{ matrix.arch }}" PUBLISH_DIR="$RUNNER_TEMP/publish" OUT_DIR="$PWD/dist" TOOLS_DIR="$RUNNER_TEMP/appimage-tools" packaging/linux/build-appimage.sh
+          test -s "dist/git-extensions-$VERSION-$image_arch.AppImage"
+      - uses: actions/upload-artifact@v4
+        with:
+          name: pkg-appimage-${{ matrix.arch }}
+          path: dist/*.AppImage
+          if-no-files-found: error
+
   smoke-deb:
     needs: [meta, deb]
     runs-on: ubuntu-latest
@@ -289,8 +317,39 @@ jobs:
           pacman -U --noconfirm "$RUNNER_TEMP"/pkg/git-extensions-*.pkg.tar.zst
           packaging/linux/smoke-check.sh
 
+  smoke-appimage:
+    needs: [meta, appimage]
+    runs-on: ubuntu-latest
+    steps:
+      - uses: actions/download-artifact@v4
+        with:
+          name: pkg-appimage-x64
+          path: ${{ runner.temp }}/pkg
+      - name: Start the AppImage under a virtual display
+        env:
+          VERSION: ${{ needs.meta.outputs.version }}
+        run: |
+          set -euxo pipefail
+          sudo apt-get update
+          sudo apt-get install -y xvfb libxcursor1 libxi6 libxrandr2 libice6 libsm6 libfontconfig1
+          image="$RUNNER_TEMP/pkg/git-extensions-$VERSION-x86_64.AppImage"
+          chmod +x "$image"
+          cd "$RUNNER_TEMP"
+          "$image" --appimage-extract
+          test -x squashfs-root/AppRun
+          test -x squashfs-root/usr/lib/git-extensions/GitExtensions.Avalonia
+          test -x squashfs-root/usr/lib/git-extensions/GitExtensions.AskPass
+          test -e squashfs-root/git-extensions.desktop
+          test -e squashfs-root/git-extensions.png
+          # The app has no headless command line mode: it must still be running when the timeout kills it (exit code 124).
+          set +e
+          xvfb-run -a timeout 10 "$image" --appimage-extract-and-run /tmp
+          code=$?
+          set -e
+          test "$code" -eq 124
+
   release:
-    needs: [meta, tarball, deb, rpm-fedora, rpm-opensuse, arch, smoke-deb, smoke-fedora, smoke-opensuse, smoke-arch]
+    needs: [meta, tarball, deb, rpm-fedora, rpm-opensuse, arch, appimage, smoke-deb, smoke-fedora, smoke-opensuse, smoke-arch, smoke-appimage]
     runs-on: ubuntu-latest
     permissions:
       contents: write
@@ -317,6 +376,8 @@ jobs:
             "git-extensions-$VERSION-1.opensuse.x86_64.rpm"
             "git-extensions-$VERSION-1.opensuse.aarch64.rpm"
             "git-extensions-${VERSION//-/_}-1-x86_64.pkg.tar.zst"
+            "git-extensions-$VERSION-x86_64.AppImage"
+            "git-extensions-$VERSION-aarch64.AppImage"
           )
           for f in "${expected[@]}"; do test -s "$f" || { echo "missing artifact: $f"; exit 1; }; done
           sha256sum "${expected[@]}" > SHA256SUMS

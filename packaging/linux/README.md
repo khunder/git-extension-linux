@@ -11,6 +11,7 @@ Packages are not built by hand: every release is produced by the [Release workfl
 | [`git-extensions-0.1.0-1.fedora.x86_64.rpm`](https://github.com/khunder/git-extension-linux/releases/download/v0.1.0/git-extensions-0.1.0-1.fedora.x86_64.rpm), `.aarch64.rpm` | Fedora |
 | [`git-extensions-0.1.0-1.opensuse.x86_64.rpm`](https://github.com/khunder/git-extension-linux/releases/download/v0.1.0/git-extensions-0.1.0-1.opensuse.x86_64.rpm), `.aarch64.rpm` | openSUSE (Tumbleweed, Leap) |
 | [`git-extensions-0.1.0-1-x86_64.pkg.tar.zst`](https://github.com/khunder/git-extension-linux/releases/download/v0.1.0/git-extensions-0.1.0-1-x86_64.pkg.tar.zst) | Arch Linux and derivatives |
+| [`git-extensions-0.1.0-x86_64.AppImage`](https://github.com/khunder/git-extension-linux/releases/download/v0.1.0/git-extensions-0.1.0-x86_64.AppImage), `-aarch64.AppImage` | any distribution, portable single file |
 | [`SHA256SUMS`](https://github.com/khunder/git-extension-linux/releases/download/v0.1.0/SHA256SUMS) | checksums of all of the above |
 
 Verify a download with `sha256sum -c SHA256SUMS --ignore-missing`.
@@ -44,6 +45,14 @@ Arch Linux:
 ```bash
 sudo pacman -U git-extensions-0.1.0-1-x86_64.pkg.tar.zst
 sudo pacman -R git-extensions
+```
+
+AppImage (portable, nothing is installed):
+
+```bash
+chmod +x git-extensions-0.1.0-x86_64.AppImage
+./git-extensions-0.1.0-x86_64.AppImage [path-to-repository]
+# without FUSE 2: ./git-extensions-0.1.0-x86_64.AppImage --appimage-extract-and-run
 ```
 
 Tarball (nothing needs root; installs under `~/.local`):

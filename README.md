@@ -55,6 +55,8 @@ Download the package for your distribution from the [**latest GitHub release**](
 | Arch Linux | x86_64 | [`git-extensions-0.1.0-1-x86_64.pkg.tar.zst`](https://github.com/khunder/git-extension-linux/releases/download/v0.1.0/git-extensions-0.1.0-1-x86_64.pkg.tar.zst) |
 | Any distribution (tarball) | x64 | [`git-extensions-linux-0.1.0-x64.tar.gz`](https://github.com/khunder/git-extension-linux/releases/download/v0.1.0/git-extensions-linux-0.1.0-x64.tar.gz) |
 | Any distribution (tarball) | arm64 | [`git-extensions-linux-0.1.0-arm64.tar.gz`](https://github.com/khunder/git-extension-linux/releases/download/v0.1.0/git-extensions-linux-0.1.0-arm64.tar.gz) |
+| AppImage (any distribution) | x86_64 | [`git-extensions-0.1.0-x86_64.AppImage`](https://github.com/khunder/git-extension-linux/releases/download/v0.1.0/git-extensions-0.1.0-x86_64.AppImage) |
+| AppImage (any distribution) | aarch64 | [`git-extensions-0.1.0-aarch64.AppImage`](https://github.com/khunder/git-extension-linux/releases/download/v0.1.0/git-extensions-0.1.0-aarch64.AppImage) |
 | Checksums | all | [`SHA256SUMS`](https://github.com/khunder/git-extension-linux/releases/download/v0.1.0/SHA256SUMS) |
 
 With the GitHub CLI you can also fetch an artifact directly: `gh release download v0.1.0 --repo khunder/git-extension-linux --pattern '*.deb'`.
@@ -104,6 +106,16 @@ cd git-extensions
 ./install.sh              # user-level install under ~/.local, no root needed
 ./install.sh --uninstall  # remove it again
 ```
+
+### AppImage (any distribution, no installation)
+
+```bash
+curl -LO https://github.com/khunder/git-extension-linux/releases/download/v0.1.0/git-extensions-0.1.0-x86_64.AppImage
+chmod +x git-extensions-0.1.0-x86_64.AppImage
+./git-extensions-0.1.0-x86_64.AppImage [path-to-repository]
+```
+
+The AppImage bundles the application and the .NET runtime; it uses the system's X11, fontconfig and OpenSSL 3 libraries and needs `git` installed. On systems without FUSE 2 run it with `--appimage-extract-and-run`.
 
 ### Verify the download
 
