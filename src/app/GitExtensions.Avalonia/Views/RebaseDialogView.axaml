@@ -1,0 +1,57 @@
+<UserControl xmlns="https://github.com/avaloniaui"
+             xmlns:x="http://schemas.microsoft.com/winfx/2006/xaml"
+             xmlns:vm="using:GitExtensions.Desktop.ViewModels"
+             x:Class="GitExtensions.Desktop.Views.RebaseDialogView"
+             x:DataType="vm:RebaseDialogViewModel">
+  <!-- Content of the "Rebase" dialog window (FormRebase). -->
+  <Border Padding="14" Background="{DynamicResource DialogBackground}">
+    <DockPanel>
+      <StackPanel DockPanel.Dock="Bottom" Orientation="Horizontal" HorizontalAlignment="Right" Spacing="8" Margin="0,10,0,0">
+        <Button x:Name="RebaseButton" Content="_Rebase" Classes="accent" IsDefault="True" MinWidth="110" Command="{Binding RebaseCommand}" IsEnabled="{Binding CanRun}" />
+        <Button x:Name="CloseButton" Content="Close" MinWidth="90" Command="{Binding CloseCommand}" />
+      </StackPanel>
+      <ProgressBar DockPanel.Dock="Bottom" Height="3" IsIndeterminate="True" IsVisible="{Binding IsRunning}" Margin="0,8,0,0" />
+      <TextBox x:Name="OutputBox" DockPanel.Dock="Bottom" Text="{Binding Output}" IsVisible="{Binding HasOutput}" IsReadOnly="True" AcceptsReturn="True" TextWrapping="NoWrap"
+               Height="80" Classes="mono" Margin="0,8,0,0" AutomationProperties.Name="Git output" />
+      <TextBlock x:Name="ErrorText" DockPanel.Dock="Bottom" Text="{Binding Error}" IsVisible="{Binding HasError}" TextWrapping="Wrap"
+                 Foreground="{DynamicResource ErrorTextForeground}" Margin="0,8,0,0" />
+      <ScrollViewer HorizontalScrollBarVisibility="Disabled">
+        <StackPanel Spacing="10">
+          <Grid ColumnDefinitions="Auto,*" RowDefinitions="Auto,Auto" ColumnSpacing="10" RowSpacing="8">
+            <TextBlock Text="Rebase current branch" VerticalAlignment="Center" />
+            <TextBox x:Name="CurrentBranchBox" Grid.Column="1" Text="{Binding CurrentBranch, Mode=OneWay}" IsReadOnly="True" AutomationProperties.Name="Current branch" />
+            <TextBlock Grid.Row="1" Text="on" VerticalAlignment="Center" HorizontalAlignment="Right" />
+            <ComboBox x:Name="TargetCombo" Grid.Row="1" Grid.Column="1" HorizontalAlignment="Stretch" IsEditable="True"
+                      ItemsSource="{Binding AllBranches}" Text="{Binding Target}" AutomationProperties.Name="Branch or commit to rebase on" />
+          </Grid>
+
+          <Border BorderThickness="1" BorderBrush="{DynamicResource SubtleBorderBrush}" CornerRadius="4" Padding="10">
+            <StackPanel Spacing="4">
+              <TextBlock Text="Options" FontWeight="SemiBold" />
+              <CheckBox x:Name="InteractiveBox" Content="_Interactive rebase" IsEnabled="{Binding CanInteractive}" ToolTip.Tip="{Binding InteractiveToolTip}" ToolTip.ShowOnDisabled="True" />
+              <CheckBox x:Name="RebaseMergesBox" Content="Preserve _merges (--rebase-merges)" IsChecked="{Binding RebaseMerges}" />
+              <CheckBox x:Name="AutoSquashBox" Content="Auto s_quash fixup! and squash! commits" IsChecked="{Binding AutoSquash}" />
+              <CheckBox x:Name="AutoStashBox" Content="Auto stas_h: stash local changes, apply them afterwards" IsChecked="{Binding AutoStash}" />
+              <CheckBox x:Name="IgnoreDateBox" Content="Ignore the author date (--ignore-date)" IsChecked="{Binding IgnoreDate}" />
+              <CheckBox x:Name="CommitterDateBox" Content="Committer date is author date" IsChecked="{Binding CommitterDateIsAuthorDate}" />
+            </StackPanel>
+          </Border>
+
+          <Border BorderThickness="1" BorderBrush="{DynamicResource SubtleBorderBrush}" CornerRadius="4" Padding="10">
+            <StackPanel Spacing="6">
+              <CheckBox x:Name="RangeBox" Content="Rebase a _specific range onto the branch above" IsChecked="{Binding SpecificRange}" />
+              <Grid ColumnDefinitions="Auto,*" RowDefinitions="Auto,Auto" ColumnSpacing="10" RowSpacing="6" IsEnabled="{Binding SpecificRange}" Margin="22,0,0,0">
+                <TextBlock Text="From (exclusive)" VerticalAlignment="Center" />
+                <ComboBox x:Name="RangeFromCombo" Grid.Column="1" HorizontalAlignment="Stretch" IsEditable="True"
+                          ItemsSource="{Binding AllBranches}" Text="{Binding RangeFrom}" AutomationProperties.Name="Range from" />
+                <TextBlock Grid.Row="1" Text="To (optional)" VerticalAlignment="Center" />
+                <ComboBox x:Name="RangeToCombo" Grid.Row="1" Grid.Column="1" HorizontalAlignment="Stretch" IsEditable="True"
+                          ItemsSource="{Binding AllBranches}" Text="{Binding RangeTo}" AutomationProperties.Name="Range to" />
+              </Grid>
+            </StackPanel>
+          </Border>
+        </StackPanel>
+      </ScrollViewer>
+    </DockPanel>
+  </Border>
+</UserControl>

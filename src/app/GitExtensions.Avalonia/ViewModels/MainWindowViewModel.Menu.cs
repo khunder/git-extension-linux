@@ -317,25 +317,13 @@ public sealed partial class MainWindowViewModel
     }
 
     [RelayCommand]
-    private void MergeSelectedRef()
-    {
-        if (CanMergeSelectedRef)
-        {
-            Refs.MergeIntoCurrentCommand.Execute(Refs.SelectedNode);
-        }
-    }
+    private Task MergeSelectedRefAsync() => OpenMergeDialogAsync(CanMergeSelectedRef ? Refs.SelectedNode!.FullName : null);
 
     [RelayCommand]
-    private void RebaseOntoSelectedRef()
-    {
-        if (CanMergeSelectedRef)
-        {
-            Refs.RebaseOntoCommand.Execute(Refs.SelectedNode);
-        }
-    }
+    private Task RebaseOntoSelectedRefAsync() => OpenRebaseDialogAsync(CanMergeSelectedRef ? Refs.SelectedNode!.FullName : null);
 
     [RelayCommand]
-    private void CheckoutBranch() => UiRequested?.Invoke(UiTarget.ShowBranches);
+    private Task ShowCheckoutBranchDialogAsync() => OpenCheckoutDialogAsync(Refs.SelectedNode is { Kind: RefNodeKind.LocalBranch or RefNodeKind.RemoteBranch, IsCurrent: false } node ? node.FullName : null);
 
     /// <summary>Checks out the branch picked in the toolbar's branch list.</summary>
     public Task CheckoutBranchAsync(string name) => name == Branch ? Task.CompletedTask : Refs.CheckoutRefAsync(name);

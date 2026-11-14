@@ -1,154 +1,168 @@
-![Git Extensions logo](https://cdn.rawgit.com/gitextensions/gitextensions/master/setup/assets/Logo/git-extensions-logo.svg)
+<p align="center">
+  <img src="packaging/linux/icons/git-extensions-128.png" alt="Git Extensions logo" width="96" height="96">
+</p>
 
-# Git Extensions
+# Git Extensions for Linux
 
-Git Extensions is a standalone Windows UI tool for managing git repositories.
-It also integrates with Windows Explorer and Microsoft Visual Studio.
+A native Linux port of [Git Extensions](https://github.com/gitextensions/gitextensions), the graphical Git client.
 
-## Online manual
+Git Extensions was written for Windows with WinForms. This project takes the portable core of Git Extensions (`GitCommands`, `GitExtUtils` and the plugin interfaces) and puts a new user interface on top of it, built with [Avalonia](https://avaloniaui.net/), a cross-platform .NET UI framework. The WinForms UI is not used any more, so the application runs natively on Linux, with no Wine and no Mono.
 
-[git-extensions-documentation.readthedocs.org](https://git-extensions-documentation.readthedocs.org/)
+- Website: <https://khunder.github.io/git-extension-linux/>
+- Releases: <https://github.com/khunder/git-extension-linux/releases>
+- Issues: <https://github.com/khunder/git-extension-linux/issues>
 
-## Current Status
+![Main window, light theme](site/assets/screenshots/main-light.png)
 
-<a href="#backers" alt="sponsors on Open Collective"><img src="https://opencollective.com/gitextensions/backers/badge.svg" /></a> <a href="#sponsors" alt="Sponsors on Open Collective"><img src="https://opencollective.com/gitextensions/sponsors/badge.svg" /></a>
+## Features
 
-### Next Version ([build instructions](https://github.com/gitextensions/gitextensions/wiki/Build-instructions))
+- Revision grid with commit graph, ref labels, filtering and search
+- Commit window with file, hunk and line staging, amend, sign-off, templates and recent messages
+- Diff viewer, blame and file history (with rename following)
+- Branches, tags, remotes, stashes, submodules and worktrees
+- Merge, rebase, cherry-pick, bisect, reset, clean, archive and patches (format, apply, view)
+- Merge conflict resolver
+- Clone, init, pull and push dialogs; in-window credential prompts through an askpass bridge
+- Settings dialog (general, confirmations, colors, git config, SSH, scripts and more)
+- Light and dark themes, following the system or chosen manually
+- The original Git Extensions icons
+- Keyboard shortcuts and a shortcut help dialog
+- Command log and reflog browser
 
-<table>
-  <tr>
-    <th>&nbsp;</th>
-    <th>Windows only</th>
-  </tr>
-  <tr>
-    <td>
-      Runtime environment
-    </td>
-    <td>
-      MS Windows 10+ // <a href="https://dotnet.microsoft.com/download/dotnet/10.0" target=_blank>.NET Desktop 10.0 SDK</a>
-    </td>
-  </tr>
-  <tr>
-    <td>
-      Development
-    </td>
-    <td>
-      MS Visual Studio 2026, C# 14 // VC++ (inc. ATL for x86/x64 for installer)
-    </td>
-  </tr>
-  <tr>
-    <td>
-      Current dev status
-    </td>
-    <td>
-      <a href="https://github.com/gitextensions/gitextensions/actions/workflows/pr-build.yml?query=branch%3Amaster"><img alt="Build status" src="https://github.com/gitextensions/gitextensions/actions/workflows/pr-build.yml/badge.svg?branch=master" style="max-width:100%;"></a>
-    </td>
-  </tr>
-  <tr>
-    <td>
-      Translations
-    </td>
-    <td>
-      <a target="_blank" style="text-decoration:none; color:black; font-size:66%" href="https://github.com/gitextensions/gitextensions/wiki/Translations" title="More information in the wiki"><img src="https://img.shields.io/badge/tranlations-Transifex-blue" ></a>
-    </td>
-  </tr>
-</table>
+## Screenshots
 
-## Downloads
+| Commit window | Blame |
+| --- | --- |
+| ![Commit window](site/assets/screenshots/commit-light.png) | ![File history with blame](site/assets/screenshots/blame-light.png) |
+| ![Main window, dark theme](site/assets/screenshots/main-dark.png) | ![Settings, dark theme](site/assets/screenshots/settings-dark.png) |
 
-<a href="https://github.com/gitextensions/gitextensions/releases" rel="nofollow" style="vertical-align: -webkit-baseline-middle;"><img src="https://img.shields.io/github/downloads/gitextensions/gitextensions/total.svg?label=GitHub%20downloads%20(total)&cacheSeconds=86400"></a> <a href="https://chocolatey.org/packages/gitextensions" rel="nofollow" style="vertical-align: -webkit-baseline-middle;"><img src="https://img.shields.io/chocolatey/dt/gitextensions.svg?label=Chocolatey%20downloads%20(total)&cacheSeconds=86400"></a>
+## Install
 
-**[Download it now](https://github.com/gitextensions/gitextensions/releases/latest)** or install it with [Chocolatey](https://chocolatey.org/packages/gitextensions) or [Winget](https://winget.run/pkg/GitExtensionsTeam/GitExtensions).
+Version 0.1.0 packages are attached to the [v0.1.0 release](https://github.com/khunder/git-extension-linux/releases/tag/v0.1.0). All packages are self-contained: no .NET runtime is needed. You need `git` installed.
 
-If you want to **update a portable version**, you should delete all the files and the subfolders from the existing folder except:
+Download links below use `https://github.com/khunder/git-extension-linux/releases/download/v0.1.0/<file>`. The RPM and Arch file names may carry a distro suffix; check the release page for the exact names.
 
-* _GitExtensions.settings_
-* _WindowPositions.xml_
-* User defined themes in folder _Themes_
+### Ubuntu / Debian (.deb)
 
-<table>
-  <tr>
-    <td>
-      <strong>Latest official release: v7.2.1</strong>
-    </td>
-    <td>
-      <a href="https://github.com/gitextensions/gitextensions/releases/latest">[ Download ]</a><br />
-      <a href="https://github.com/gitextensions/gitextensions/releases/latest" rel="nofollow" style="vertical-align: -webkit-baseline-middle;"><img src="https://img.shields.io/github/downloads/gitextensions/gitextensions/latest/total.svg?label=GitHub%20downloads%20(latest)&cacheSeconds=3600"></a>
-    </td>
-  </tr>
-  <tr>
-    <td>
-      <strong>Current dev stream</strong><br />
-      NB: expect :unicorn: :unicorn: and :dragon: :dragon:
-    </td>
-    <td>
-      <a href="https://github.com/gitextensions/gitextensions/actions/workflows/pr-build.yml?query=branch%3Amaster">[ Download ]</a><br />
-      <a href="https://github.com/gitextensions/gitextensions/actions/workflows/pr-build.yml?query=branch%3Amaster"><img alt="Build status" src="https://github.com/gitextensions/gitextensions/actions/workflows/pr-build.yml/badge.svg?branch=master" style="max-width:100%;"></a>
-    </td>
-  </tr>
-  <tr>
-    <td>
-      <strong>Visual Studio VSIX (2022 and later)</strong>
-    </td>
-    <td>
-      <a href="https://marketplace.visualstudio.com/items?itemName=GitExtensionsApp.VS2022">[ Download ]</a> or install from Visual Studio via Extensions
-    </td>
-  </tr>
-  <tr>
-    <td>
-      <strong>Visual Studio Code VSIX</strong><br />
-      Kudos to <a href="https://github.com/pmiossec" class="author text-inherit">@pmiossec</a>
-    </td>
-    <td>
-      <a href="https://marketplace.visualstudio.com/items?itemName=pmiossec.vscode-gitextensions">[ Download ]</a> or install via VSCode<br />
-      NB: Please direct all discussions about the VSIX to <a href="https://github.com/pmiossec/vscode-gitextensions">its own repo</a>.
-    </td>
-  </tr>
-</table>
+```bash
+# amd64
+curl -LO https://github.com/khunder/git-extension-linux/releases/download/v0.1.0/git-extensions_0.1.0_amd64.deb
+sudo apt install ./git-extensions_0.1.0_amd64.deb
 
-# Conduct
+# arm64
+curl -LO https://github.com/khunder/git-extension-linux/releases/download/v0.1.0/git-extensions_0.1.0_arm64.deb
+sudo apt install ./git-extensions_0.1.0_arm64.deb
+```
 
-Project maintainers pledge to foster an open and welcoming environment, and ask contributors to do the same.
+### Fedora (.rpm)
 
-For more information see our [code of conduct](CODE_OF_CONDUCT.md).
+```bash
+curl -LO https://github.com/khunder/git-extension-linux/releases/download/v0.1.0/git-extensions-0.1.0-1.x86_64.rpm
+sudo dnf install ./git-extensions-0.1.0-1.x86_64.rpm
+```
 
-# Shoutouts
+### openSUSE (.rpm)
 
-* We thank all the people who contribute, the project exists because of you<br />
-  <a href="https://github.com/gitextensions/gitextensions/contributors"><img src="https://opencollective.com/gitextensions/contributors.svg?width=890&button=false" /></a>
-* We thank [Transifex](https://www.transifex.com/) for helping us with translations<br />
-  <a href="https://www.transifex.com/" target="_blank"><img src="./src/app/GitUI/Resources/Icons/originals/transifex.svg"></a>
-* We thank [SignPath.io](https://signpath.io/?utm_source=foundation&utm_medium=github&utm_campaign=gitextension) for the free code signing<br />
-  <a href="https://signpath.io/?utm_source=foundation&utm_medium=github&utm_campaign=gitextension" target="_blank"><img src="./src/app/GitUI/Resources/Icons/originals/signpath_logo.png"></a>
-* We thank [SignPath Foundation](https://signpath.org/?utm_source=foundation&utm_medium=github&utm_campaign=gitextension) for the signing certificate
-* We thank [Yusuke Kamiyamane](http://p.yusukekamiyamane.com/) for the icons ([CCA/3.0](http://creativecommons.org/licenses/by/3.0/))
+```bash
+curl -LO https://github.com/khunder/git-extension-linux/releases/download/v0.1.0/git-extensions-0.1.0-1.x86_64.rpm
+sudo zypper --no-gpg-checks install ./git-extensions-0.1.0-1.x86_64.rpm
+```
 
-## Backers
+The packages are not signed yet, hence `--no-gpg-checks` on openSUSE (on Fedora, `dnf` may need `--nogpgcheck` as well).
 
-Thank you to all our backers! 🙏 [[Become a backer](https://opencollective.com/gitextensions#backer)]
+### Arch Linux (.pkg.tar.zst)
 
-<a href="https://opencollective.com/gitextensions#backers" target="_blank"><img src="https://opencollective.com/gitextensions/backers.svg?width=890"></a>
+```bash
+curl -LO https://github.com/khunder/git-extension-linux/releases/download/v0.1.0/git-extensions-0.1.0-1-x86_64.pkg.tar.zst
+sudo pacman -U ./git-extensions-0.1.0-1-x86_64.pkg.tar.zst
+```
 
-## Sponsors
+### Any distribution (tarball)
 
-Support this project by becoming a sponsor. Your logo will show up here with a link to your website. [[Become a sponsor](https://opencollective.com/gitextensions#sponsor)]
+```bash
+# x64 (use git-extensions-linux-0.1.0-arm64.tar.gz on arm64)
+curl -LO https://github.com/khunder/git-extension-linux/releases/download/v0.1.0/git-extensions-linux-0.1.0-x64.tar.gz
+tar xzf git-extensions-linux-0.1.0-x64.tar.gz
+cd git-extensions
+./install.sh              # user-level install under ~/.local, no root needed
+./install.sh --uninstall  # remove it again
+```
 
-<a href="https://opencollective.com/gitextensions/sponsor/0/website" target="_blank"><img src="https://opencollective.com/gitextensions/sponsor/0/avatar.svg"></a>
-<a href="https://opencollective.com/gitextensions/sponsor/1/website" target="_blank"><img src="https://opencollective.com/gitextensions/sponsor/1/avatar.svg"></a>
-<a href="https://opencollective.com/gitextensions/sponsor/2/website" target="_blank"><img src="https://opencollective.com/gitextensions/sponsor/2/avatar.svg"></a>
-<a href="https://opencollective.com/gitextensions/sponsor/3/website" target="_blank"><img src="https://opencollective.com/gitextensions/sponsor/3/avatar.svg"></a>
-<a href="https://opencollective.com/gitextensions/sponsor/4/website" target="_blank"><img src="https://opencollective.com/gitextensions/sponsor/4/avatar.svg"></a>
-<a href="https://opencollective.com/gitextensions/sponsor/5/website" target="_blank"><img src="https://opencollective.com/gitextensions/sponsor/5/avatar.svg"></a>
-<a href="https://opencollective.com/gitextensions/sponsor/6/website" target="_blank"><img src="https://opencollective.com/gitextensions/sponsor/6/avatar.svg"></a>
-<a href="https://opencollective.com/gitextensions/sponsor/7/website" target="_blank"><img src="https://opencollective.com/gitextensions/sponsor/7/avatar.svg"></a>
-<a href="https://opencollective.com/gitextensions/sponsor/8/website" target="_blank"><img src="https://opencollective.com/gitextensions/sponsor/8/avatar.svg"></a>
-<a href="https://opencollective.com/gitextensions/sponsor/9/website" target="_blank"><img src="https://opencollective.com/gitextensions/sponsor/9/avatar.svg"></a>
+### Verify the download
 
-# Useful Links
+```bash
+curl -LO https://github.com/khunder/git-extension-linux/releases/download/v0.1.0/SHA256SUMS
+sha256sum --check --ignore-missing SHA256SUMS
+```
 
-* Website: [gitextensions.github.io](https://gitextensions.github.io/) [Git repo](https://github.com/gitextensions/gitextensions.github.io)
-* Source code: [github.com/gitextensions/gitextensions](https://github.com/gitextensions/gitextensions)
-* Online manual: [git-extensions-documentation.readthedocs.org](https://git-extensions-documentation.readthedocs.org/) [Git repo](https://github.com/gitextensions/GitExtensionsDoc)
-* Issue tracker: [github.com/gitextensions/gitextensions/issues](https://github.com/gitextensions/gitextensions/issues)
-* Wiki: [github.com/gitextensions/gitextensions/wiki](https://github.com/gitextensions/gitextensions/wiki)
-* Gitter chat: [gitter.im/gitextensions/gitextensions](https://gitter.im/gitextensions/gitextensions?utm_source=badge&utm_medium=badge&utm_campaign=pr-badge&utm_content=badge)
+### Run
+
+Start "Git Extensions" from the application menu, or from a terminal:
+
+```bash
+git-extensions [path/to/repository]
+```
+
+## Build from source
+
+Requirements: the [.NET 10 SDK](https://dotnet.microsoft.com/download) and `git`.
+
+```bash
+git clone https://github.com/khunder/git-extension-linux.git
+cd git-extension-linux
+dotnet build GitExtensions.slnx
+dotnet run --project src/app/GitExtensions.Avalonia -- <repo path>
+```
+
+To build the self-contained tarball (see [packaging/linux/README.md](packaging/linux/README.md)):
+
+```bash
+packaging/linux/build-tarball.sh                  # linux-x64
+RID=linux-arm64 packaging/linux/build-tarball.sh  # linux-arm64
+```
+
+## Tests
+
+```bash
+dotnet test GitExtensions.slnx
+```
+
+The Avalonia UI tests run headless and use real temporary git repositories. The render tests also write screenshots to `artifacts/Debug/bin/tests/UnitTests/GitExtensions.Avalonia.Tests/net10.0/screenshots/`; those are the images used on the website.
+
+## Repository layout
+
+| Path | Content |
+| --- | --- |
+| `src/app/GitExtensions.Avalonia` | The Avalonia application (views, view-models, styles, assets) |
+| `src/app/GitCommands` | Portable core: running git, parsing output, settings |
+| `src/app/GitExtUtils` | Shared utilities |
+| `src/app/GitExtensions.Extensibility.Core` | Extensibility types |
+| `src/app/GitExtensions.AskPass` | `GIT_ASKPASS` / `SSH_ASKPASS` helper used for credential prompts |
+| `src/plugins/GitUIPluginInterfaces` | Plugin interfaces |
+| `tests/` | Unit and headless UI tests |
+| `packaging/linux` | Tarball builder, installer, desktop entry, icons |
+| `site/` | The GitHub Pages website |
+| `docs/` | Documentation |
+
+## Known limitations
+
+This is an early release (0.1.0). Not available yet:
+
+- Plugins (the plugin interfaces are kept, but plugins are not loaded or ported)
+- Scripts
+- Hotkeys editor
+- Build server integration
+- Several less common settings pages and dialogs from the original application
+- Only Linux is targeted; there are no Windows or macOS builds
+
+Bug reports and pull requests are welcome.
+
+## Credits and license
+
+Git Extensions was created by Henk Westhuis and is developed by the [Git Extensions team and contributors](https://github.com/gitextensions/gitextensions/graphs/contributors). This port reuses their GPL-licensed code; all credit for the original application belongs to them. Upstream project: <https://github.com/gitextensions/gitextensions>.
+
+The icons are by [Yusuke Kamiyamane](http://p.yusukekamiyamane.com/), licensed under [CC BY 3.0](http://creativecommons.org/licenses/by/3.0/).
+
+All contributors to Git Extensions formally agree to the certificate of origin in [contributors.txt](contributors.txt).
+
+Licensed under the GNU General Public License v2.0, see [LICENSE.md](LICENSE.md). See also the [code of conduct](CODE_OF_CONDUCT.md) and [contributing guide](CONTRIBUTING.md).

@@ -55,20 +55,10 @@ public static class RevisionGridContextMenu
         checkout.AddRange(remotes.Select(r => MenuKit.Item(r.Name, "BranchRemote", () => CheckoutRemote(vm, r.Name))));
         items.Add(MenuKit.Sub("Checkout branch…", "BranchCheckout", checkout, checkout.Count > 0, "No other branch points at this commit"));
 
-        List<Control> merge = [.. others.Concat(remotes).Select(r => MenuKit.Item(r.Name, r.IsRemote ? "BranchRemote" : "BranchLocal", () => _ = vm.Operation.MergeAsync(r.Name)))];
-        items.Add(MenuKit.Sub("Merge into current branch…", "Merge", merge, merge.Count > 0 && current is not null, "No other branch points at this commit"));
-
-        List<Control> rebase = [.. others.Concat(remotes).Select(r => MenuKit.Item(r.Name, r.IsRemote ? "BranchRemote" : "BranchLocal", () => _ = vm.Operation.RebaseAsync(r.Name)))];
-        if (rebase.Count > 0)
-        {
-            rebase.Add(MenuKit.Sep());
-        }
-
-        rebase.Add(MenuKit.Item("Selected commit", "Rebase", () => _ = vm.Operation.RebaseAsync(hash)));
-        rebase.Add(MenuKit.Stub("Selected commit interactively…", "Rebase"));
-        rebase.Add(MenuKit.Sep());
-        rebase.Add(MenuKit.Stub("Selected commit with advanced options…", "Rebase"));
-        items.Add(MenuKit.Sub("Rebase current branch on", "Rebase", rebase, current is not null, "HEAD is detached: there is no current branch"));
+        // Merge and rebase open their dialog with the branch at this commit (or the commit itself) prefilled.
+        string mergeTarget = others.Concat(remotes).Select(r => r.Name).FirstOrDefault() ?? hash;
+        items.Add(MenuKit.Item("Merge into current branch…", "Merge", () => _ = vm.OpenMergeDialogAsync(mergeTarget), enabled: current is not null, disabledTip: "HEAD is detached: there is no current branch"));
+        items.Add(MenuKit.Item("Rebase current branch on…", "Rebase", () => _ = vm.OpenRebaseDialogAsync(mergeTarget), enabled: current is not null, disabledTip: "HEAD is detached: there is no current branch"));
 
         items.Add(MenuKit.Item("Reset current branch to here…", "ResetCurrentBranchToHere", () => On(vm.RevisionOps.OpenReset)));
         items.Add(MenuKit.Sep());

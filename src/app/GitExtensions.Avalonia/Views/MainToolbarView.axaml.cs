@@ -159,6 +159,9 @@ public sealed partial class MainToolbarView : UserControl
             entry.Click += (_, _) => _ = _viewModel.CheckoutBranchAsync(name);
             flyout.Items.Add(entry);
         }
+
+        flyout.Items.Add(new Separator());
+        flyout.Items.Add(new MenuItem { Header = "Checkout branch…", Command = _viewModel.ShowCheckoutBranchDialogCommand });
     }
 
     private void FillRemotes()

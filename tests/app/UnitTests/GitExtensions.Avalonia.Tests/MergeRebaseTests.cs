@@ -449,20 +449,27 @@ public class MergeRebaseTests
 
         MenuItem[] items = menu.Items.OfType<MenuItem>().ToArray();
         MenuItem merge = items.Single(i => (i.Header as TextBlock)?.Text == "Merge into current branch…");
-        MenuItem rebase = items.Single(i => (i.Header as TextBlock)?.Text == "Rebase current branch on this");
+        MenuItem rebase = items.Single(i => (i.Header as TextBlock)?.Text == "Rebase current branch on this…");
         merge.IsEnabled.Should().BeTrue();
         rebase.IsEnabled.Should().BeTrue();
-        merge.Items.OfType<MenuItem>().Should().HaveCount(3);
+        merge.Items.OfType<MenuItem>().Should().BeEmpty();
 
-        MenuItem noFf = merge.Items.OfType<MenuItem>().Single(i => ((TextBlock)i.Header!).Text!.Contains("--no-ff", StringComparison.Ordinal));
-        noFf.RaiseEvent(new Avalonia.Interactivity.RoutedEventArgs(MenuItem.ClickEvent));
-        for (int i = 0; i < 200 && repository.Parents().Length < 2; i++)
+        // The entry opens the merge dialog window with the branch prefilled; the options are chosen there.
+        merge.RaiseEvent(new Avalonia.Interactivity.RoutedEventArgs(MenuItem.ClickEvent));
+        for (int i = 0; i < 200 && DialogWindow.Open.Count == 0; i++)
         {
             await Task.Delay(50);
             Avalonia.Threading.Dispatcher.UIThread.RunJobs();
         }
 
+        DialogWindow.Open.Should().ContainSingle().Which.Title.Should().Be("Merge branches");
+        viewModel.MergeDialog.Target.Should().Be("topic");
+        viewModel.MergeDialog.IsNoFastForward = true;
+        await viewModel.MergeDialog.MergeCommand.ExecuteAsync(null);
+
         repository.Parents().Should().HaveCount(2);
+        Avalonia.Threading.Dispatcher.UIThread.RunJobs();
+        DialogWindow.Open.Should().BeEmpty();
         menu.Close();
         window.Close();
     }

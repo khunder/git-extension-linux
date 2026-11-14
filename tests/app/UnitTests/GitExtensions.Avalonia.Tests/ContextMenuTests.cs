@@ -157,7 +157,7 @@ public class ContextMenuTests
         List<Control> menu = RevisionGridContextMenu.Build(viewModel, viewModel.Commits[0], new FakeClipboard());
 
         Outline(menu).Should().Be(
-            "Copy to clipboard|-|Checkout branch…|Merge into current branch…|Rebase current branch on|Reset current branch to here…|-|"
+            "Copy to clipboard|-|Checkout branch…|Merge into current branch…|Rebase current branch on…|Reset current branch to here…|-|"
             + "Create new branch here…|Rename branch…|Delete branch…|Push branch…|Reset another branch here…|-|"
             + "Create new tag here…|Delete tag…|-|"
             + "Checkout this commit…|Revert this commit…|Cherry pick this commit…|Archive this commit…|Format patch…|Advanced|-|"
@@ -314,7 +314,7 @@ public class ContextMenuTests
     }
 
     [AvaloniaTest]
-    public async Task Merge_and_rebase_entries_use_the_operation_bar_commands()
+    public async Task Merge_and_rebase_entries_open_their_dialogs()
     {
         using TestRepository repository = new();
         repository.RunGit("config", "user.name", "Test Author");
@@ -326,18 +326,25 @@ public class ContextMenuTests
         (MainWindow window, MainWindowViewModel viewModel) = await OpenAsync(repository);
         CommitItemViewModel side = viewModel.Commits.Single(c => c.Subject == "Side work");
 
-        MenuItem merge = Find(RevisionGridContextMenu.Build(viewModel, side, null), "Merge into current branch…");
-        Texts(merge).Should().Equal("side");
-        Click(Find(merge.Items.OfType<Control>(), "side"));
-        await WaitUntilAsync(() => File.Exists(Path.Combine(repository.Path, "side.txt")));
+        // Merge opens its dialog with the branch at the commit prefilled; the merge runs from there.
+        Click(Find(RevisionGridContextMenu.Build(viewModel, side, null), "Merge into current branch…"));
+        await WaitUntilAsync(() => viewModel.MergeDialog.IsOpen && viewModel.MergeDialog.AllBranches.Count > 0);
+        viewModel.MergeDialog.Target.Should().Be("side");
+        await viewModel.MergeDialog.MergeCommand.ExecuteAsync(null);
+        viewModel.MergeDialog.IsOpen.Should().BeFalse();
+        File.Exists(Path.Combine(repository.Path, "side.txt")).Should().BeTrue();
         repository.GitOutput("log", "--format=%s", "-1").Trim().Should().Be("Side work");
 
-        // Rebase current branch on ▸ Selected commit: main is now at the same commit, so it is a no-op that still succeeds.
+        // Rebase opens its dialog prefilled with the commit (no other branch points at it): main is at the same commit now, so it is a no-op that still succeeds.
         await WaitUntilAsync(() => viewModel.Commits.Count > 0 && !viewModel.IsBusy);
         CommitItemViewModel head = viewModel.Commits[0];
-        MenuItem rebase = Find(RevisionGridContextMenu.Build(viewModel, head, null), "Rebase current branch on");
-        Texts(rebase).Should().Contain(["Selected commit", "Selected commit interactively…", "Selected commit with advanced options…"]);
-        Find(rebase.Items.OfType<Control>(), "Selected commit interactively…").IsEnabled.Should().BeFalse();
+        MenuItem rebase = Find(RevisionGridContextMenu.Build(viewModel, head, null), "Rebase current branch on…");
+        rebase.Items.OfType<Control>().Should().BeEmpty();
+        Click(rebase);
+        await WaitUntilAsync(() => viewModel.RebaseDialog.IsOpen && viewModel.RebaseDialog.AllBranches.Count > 0);
+        viewModel.RebaseDialog.Target.Should().NotBeNullOrEmpty();
+        await viewModel.RebaseDialog.RebaseCommand.ExecuteAsync(null);
+        viewModel.RebaseDialog.IsOpen.Should().BeFalse();
         window.Close();
     }
 
@@ -463,8 +470,11 @@ public class ContextMenuTests
 
         List<Control> local = RefsContextMenu.Build(refs, viewModel, refs.FindNode(RefNodeKind.LocalBranch, "develop")!, clipboard);
         Outline(local).Should().Be(
-            "Checkout|Merge into current branch…|Rebase current branch on this|-|Create branch from here…|Create tag here…|-|Rename…|Delete branch|-|Push|Set upstream…|Unset upstream|-|Copy name");
-        Texts(Find(local, "Merge into current branch…")).Should().HaveCount(3);
+            "Checkout|Merge into current branch…|Rebase current branch on this…|-|Create branch from here…|Create tag here…|-|Rename…|Delete branch|-|Push|Set upstream…|Unset upstream|-|Copy name");
+        Click(Find(local, "Merge into current branch…"));
+        await WaitUntilAsync(() => viewModel.MergeDialog.IsOpen);
+        viewModel.MergeDialog.Target.Should().Be("develop");
+        viewModel.MergeDialog.CloseCommand.Execute(null);
         Find(RefsContextMenu.Build(refs, viewModel, refs.FindNode(RefNodeKind.LocalBranch, "main")!, clipboard), "Checkout").IsEnabled.Should().BeFalse();
         Find(RefsContextMenu.Build(refs, viewModel, refs.FindNode(RefNodeKind.LocalBranch, "main")!, clipboard), "Delete branch").IsEnabled.Should().BeFalse();
 
@@ -480,7 +490,7 @@ public class ContextMenuTests
 
         List<Control> remote = RefsContextMenu.Build(refs, viewModel, refs.FindNode(RefNodeKind.RemoteBranch, "origin/main")!, clipboard);
         Outline(remote).Should().Be(
-            "Checkout as local tracking branch|Merge into current branch…|Rebase current branch on this|-|Create branch from here…|Create tag here…|-|Fetch this remote|Delete remote branch…|-|Copy name");
+            "Checkout as local tracking branch|Merge into current branch…|Rebase current branch on this…|-|Create branch from here…|Create tag here…|-|Fetch this remote|Delete remote branch…|-|Copy name");
 
         List<Control> tag = RefsContextMenu.Build(refs, viewModel, refs.FindNode(RefNodeKind.Tag, "v1.0")!, clipboard);
         Outline(tag).Should().Be("Checkout|Create branch from here…|-|Push tag|Delete tag…|-|Copy name");

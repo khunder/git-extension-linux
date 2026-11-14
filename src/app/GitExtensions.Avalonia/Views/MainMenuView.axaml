@@ -226,13 +226,13 @@
       <MenuItem x:Name="DeleteBranchMenuItem" Header="_Delete branch…" Command="{Binding ShowDeleteBranchCommand}">
         <MenuItem.Icon><local:AppIcon IconName="BranchDelete" /></MenuItem.Icon>
       </MenuItem>
-      <MenuItem x:Name="CheckoutBranchMenuItem" Header="Chec_kout branch…" Command="{Binding CheckoutBranchCommand}">
+      <MenuItem x:Name="CheckoutBranchMenuItem" Header="Chec_kout branch…" Command="{Binding ShowCheckoutBranchDialogCommand}">
         <MenuItem.Icon><local:AppIcon IconName="BranchCheckout" /></MenuItem.Icon>
       </MenuItem>
-      <MenuItem x:Name="MergeMenuItem" Header="_Merge branches…" Command="{Binding MergeSelectedRefCommand}" IsEnabled="{Binding CanMergeSelectedRef}" ToolTip.Tip="Merges the branch selected in the left panel into the current branch" ToolTip.ShowOnDisabled="True">
+      <MenuItem x:Name="MergeMenuItem" Header="_Merge branches…" Command="{Binding MergeSelectedRefCommand}" ToolTip.Tip="Merges a branch or commit into the current branch">
         <MenuItem.Icon><local:AppIcon IconName="Merge" /></MenuItem.Icon>
       </MenuItem>
-      <MenuItem x:Name="RebaseMenuItem" Header="Re_base…" Command="{Binding RebaseOntoSelectedRefCommand}" IsEnabled="{Binding CanMergeSelectedRef}" ToolTip.Tip="Rebases the current branch onto the branch selected in the left panel" ToolTip.ShowOnDisabled="True">
+      <MenuItem x:Name="RebaseMenuItem" Header="Re_base…" Command="{Binding RebaseOntoSelectedRefCommand}" ToolTip.Tip="Rebases the current branch onto a branch or commit">
         <MenuItem.Icon><local:AppIcon IconName="Rebase" /></MenuItem.Icon>
       </MenuItem>
       <MenuItem x:Name="SolveConflictsMenuItem" Header="S_olve merge conflicts…" Command="{Binding ShowMergeConflictsCommand}">

@@ -1,0 +1,56 @@
+<UserControl xmlns="https://github.com/avaloniaui"
+             xmlns:x="http://schemas.microsoft.com/winfx/2006/xaml"
+             xmlns:vm="using:GitExtensions.Desktop.ViewModels"
+             x:Class="GitExtensions.Desktop.Views.CheckoutBranchDialogView"
+             x:DataType="vm:CheckoutBranchDialogViewModel">
+  <!-- Content of the "Checkout branch" dialog window (FormCheckoutBranch). -->
+  <Border Padding="14" Background="{DynamicResource DialogBackground}">
+    <DockPanel>
+      <StackPanel DockPanel.Dock="Bottom" Orientation="Horizontal" HorizontalAlignment="Right" Spacing="8" Margin="0,10,0,0">
+        <Button x:Name="CheckoutButton" Content="_Checkout" Classes="accent" IsDefault="True" MinWidth="110" Command="{Binding CheckoutCommand}" IsEnabled="{Binding CanRun}" />
+        <Button x:Name="CloseButton" Content="Close" MinWidth="90" Command="{Binding CloseCommand}" />
+      </StackPanel>
+      <ProgressBar DockPanel.Dock="Bottom" Height="3" IsIndeterminate="True" IsVisible="{Binding IsRunning}" Margin="0,8,0,0" />
+      <TextBox x:Name="OutputBox" DockPanel.Dock="Bottom" Text="{Binding Output}" IsVisible="{Binding HasOutput}" IsReadOnly="True" AcceptsReturn="True" TextWrapping="NoWrap"
+               Height="80" Classes="mono" Margin="0,8,0,0" AutomationProperties.Name="Git output" />
+      <TextBlock x:Name="ErrorText" DockPanel.Dock="Bottom" Text="{Binding Error}" IsVisible="{Binding HasError}" TextWrapping="Wrap"
+                 Foreground="{DynamicResource ErrorTextForeground}" Margin="0,8,0,0" />
+      <ScrollViewer HorizontalScrollBarVisibility="Disabled">
+        <StackPanel Spacing="10">
+          <Border BorderThickness="1" BorderBrush="{DynamicResource SubtleBorderBrush}" CornerRadius="4" Padding="10">
+            <StackPanel Spacing="6">
+              <TextBlock Text="Branch" FontWeight="SemiBold" />
+              <Grid ColumnDefinitions="Auto,*" RowDefinitions="Auto,Auto" ColumnSpacing="10" RowSpacing="6">
+                <RadioButton x:Name="LocalRadio" GroupName="BranchKind" Content="_Local branch" IsChecked="{Binding IsLocalBranch}" VerticalAlignment="Center" />
+                <ComboBox x:Name="LocalCombo" Grid.Column="1" HorizontalAlignment="Stretch" IsEditable="True" IsEnabled="{Binding IsLocalBranch}"
+                          ItemsSource="{Binding LocalBranches}" Text="{Binding LocalBranch}" AutomationProperties.Name="Local branch" />
+                <RadioButton x:Name="RemoteRadio" Grid.Row="1" GroupName="BranchKind" Content="_Remote branch" IsChecked="{Binding IsRemoteBranch}" VerticalAlignment="Center" />
+                <ComboBox x:Name="RemoteCombo" Grid.Row="1" Grid.Column="1" HorizontalAlignment="Stretch" IsEditable="True" IsEnabled="{Binding IsRemoteBranch}"
+                          ItemsSource="{Binding RemoteBranches}" Text="{Binding RemoteBranch}" AutomationProperties.Name="Remote branch" />
+              </Grid>
+              <StackPanel x:Name="RemoteOptions" Spacing="4" Margin="22,4,0,0" IsEnabled="{Binding IsRemoteBranch}">
+                <Grid ColumnDefinitions="Auto,*" ColumnSpacing="8">
+                  <RadioButton x:Name="CreateLocalRadio" GroupName="RemoteAction" Content="Create local branch with _name" IsChecked="{Binding IsCreateLocal}" VerticalAlignment="Center" />
+                  <TextBox x:Name="NewNameBox" Grid.Column="1" Text="{Binding NewBranchName}" IsEnabled="{Binding CanEditNewName}" AutomationProperties.Name="New local branch name" />
+                </Grid>
+                <RadioButton x:Name="ResetLocalRadio" GroupName="RemoteAction" Content="_Reset the local branch of the same name" IsChecked="{Binding IsResetLocal}" />
+                <RadioButton x:Name="DetachedRadio" GroupName="RemoteAction" Content="Check out as a _detached HEAD" IsChecked="{Binding IsDetached}" />
+              </StackPanel>
+            </StackPanel>
+          </Border>
+
+          <Border BorderThickness="1" BorderBrush="{DynamicResource SubtleBorderBrush}" CornerRadius="4" Padding="10">
+            <StackPanel Spacing="4">
+              <TextBlock Text="Local changes" FontWeight="SemiBold" />
+              <RadioButton x:Name="DontChangeRadio" GroupName="LocalChanges" Content="_Don't change (git refuses on conflicts)" IsChecked="{Binding IsDontChange}" />
+              <RadioButton x:Name="MergeChangesRadio" GroupName="LocalChanges" Content="_Merge them into the new branch" IsChecked="{Binding IsMergeChanges}" />
+              <RadioButton x:Name="StashRadio" GroupName="LocalChanges" Content="_Stash them before the checkout" IsChecked="{Binding IsStashChanges}" />
+              <CheckBox x:Name="ReapplyBox" Content="Apply the stash again after the checkout" IsChecked="{Binding ReapplyStash}" IsEnabled="{Binding CanReapplyStash}" Margin="22,0,0,0" />
+              <RadioButton x:Name="ResetRadio" GroupName="LocalChanges" Content="Re_set (throw the local changes away)" IsChecked="{Binding IsResetChanges}" />
+            </StackPanel>
+          </Border>
+        </StackPanel>
+      </ScrollViewer>
+    </DockPanel>
+  </Border>
+</UserControl>

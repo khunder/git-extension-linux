@@ -1,0 +1,102 @@
+<!doctype html>
+<html lang="en">
+<head>
+<meta charset="utf-8">
+<meta name="viewport" content="width=device-width, initial-scale=1">
+<title>Git Extensions for Linux</title>
+<meta name="description" content="Git Extensions, ported to Linux with a native Avalonia user interface.">
+<meta name="color-scheme" content="light dark">
+<link rel="icon" type="image/png" href="assets/git-extensions-32.png">
+<link rel="stylesheet" href="assets/style.css">
+</head>
+<body>
+<a class="skip" href="#main">Skip to content</a>
+<header class="top"><div class="wrap">
+<a class="brand" href="#top"><img src="assets/git-extensions-32.png" alt="" width="28" height="28"> Git Extensions for Linux</a>
+<nav aria-label="Primary"><a href="#download">Download</a><a href="#features">Features</a><a href="#screenshots">Screenshots</a><a href="#about">About</a><a href="https://github.com/khunder/git-extension-linux">GitHub</a></nav>
+</div></header>
+<main id="main"><div class="wrap">
+<div class="hero" id="top">
+<img src="assets/git-extensions-256.png" alt="Git Extensions logo" width="128" height="128">
+<h1>Git Extensions for Linux</h1>
+<p class="tag">The graphical Git client you know, running natively on Linux.</p>
+<div class="actions"><a class="btn primary" href="#download">Download v0.1.0</a><a class="btn" href="https://github.com/khunder/git-extension-linux/releases/latest">Latest release</a><a class="btn" href="https://github.com/khunder/git-extension-linux">Source code</a></div>
+</div>
+<aside class="note" aria-labelledby="avalonia-note"><h2 id="avalonia-note">Reworked with Avalonia instead of WinForms</h2>
+<p>Git Extensions was Windows-only because its user interface was built with WinForms. This port replaces that interface with a new one built on Avalonia, a cross-platform .NET UI framework, so Git Extensions runs natively on Linux. The portable core that does the actual Git work is kept.</p></aside>
+
+<section id="download" aria-labelledby="dl-h"><h2 id="dl-h">Download</h2>
+<p class="lead">Version 0.1.0. Packages are self-contained (no .NET runtime needed); <code>git</code> must be installed. Pick your distribution family, or see the <a href="https://github.com/khunder/git-extension-linux/releases/tag/v0.1.0">release page</a> for every file (RPM and Arch names may carry a distro suffix there). <a href="https://github.com/khunder/git-extension-linux/releases/latest">Latest release</a>.</p>
+<div class="grid">
+<article class="card"><h3>Ubuntu / Debian</h3><p class="arch">amd64 and arm64 (.deb)</p><ul><li><a href="https://github.com/khunder/git-extension-linux/releases/download/v0.1.0/git-extensions_0.1.0_amd64.deb">git-extensions_0.1.0_amd64.deb</a></li><li><a href="https://github.com/khunder/git-extension-linux/releases/download/v0.1.0/git-extensions_0.1.0_arm64.deb">git-extensions_0.1.0_arm64.deb</a></li></ul><div class="cmd"><pre tabindex="0" aria-label="Ubuntu / Debian install command">curl -LO https://github.com/khunder/git-extension-linux/releases/download/v0.1.0/git-extensions_0.1.0_amd64.deb
+sudo apt install ./git-extensions_0.1.0_amd64.deb</pre><button type="button" aria-label="Copy Ubuntu / Debian install command to clipboard">Copy</button></div></article>
+<article class="card"><h3>Fedora</h3><p class="arch">x86_64 (.rpm)</p><ul><li><a href="https://github.com/khunder/git-extension-linux/releases/download/v0.1.0/git-extensions-0.1.0-1.x86_64.rpm">git-extensions-0.1.0-1.x86_64.rpm</a></li></ul><div class="cmd"><pre tabindex="0" aria-label="Fedora install command">curl -LO https://github.com/khunder/git-extension-linux/releases/download/v0.1.0/git-extensions-0.1.0-1.x86_64.rpm
+sudo dnf install ./git-extensions-0.1.0-1.x86_64.rpm</pre><button type="button" aria-label="Copy Fedora install command to clipboard">Copy</button></div></article>
+<article class="card"><h3>openSUSE</h3><p class="arch">x86_64 (.rpm)</p><ul><li><a href="https://github.com/khunder/git-extension-linux/releases/download/v0.1.0/git-extensions-0.1.0-1.x86_64.rpm">git-extensions-0.1.0-1.x86_64.rpm</a></li></ul><div class="cmd"><pre tabindex="0" aria-label="openSUSE install command">curl -LO https://github.com/khunder/git-extension-linux/releases/download/v0.1.0/git-extensions-0.1.0-1.x86_64.rpm
+sudo zypper --no-gpg-checks install ./git-extensions-0.1.0-1.x86_64.rpm</pre><button type="button" aria-label="Copy openSUSE install command to clipboard">Copy</button></div></article>
+<article class="card"><h3>Arch Linux</h3><p class="arch">x86_64 (.pkg.tar.zst)</p><ul><li><a href="https://github.com/khunder/git-extension-linux/releases/download/v0.1.0/git-extensions-0.1.0-1-x86_64.pkg.tar.zst">git-extensions-0.1.0-1-x86_64.pkg.tar.zst</a></li></ul><div class="cmd"><pre tabindex="0" aria-label="Arch Linux install command">curl -LO https://github.com/khunder/git-extension-linux/releases/download/v0.1.0/git-extensions-0.1.0-1-x86_64.pkg.tar.zst
+sudo pacman -U ./git-extensions-0.1.0-1-x86_64.pkg.tar.zst</pre><button type="button" aria-label="Copy Arch Linux install command to clipboard">Copy</button></div></article>
+<article class="card"><h3>Other distributions</h3><p class="arch">Tarball, x64 and arm64 (no root needed)</p><ul><li><a href="https://github.com/khunder/git-extension-linux/releases/download/v0.1.0/git-extensions-linux-0.1.0-x64.tar.gz">git-extensions-linux-0.1.0-x64.tar.gz</a></li><li><a href="https://github.com/khunder/git-extension-linux/releases/download/v0.1.0/git-extensions-linux-0.1.0-arm64.tar.gz">git-extensions-linux-0.1.0-arm64.tar.gz</a></li></ul><div class="cmd"><pre tabindex="0" aria-label="Other distributions install command">curl -LO https://github.com/khunder/git-extension-linux/releases/download/v0.1.0/git-extensions-linux-0.1.0-x64.tar.gz
+tar xzf git-extensions-linux-0.1.0-x64.tar.gz
+cd git-extensions &amp;&amp; ./install.sh</pre><button type="button" aria-label="Copy Other distributions install command to clipboard">Copy</button></div></article>
+</div>
+<h3>Verify your download</h3>
+<p>Every release includes a <a href="https://github.com/khunder/git-extension-linux/releases/download/v0.1.0/SHA256SUMS">SHA256SUMS</a> file.</p>
+<div class="cmd"><pre tabindex="0" aria-label="SHA256 verification command">curl -LO https://github.com/khunder/git-extension-linux/releases/download/v0.1.0/SHA256SUMS
+sha256sum --check --ignore-missing SHA256SUMS</pre><button type="button" aria-label="Copy SHA256 verification command to clipboard">Copy</button></div>
+<p>Run it with <code>git-extensions [path/to/repository]</code> or from your application menu.</p>
+</section>
+
+<section id="features" aria-labelledby="f-h"><h2 id="f-h">Features</h2>
+<div class="grid">
+<div class="card"><h3>Revision grid</h3><p>Commit graph with ref labels, filtering and search.</p></div>
+<div class="card"><h3>Commit window</h3><p>File, hunk and line staging, amend, sign-off, templates.</p></div>
+<div class="card"><h3>Diff, blame, history</h3><p>Diff viewer, blame and file history with rename following.</p></div>
+<div class="card"><h3>Branches and refs</h3><p>Branches, tags, remotes and stashes in a sidebar tree.</p></div>
+<div class="card"><h3>Submodules and worktrees</h3><p>Manage submodules and linked worktrees from dialogs.</p></div>
+<div class="card"><h3>History operations</h3><p>Merge, rebase, cherry-pick, bisect, reset, clean and archive.</p></div>
+<div class="card"><h3>Patches</h3><p>Format, apply and view patches.</p></div>
+<div class="card"><h3>Conflict resolver</h3><p>Resolve merge conflicts without leaving the app.</p></div>
+<div class="card"><h3>Pull, push, clone, init</h3><p>Dedicated dialogs, with in-window credential prompts.</p></div>
+<div class="card"><h3>Settings</h3><p>A settings dialog covering the common Git Extensions options.</p></div>
+<div class="card"><h3>Light and dark themes</h3><p>Follows your system or set it manually.</p></div>
+<div class="card"><h3>Original icons and shortcuts</h3><p>The familiar Git Extensions icons and keyboard shortcuts.</p></div>
+</div></section>
+
+<section id="screenshots" aria-labelledby="s-h"><h2 id="s-h">Screenshots</h2>
+<p class="lead">Select an image to open it at full size.</p>
+<div class="shots">
+<figure><a href="assets/screenshots/main-light.png"><img src="assets/screenshots/main-light.png" alt="Main window, light theme" loading="lazy"></a><figcaption>Main window, light theme</figcaption></figure>
+<figure><a href="assets/screenshots/main-dark.png"><img src="assets/screenshots/main-dark.png" alt="Main window, dark theme" loading="lazy"></a><figcaption>Main window, dark theme</figcaption></figure>
+<figure><a href="assets/screenshots/commit-light.png"><img src="assets/screenshots/commit-light.png" alt="Commit window with hunk and line staging" loading="lazy"></a><figcaption>Commit window with hunk and line staging</figcaption></figure>
+<figure><a href="assets/screenshots/commit-dark.png"><img src="assets/screenshots/commit-dark.png" alt="Commit window, dark theme" loading="lazy"></a><figcaption>Commit window, dark theme</figcaption></figure>
+<figure><a href="assets/screenshots/blame-light.png"><img src="assets/screenshots/blame-light.png" alt="File history with blame" loading="lazy"></a><figcaption>File history with blame</figcaption></figure>
+<figure><a href="assets/screenshots/settings-light.png"><img src="assets/screenshots/settings-light.png" alt="Settings dialog" loading="lazy"></a><figcaption>Settings dialog</figcaption></figure>
+<figure><a href="assets/screenshots/settings-dark.png"><img src="assets/screenshots/settings-dark.png" alt="Settings dialog, dark theme" loading="lazy"></a><figcaption>Settings dialog, dark theme</figcaption></figure>
+<figure><a href="assets/screenshots/push-dark.png"><img src="assets/screenshots/push-dark.png" alt="Push dialog" loading="lazy"></a><figcaption>Push dialog</figcaption></figure>
+</div></section>
+
+<section id="about" aria-labelledby="a-h"><h2 id="a-h">About this port</h2>
+<p>This is a port of <a href="https://github.com/gitextensions/gitextensions">Git Extensions</a> to Linux. What changed:</p>
+<ul class="plain">
+<li><strong>Avalonia UI rewrite.</strong> The WinForms interface was replaced by an Avalonia interface with modal dialogs, themes and the original icons.</li>
+<li><strong>Portable core split.</strong> <code>GitCommands</code>, <code>GitExtUtils</code> and the plugin interfaces were separated from Windows-only code and kept.</li>
+<li><strong>Linux runtime fixes.</strong> Path handling, process launching, settings locations and similar details were fixed for Linux.</li>
+<li><strong>Askpass bridge.</strong> A small <code>GIT_ASKPASS</code> / <code>SSH_ASKPASS</code> helper lets Git ask for credentials in an in-window prompt.</li>
+</ul>
+<p>Not available yet: plugins, scripts, the hotkeys editor, build server integration and a few less common pages.</p>
+<p>All credit for the original application goes to the Git Extensions team and contributors. This port reuses their GPL code and is licensed under the <a href="https://github.com/khunder/git-extension-linux/blob/main/LICENSE.md">GNU GPL v2.0</a>.</p>
+</section>
+</div></main>
+<footer><div class="wrap">
+<ul>
+<li><a href="https://github.com/khunder/git-extension-linux">Repository</a></li>
+<li><a href="https://github.com/khunder/git-extension-linux/issues">Issues</a></li>
+<li><a href="https://github.com/khunder/git-extension-linux/blob/main/LICENSE.md">License (GPL-2.0)</a></li>
+<li><a href="https://github.com/gitextensions/gitextensions">Upstream Git Extensions</a></li>
+</ul>
+<p>Icons by Yusuke Kamiyamane (CC BY 3.0).</p>
+</div></footer>
+<script src="assets/site.js" defer></script>
+</body>
+</html>

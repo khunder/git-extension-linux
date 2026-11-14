@@ -307,8 +307,10 @@ public class MainMenuToolbarTests
         Pump();
         MenuFlyout flyout = (MenuFlyout)toolbar.BranchList.Flyout;
         MenuItem[] items = flyout.Items.OfType<MenuItem>().ToArray();
-        items.Select(i => (string)i.Tag!).Should().Equal("develop", "feature/x", "main");
+        items.Where(i => i.Tag is string).Select(i => (string)i.Tag!).Should().Equal("develop", "feature/x", "main");
         items.Single(i => i.IsChecked).Tag.Should().Be("main");
+        items[^1].Header.Should().Be("Checkout branch…");
+        items[^1].Command.Should().BeSameAs(viewModel.ShowCheckoutBranchDialogCommand);
 
         Click(items[0]);
         await WaitAsync(() => viewModel.Branch == "develop" && !viewModel.IsBusy);
@@ -467,16 +469,23 @@ public class MainMenuToolbarTests
         viewModel.PreviousChangeCommand.Execute(null);
         viewModel.SelectedCommit.Should().BeSameAs(viewModel.Commits[0]);
 
-        // Merge/Rebase need a branch selected in the left panel.
+        // Merge/Rebase are always available (they open a dialog); the branch selected in the left panel is prefilled.
         MenuItem merge = Item(window, "MergeMenuItem");
         viewModel.CanMergeSelectedRef.Should().BeFalse();
-        merge.IsEnabled.Should().BeFalse();
+        merge.IsEnabled.Should().BeTrue();
         RefNodeViewModel develop = Flatten(viewModel.Refs.Roots).First(n => n.Kind == RefNodeKind.LocalBranch && n.FullName == "develop");
         viewModel.Refs.SelectedNode = develop;
         Pump();
         viewModel.CanMergeSelectedRef.Should().BeTrue();
         merge.IsEnabled.Should().BeTrue();
         Item(window, "RebaseMenuItem").IsEnabled.Should().BeTrue();
+        await viewModel.MergeSelectedRefCommand.ExecuteAsync(null);
+        viewModel.MergeDialog.IsOpen.Should().BeTrue();
+        viewModel.MergeDialog.Target.Should().Be("develop");
+        viewModel.MergeDialog.CloseCommand.Execute(null);
+        await viewModel.RebaseOntoSelectedRefCommand.ExecuteAsync(null);
+        viewModel.RebaseDialog.Target.Should().Be("develop");
+        viewModel.RebaseDialog.CloseCommand.Execute(null);
         Item(window, "DeleteTagMenuItem").IsEnabled.Should().BeFalse();
 
         RefNodeViewModel tag = Flatten(viewModel.Refs.Roots).First(n => n.Kind == RefNodeKind.Tag);

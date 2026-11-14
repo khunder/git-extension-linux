@@ -13,8 +13,8 @@ public static class RefsContextMenu
     {
         List<Control> items = node.Kind switch
         {
-            RefNodeKind.LocalBranch => LocalBranch(refs, node),
-            RefNodeKind.RemoteBranch => RemoteBranch(refs, node),
+            RefNodeKind.LocalBranch => LocalBranch(refs, main, node),
+            RefNodeKind.RemoteBranch => RemoteBranch(refs, main, node),
             RefNodeKind.Tag => Tag(refs, node),
             RefNodeKind.Stash => Stash(main, node),
             RefNodeKind.Submodule => Submodule(main),
@@ -32,28 +32,20 @@ public static class RefsContextMenu
         return MenuKit.Tidy(items);
     }
 
-    private static List<Control> MergeAndRebase(RefsTreeViewModel refs, RefNodeViewModel node)
+    // Both open their dialog with this branch prefilled; the options (fast-forward mode, rebase flags) are chosen there.
+    private static List<Control> MergeAndRebase(MainWindowViewModel? main, RefNodeViewModel node)
         =>
         [
-            MenuKit.Sub(
-                "Merge into current branch…",
-                "Merge",
-                [
-                    MenuKit.Item("Merge (fast-forward when possible)", "Merge", () => refs.MergeIntoCurrentCommand.Execute(node)),
-                    MenuKit.Item("Merge, always create a merge commit (--no-ff)", "Merge", () => refs.MergeNoFastForwardCommand.Execute(node)),
-                    MenuKit.Item("Merge, fast-forward only (--ff-only)", "Merge", () => refs.MergeFastForwardOnlyCommand.Execute(node)),
-                ],
-                node.CanMergeOrRebase,
-                "This is the current branch"),
-            MenuKit.Item("Rebase current branch on this", "Rebase", () => refs.RebaseOntoCommand.Execute(node), enabled: node.CanMergeOrRebase, disabledTip: "This is the current branch"),
+            MenuKit.Item("Merge into current branch…", "Merge", () => _ = main?.OpenMergeDialogAsync(node.FullName), enabled: main is not null && node.CanMergeOrRebase, disabledTip: "This is the current branch"),
+            MenuKit.Item("Rebase current branch on this…", "Rebase", () => _ = main?.OpenRebaseDialogAsync(node.FullName), enabled: main is not null && node.CanMergeOrRebase, disabledTip: "This is the current branch"),
         ];
 
-    private static List<Control> LocalBranch(RefsTreeViewModel refs, RefNodeViewModel node)
+    private static List<Control> LocalBranch(RefsTreeViewModel refs, MainWindowViewModel? main, RefNodeViewModel node)
     {
         List<Control> items =
         [
             MenuKit.Item("Checkout", "BranchCheckout", () => refs.CheckoutCommand.Execute(node), enabled: node.CanCheckout, disabledTip: "This is the current branch"),
-            .. MergeAndRebase(refs, node),
+            .. MergeAndRebase(main, node),
             MenuKit.Sep(),
             MenuKit.Item("Create branch from here…", "BranchCreate", () => refs.RequestNewBranchCommand.Execute(node)),
             MenuKit.Item("Create tag here…", "TagCreate", () => refs.RequestNewTagCommand.Execute(node)),
@@ -68,11 +60,11 @@ public static class RefsContextMenu
         return items;
     }
 
-    private static List<Control> RemoteBranch(RefsTreeViewModel refs, RefNodeViewModel node)
+    private static List<Control> RemoteBranch(RefsTreeViewModel refs, MainWindowViewModel? main, RefNodeViewModel node)
         =>
         [
             MenuKit.Item("Checkout as local tracking branch", "BranchCheckout", () => refs.CheckoutRemoteAsTrackingCommand.Execute(node)),
-            .. MergeAndRebase(refs, node),
+            .. MergeAndRebase(main, node),
             MenuKit.Sep(),
             MenuKit.Item("Create branch from here…", "BranchCreate", () => refs.RequestNewBranchCommand.Execute(node)),
             MenuKit.Item("Create tag here…", "TagCreate", () => refs.RequestNewTagCommand.Execute(node)),
@@ -139,7 +131,7 @@ public static class RefsContextMenu
             "Branches" =>
             [
                 MenuKit.Item("Create branch…", "BranchCreate", () => refs.RequestNewBranchCommand.Execute(null)),
-                MenuKit.Item("Checkout branch…", "BranchCheckout", () => main?.CheckoutBranchCommand.Execute(null), enabled: main is not null),
+                MenuKit.Item("Checkout branch…", "BranchCheckout", () => main?.ShowCheckoutBranchDialogCommand.Execute(null), enabled: main is not null),
             ],
             "Remotes" =>
             [
