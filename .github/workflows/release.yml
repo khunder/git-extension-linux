@@ -1,0 +1,329 @@
+name: Release
+
+on:
+  push:
+    tags: ['v*']
+  workflow_dispatch:
+    inputs:
+      version:
+        description: 'Version to release, without the leading v (for example 0.1.0). The tag v<version> is created if missing.'
+        required: true
+        type: string
+
+permissions:
+  contents: read
+
+env:
+  DOTNET_CLI_TELEMETRY_OPTOUT: 1
+  DOTNET_NOLOGO: 1
+
+jobs:
+  meta:
+    runs-on: ubuntu-latest
+    outputs:
+      version: ${{ steps.v.outputs.version }}
+    steps:
+      - id: v
+        env:
+          INPUT_VERSION: ${{ inputs.version }}
+        run: |
+          set -euxo pipefail
+          if [[ "$GITHUB_REF_TYPE" == tag ]]; then version="${GITHUB_REF_NAME#v}"; else version="${INPUT_VERSION#v}"; fi
+          [[ "$version" =~ ^[0-9]+\.[0-9]+\.[0-9]+([.-][0-9A-Za-z.]+)?$ ]] || { echo "invalid version '$version'"; exit 1; }
+          echo "version=$version" >> "$GITHUB_OUTPUT"
+
+  publish:
+    needs: meta
+    runs-on: ubuntu-latest
+    strategy:
+      fail-fast: true
+      matrix:
+        include:
+          - { arch: x64, rid: linux-x64 }
+          - { arch: arm64, rid: linux-arm64 }
+    steps:
+      - uses: actions/checkout@v4
+      - uses: actions/setup-dotnet@v4
+        with:
+          global-json-file: global.json
+      - name: Publish ${{ matrix.rid }}
+        run: |
+          set -euxo pipefail
+          packaging/linux/publish.sh "${{ matrix.rid }}" "$RUNNER_TEMP/publish"
+          # upload-artifact does not preserve permissions, so ship a tar archive.
+          tar -C "$RUNNER_TEMP/publish" -czpf "$RUNNER_TEMP/publish-${{ matrix.arch }}.tar.gz" .
+      - uses: actions/upload-artifact@v4
+        with:
+          name: publish-${{ matrix.arch }}
+          path: ${{ runner.temp }}/publish-${{ matrix.arch }}.tar.gz
+          if-no-files-found: error
+          retention-days: 7
+
+  tarball:
+    needs: [meta, publish]
+    runs-on: ubuntu-latest
+    strategy:
+      matrix:
+        arch: [x64, arm64]
+    steps:
+      - uses: actions/checkout@v4
+      - uses: actions/download-artifact@v4
+        with:
+          name: publish-${{ matrix.arch }}
+          path: ${{ runner.temp }}/dl
+      - name: Build tarball
+        env:
+          VERSION: ${{ needs.meta.outputs.version }}
+        run: |
+          set -euxo pipefail
+          mkdir -p "$RUNNER_TEMP/publish"
+          tar -xzpf "$RUNNER_TEMP/dl/publish-${{ matrix.arch }}.tar.gz" -C "$RUNNER_TEMP/publish"
+          VERSION="$VERSION" ARCH="${{ matrix.arch }}" PUBLISH_DIR="$RUNNER_TEMP/publish" OUT_DIR="$PWD/dist" packaging/linux/build-tarball.sh
+          test -s "dist/git-extensions-linux-$VERSION-${{ matrix.arch }}.tar.gz"
+      - uses: actions/upload-artifact@v4
+        with:
+          name: pkg-tarball-${{ matrix.arch }}
+          path: dist/*.tar.gz
+          if-no-files-found: error
+
+  deb:
+    needs: [meta, publish]
+    runs-on: ubuntu-latest
+    strategy:
+      matrix:
+        include:
+          - { arch: x64, deb_arch: amd64 }
+          - { arch: arm64, deb_arch: arm64 }
+    steps:
+      - uses: actions/checkout@v4
+      - uses: actions/download-artifact@v4
+        with:
+          name: publish-${{ matrix.arch }}
+          path: ${{ runner.temp }}/dl
+      - name: Build .deb
+        env:
+          VERSION: ${{ needs.meta.outputs.version }}
+        run: |
+          set -euxo pipefail
+          mkdir -p "$RUNNER_TEMP/publish"
+          tar -xzpf "$RUNNER_TEMP/dl/publish-${{ matrix.arch }}.tar.gz" -C "$RUNNER_TEMP/publish"
+          VERSION="$VERSION" ARCH="${{ matrix.deb_arch }}" PUBLISH_DIR="$RUNNER_TEMP/publish" OUT_DIR="$PWD/dist" packaging/linux/build-deb.sh
+          deb="dist/git-extensions_${VERSION}_${{ matrix.deb_arch }}.deb"
+          test -s "$deb"
+          dpkg-deb --info "$deb"
+          dpkg-deb --contents "$deb" | grep -q ' ./usr/bin/git-extensions -> /opt/git-extensions/GitExtensions.Avalonia'
+      - uses: actions/upload-artifact@v4
+        with:
+          name: pkg-deb-${{ matrix.deb_arch }}
+          path: dist/*.deb
+          if-no-files-found: error
+
+  rpm-fedora:
+    needs: [meta, publish]
+    runs-on: ubuntu-latest
+    container: fedora:latest
+    strategy:
+      matrix:
+        include:
+          - { arch: x64, rpm_arch: x86_64 }
+          - { arch: arm64, rpm_arch: aarch64 }
+    steps:
+      - run: dnf install -y rpm-build tar gzip xz findutils which
+      - uses: actions/checkout@v4
+      - uses: actions/download-artifact@v4
+        with:
+          name: publish-${{ matrix.arch }}
+          path: ${{ runner.temp }}/dl
+      - name: Build .rpm
+        env:
+          VERSION: ${{ needs.meta.outputs.version }}
+        run: |
+          set -euxo pipefail
+          mkdir -p "$RUNNER_TEMP/publish"
+          tar -xzpf "$RUNNER_TEMP/dl/publish-${{ matrix.arch }}.tar.gz" -C "$RUNNER_TEMP/publish"
+          VERSION="$VERSION" ARCH="${{ matrix.rpm_arch }}" DISTRO=fedora PUBLISH_DIR="$RUNNER_TEMP/publish" OUT_DIR="$PWD/dist" packaging/linux/build-rpm.sh
+          test -s "dist/git-extensions-$VERSION-1.fedora.${{ matrix.rpm_arch }}.rpm"
+      - uses: actions/upload-artifact@v4
+        with:
+          name: pkg-rpm-fedora-${{ matrix.rpm_arch }}
+          path: dist/*.rpm
+          if-no-files-found: error
+
+  rpm-opensuse:
+    needs: [meta, publish]
+    runs-on: ubuntu-latest
+    container: opensuse/tumbleweed:latest
+    strategy:
+      matrix:
+        include:
+          - { arch: x64, rpm_arch: x86_64 }
+          - { arch: arm64, rpm_arch: aarch64 }
+    steps:
+      - run: zypper --non-interactive install --no-recommends rpm-build tar gzip xz findutils which
+      - uses: actions/checkout@v4
+      - uses: actions/download-artifact@v4
+        with:
+          name: publish-${{ matrix.arch }}
+          path: ${{ runner.temp }}/dl
+      - name: Build .rpm
+        env:
+          VERSION: ${{ needs.meta.outputs.version }}
+        run: |
+          set -euxo pipefail
+          mkdir -p "$RUNNER_TEMP/publish"
+          tar -xzpf "$RUNNER_TEMP/dl/publish-${{ matrix.arch }}.tar.gz" -C "$RUNNER_TEMP/publish"
+          VERSION="$VERSION" ARCH="${{ matrix.rpm_arch }}" DISTRO=opensuse PUBLISH_DIR="$RUNNER_TEMP/publish" OUT_DIR="$PWD/dist" packaging/linux/build-rpm.sh
+          test -s "dist/git-extensions-$VERSION-1.opensuse.${{ matrix.rpm_arch }}.rpm"
+      - uses: actions/upload-artifact@v4
+        with:
+          name: pkg-rpm-opensuse-${{ matrix.rpm_arch }}
+          path: dist/*.rpm
+          if-no-files-found: error
+
+  arch:
+    needs: [meta, tarball]
+    runs-on: ubuntu-latest
+    container: archlinux:latest
+    steps:
+      - run: |
+          set -euxo pipefail
+          pacman -Syu --noconfirm --needed base-devel git
+          useradd -m builder
+      - uses: actions/checkout@v4
+      - uses: actions/download-artifact@v4
+        with:
+          name: pkg-tarball-x64
+          path: ${{ runner.temp }}/dl
+      - name: Build package with makepkg (non-root)
+        env:
+          VERSION: ${{ needs.meta.outputs.version }}
+        run: |
+          set -euxo pipefail
+          work=/home/builder/work
+          mkdir -p "$work/dist"
+          cp -r packaging "$work/packaging"
+          cp LICENSE.md "$work/"
+          cp "$RUNNER_TEMP/dl/git-extensions-linux-$VERSION-x64.tar.gz" "$work/"
+          chown -R builder:builder "$work"
+          su builder -c "cd $work && VERSION=$VERSION ARCH=x86_64 TARBALL=$work/git-extensions-linux-$VERSION-x64.tar.gz OUT_DIR=$work/dist packaging/linux/build-arch.sh"
+          mkdir -p dist
+          cp "$work/dist/git-extensions-$VERSION-1-x86_64.pkg.tar.zst" dist/
+          pacman -Qip dist/*.pkg.tar.zst
+      - uses: actions/upload-artifact@v4
+        with:
+          name: pkg-arch-x86_64
+          path: dist/*.pkg.tar.zst
+          if-no-files-found: error
+
+  # Install each package in a matching distribution image and check that the files exist and all native libraries resolve.
+  smoke-deb:
+    needs: [meta, deb]
+    runs-on: ubuntu-latest
+    container: ${{ matrix.image }}
+    strategy:
+      fail-fast: false
+      matrix:
+        image: ['ubuntu:22.04', 'ubuntu:24.04', 'debian:12']
+    steps:
+      - uses: actions/checkout@v4
+      - uses: actions/download-artifact@v4
+        with:
+          name: pkg-deb-amd64
+          path: ${{ runner.temp }}/pkg
+      - run: |
+          set -euxo pipefail
+          export DEBIAN_FRONTEND=noninteractive
+          apt-get update
+          apt-get install -y "$RUNNER_TEMP"/pkg/git-extensions_*_amd64.deb
+          packaging/linux/smoke-check.sh
+
+  smoke-fedora:
+    needs: [meta, rpm-fedora]
+    runs-on: ubuntu-latest
+    container: fedora:latest
+    steps:
+      - uses: actions/checkout@v4
+      - uses: actions/download-artifact@v4
+        with:
+          name: pkg-rpm-fedora-x86_64
+          path: ${{ runner.temp }}/pkg
+      - run: |
+          set -euxo pipefail
+          dnf install -y "$RUNNER_TEMP"/pkg/git-extensions-*.rpm
+          packaging/linux/smoke-check.sh
+
+  smoke-opensuse:
+    needs: [meta, rpm-opensuse]
+    runs-on: ubuntu-latest
+    container: opensuse/tumbleweed:latest
+    steps:
+      - uses: actions/checkout@v4
+      - uses: actions/download-artifact@v4
+        with:
+          name: pkg-rpm-opensuse-x86_64
+          path: ${{ runner.temp }}/pkg
+      - run: |
+          set -euxo pipefail
+          zypper --non-interactive refresh
+          zypper --non-interactive --no-gpg-checks install "$RUNNER_TEMP"/pkg/git-extensions-*.rpm
+          packaging/linux/smoke-check.sh
+
+  smoke-arch:
+    needs: [meta, arch]
+    runs-on: ubuntu-latest
+    container: archlinux:latest
+    steps:
+      - run: pacman -Syu --noconfirm --needed git
+      - uses: actions/checkout@v4
+      - uses: actions/download-artifact@v4
+        with:
+          name: pkg-arch-x86_64
+          path: ${{ runner.temp }}/pkg
+      - run: |
+          set -euxo pipefail
+          pacman -U --noconfirm "$RUNNER_TEMP"/pkg/git-extensions-*.pkg.tar.zst
+          packaging/linux/smoke-check.sh
+
+  release:
+    needs: [meta, tarball, deb, rpm-fedora, rpm-opensuse, arch, smoke-deb, smoke-fedora, smoke-opensuse, smoke-arch]
+    runs-on: ubuntu-latest
+    permissions:
+      contents: write
+    steps:
+      - uses: actions/checkout@v4
+      - uses: actions/download-artifact@v4
+        with:
+          pattern: pkg-*
+          merge-multiple: true
+          path: release
+      - name: Verify and checksum
+        env:
+          VERSION: ${{ needs.meta.outputs.version }}
+        run: |
+          set -euxo pipefail
+          cd release
+          expected=(
+            "git-extensions-linux-$VERSION-x64.tar.gz"
+            "git-extensions-linux-$VERSION-arm64.tar.gz"
+            "git-extensions_${VERSION}_amd64.deb"
+            "git-extensions_${VERSION}_arm64.deb"
+            "git-extensions-$VERSION-1.fedora.x86_64.rpm"
+            "git-extensions-$VERSION-1.fedora.aarch64.rpm"
+            "git-extensions-$VERSION-1.opensuse.x86_64.rpm"
+            "git-extensions-$VERSION-1.opensuse.aarch64.rpm"
+            "git-extensions-${VERSION//-/_}-1-x86_64.pkg.tar.zst"
+          )
+          for f in "${expected[@]}"; do test -s "$f" || { echo "missing artifact: $f"; exit 1; }; done
+          sha256sum "${expected[@]}" > SHA256SUMS
+          cat SHA256SUMS
+          ls -l
+      - name: Create or update the GitHub release
+        uses: softprops/action-gh-release@v2
+        with:
+          tag_name: v${{ needs.meta.outputs.version }}
+          target_commitish: ${{ github.sha }}
+          name: Git Extensions ${{ needs.meta.outputs.version }}
+          generate_release_notes: true
+          prerelease: ${{ contains(needs.meta.outputs.version, '-') }}
+          fail_on_unmatched_files: true
+          files: release/*

@@ -1,30 +1,39 @@
 #!/usr/bin/env bash
-# Builds a self-contained Linux tarball of the Avalonia UI (no .NET runtime needed on the target machine).
+# Builds the self-contained Linux tarball (no .NET runtime needed on the target machine).
 #
-#   packaging/linux/build-tarball.sh            # linux-x64
-#   RID=linux-arm64 packaging/linux/build-tarball.sh
+#   VERSION=0.1.0 ARCH=x64 PUBLISH_DIR=<published tree> packaging/linux/build-tarball.sh
 #
-# Output: artifacts/publish/git-extensions-avalonia-<rid>.tar.gz
+# Inputs (environment):
+#   VERSION      package version (default 0.1.0)
+#   ARCH         x64 (default) or arm64
+#   PUBLISH_DIR  output of publish.sh; when empty the app is published first
+#   OUT_DIR      output directory (default artifacts/dist)
+#
+# Output: $OUT_DIR/git-extensions-linux-$VERSION-$ARCH.tar.gz
 set -euo pipefail
+source "$(dirname "${BASH_SOURCE[0]}")/common.sh"
 
-RID="${RID:-linux-x64}"
-root="$(cd "$(dirname "${BASH_SOURCE[0]}")/../.." && pwd)"
-stage="$root/artifacts/publish/stage-$RID/git-extensions"
-tarball="$root/artifacts/publish/git-extensions-avalonia-$RID.tar.gz"
+VERSION="${VERSION:-0.1.0}"
+ARCH="${ARCH:-x64}"
+OUT_DIR="${OUT_DIR:-$repo_root/artifacts/dist}"
+RID="$(rid_for_arch "$ARCH")"
+PUBLISH_DIR="${PUBLISH_DIR:-}"
 
-rm -rf "$root/artifacts/publish/stage-$RID"
-mkdir -p "$stage"
+if [[ -z "$PUBLISH_DIR" ]]; then
+  PUBLISH_DIR="$repo_root/artifacts/publish/$RID"
+  "$packaging_dir/publish.sh" "$RID" "$PUBLISH_DIR"
+fi
+check_publish_dir "$PUBLISH_DIR"
 
-# The Avalonia project publishes the askpass helper next to the app (see CopyAskPassToPublishDir).
-dotnet publish "$root/src/app/GitExtensions.Avalonia/GitExtensions.Avalonia.csproj" \
-  -c Release -r "$RID" --self-contained true \
-  -p:DebugType=None -p:DebugSymbols=false \
-  -o "$stage/app"
+work="$(mktemp -d)"
+trap 'rm -rf "$work"' EXIT
+stage="$work/git-extensions"
+mkdir -p "$stage" "$OUT_DIR"
+cp -a "$PUBLISH_DIR" "$stage/app"
+cp "$packaging_dir/git-extensions.desktop" "$packaging_dir/git-extensions.svg" "$packaging_dir/install.sh" "$repo_root/LICENSE.md" "$stage/"
+cp -r "$packaging_dir/icons" "$stage/icons"
+chmod +x "$stage/install.sh" "$stage/app/GitExtensions.Avalonia" "$stage/app/GitExtensions.AskPass"
 
-cp "$root/packaging/linux/git-extensions.desktop" "$root/packaging/linux/git-extensions.svg" "$stage/"
-cp -r "$root/packaging/linux/icons" "$stage/icons"
-cp "$root/packaging/linux/install.sh" "$stage/install.sh"
-chmod +x "$stage/install.sh"
-
-tar -C "$root/artifacts/publish/stage-$RID" -czf "$tarball" git-extensions
+tarball="$OUT_DIR/git-extensions-linux-$VERSION-$ARCH.tar.gz"
+tar --owner=0 --group=0 --numeric-owner -C "$work" -czf "$tarball" git-extensions
 echo "Created $tarball ($(du -h "$tarball" | cut -f1))"

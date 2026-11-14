@@ -1,0 +1,61 @@
+name: CI
+
+on:
+  push:
+    branches: [main]
+  pull_request:
+
+permissions:
+  contents: read
+
+concurrency:
+  group: ci-${{ github.ref }}
+  cancel-in-progress: true
+
+jobs:
+  build-and-test:
+    runs-on: ubuntu-latest
+    timeout-minutes: 45
+    env:
+      DOTNET_CLI_TELEMETRY_OPTOUT: 1
+      DOTNET_NOLOGO: 1
+    steps:
+      - uses: actions/checkout@v4
+
+      - uses: actions/setup-dotnet@v4
+        with:
+          global-json-file: global.json
+
+      - name: Configure git for the tests
+        run: |
+          set -euxo pipefail
+          git config --global user.name "CI"
+          git config --global user.email "ci@example.invalid"
+          git config --global init.defaultBranch main
+          git --version
+
+      - name: Restore
+        run: dotnet restore GitExtensions.slnx
+
+      # TreatWarningsAsErrors is set in Directory.Build.props, so any warning fails the build.
+      - name: Build
+        run: dotnet build GitExtensions.slnx -c Release --no-restore
+
+      - name: Portable tests
+        run: >
+          dotnet test tests/app/UnitTests/GitCommands.Portable.Tests/GitCommands.Portable.Tests.csproj
+          -c Release --no-build --logger "trx;LogFileName=portable.trx" --results-directory TestResults
+
+      # The Avalonia headless platform renders without a display server, so no xvfb is needed.
+      - name: Avalonia headless tests
+        run: >
+          dotnet test tests/app/UnitTests/GitExtensions.Avalonia.Tests/GitExtensions.Avalonia.Tests.csproj
+          -c Release --no-build --logger "trx;LogFileName=avalonia.trx" --results-directory TestResults
+
+      - name: Upload test results
+        if: always()
+        uses: actions/upload-artifact@v4
+        with:
+          name: test-results
+          path: TestResults/*.trx
+          if-no-files-found: warn

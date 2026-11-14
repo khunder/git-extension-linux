@@ -13,7 +13,24 @@
     <ApplicationManifest>app.manifest</ApplicationManifest>
     <!-- The repository disables publishing globally (IsPublishable=false); this app is meant to be published. -->
     <IsPublishable>true</IsPublishable>
+    <!-- No libicu dependency on the target machine. -->
+    <InvariantGlobalization>true</InvariantGlobalization>
+    <!-- Release version, shown in the About dialog (read from AssemblyInformationalVersion). -->
+    <Version>0.1.0</Version>
+    <AssemblyVersion>0.1.0.0</AssemblyVersion>
+    <FileVersion>0.1.0.0</FileVersion>
+    <InformationalVersion>0.1.0</InformationalVersion>
+    <Company>Git Extensions</Company>
+    <Product>Git Extensions</Product>
+    <GenerateAssemblyInfo>true</GenerateAssemblyInfo>
+    <!-- Do not append the source revision to the informational version. -->
+    <IncludeSourceRevisionInInformationalVersion>false</IncludeSourceRevisionInInformationalVersion>
   </PropertyGroup>
+
+  <ItemGroup>
+    <!-- The shared CommonAssemblyInfo.cs carries the upstream placeholder version (33.33.33). -->
+    <Compile Remove="$(RepoRoot)\CommonAssemblyInfo.cs" />
+  </ItemGroup>
 
   <ItemGroup>
     <AvaloniaResource Include="Assets\Icons\*.png" />

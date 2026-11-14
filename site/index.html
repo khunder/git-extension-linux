@@ -30,10 +30,10 @@
 <div class="grid">
 <article class="card"><h3>Ubuntu / Debian</h3><p class="arch">amd64 and arm64 (.deb)</p><ul><li><a href="https://github.com/khunder/git-extension-linux/releases/download/v0.1.0/git-extensions_0.1.0_amd64.deb">git-extensions_0.1.0_amd64.deb</a></li><li><a href="https://github.com/khunder/git-extension-linux/releases/download/v0.1.0/git-extensions_0.1.0_arm64.deb">git-extensions_0.1.0_arm64.deb</a></li></ul><div class="cmd"><pre tabindex="0" aria-label="Ubuntu / Debian install command">curl -LO https://github.com/khunder/git-extension-linux/releases/download/v0.1.0/git-extensions_0.1.0_amd64.deb
 sudo apt install ./git-extensions_0.1.0_amd64.deb</pre><button type="button" aria-label="Copy Ubuntu / Debian install command to clipboard">Copy</button></div></article>
-<article class="card"><h3>Fedora</h3><p class="arch">x86_64 (.rpm)</p><ul><li><a href="https://github.com/khunder/git-extension-linux/releases/download/v0.1.0/git-extensions-0.1.0-1.x86_64.rpm">git-extensions-0.1.0-1.x86_64.rpm</a></li></ul><div class="cmd"><pre tabindex="0" aria-label="Fedora install command">curl -LO https://github.com/khunder/git-extension-linux/releases/download/v0.1.0/git-extensions-0.1.0-1.x86_64.rpm
-sudo dnf install ./git-extensions-0.1.0-1.x86_64.rpm</pre><button type="button" aria-label="Copy Fedora install command to clipboard">Copy</button></div></article>
-<article class="card"><h3>openSUSE</h3><p class="arch">x86_64 (.rpm)</p><ul><li><a href="https://github.com/khunder/git-extension-linux/releases/download/v0.1.0/git-extensions-0.1.0-1.x86_64.rpm">git-extensions-0.1.0-1.x86_64.rpm</a></li></ul><div class="cmd"><pre tabindex="0" aria-label="openSUSE install command">curl -LO https://github.com/khunder/git-extension-linux/releases/download/v0.1.0/git-extensions-0.1.0-1.x86_64.rpm
-sudo zypper --no-gpg-checks install ./git-extensions-0.1.0-1.x86_64.rpm</pre><button type="button" aria-label="Copy openSUSE install command to clipboard">Copy</button></div></article>
+<article class="card"><h3>Fedora</h3><p class="arch">x86_64 (.rpm)</p><ul><li><a href="https://github.com/khunder/git-extension-linux/releases/download/v0.1.0/git-extensions-0.1.0-1.fedora.x86_64.rpm">git-extensions-0.1.0-1.fedora.x86_64.rpm</a></li></ul><div class="cmd"><pre tabindex="0" aria-label="Fedora install command">curl -LO https://github.com/khunder/git-extension-linux/releases/download/v0.1.0/git-extensions-0.1.0-1.fedora.x86_64.rpm
+sudo dnf install ./git-extensions-0.1.0-1.fedora.x86_64.rpm</pre><button type="button" aria-label="Copy Fedora install command to clipboard">Copy</button></div></article>
+<article class="card"><h3>openSUSE</h3><p class="arch">x86_64 (.rpm)</p><ul><li><a href="https://github.com/khunder/git-extension-linux/releases/download/v0.1.0/git-extensions-0.1.0-1.opensuse.x86_64.rpm">git-extensions-0.1.0-1.opensuse.x86_64.rpm</a></li></ul><div class="cmd"><pre tabindex="0" aria-label="openSUSE install command">curl -LO https://github.com/khunder/git-extension-linux/releases/download/v0.1.0/git-extensions-0.1.0-1.opensuse.x86_64.rpm
+sudo zypper --no-gpg-checks install ./git-extensions-0.1.0-1.opensuse.x86_64.rpm</pre><button type="button" aria-label="Copy openSUSE install command to clipboard">Copy</button></div></article>
 <article class="card"><h3>Arch Linux</h3><p class="arch">x86_64 (.pkg.tar.zst)</p><ul><li><a href="https://github.com/khunder/git-extension-linux/releases/download/v0.1.0/git-extensions-0.1.0-1-x86_64.pkg.tar.zst">git-extensions-0.1.0-1-x86_64.pkg.tar.zst</a></li></ul><div class="cmd"><pre tabindex="0" aria-label="Arch Linux install command">curl -LO https://github.com/khunder/git-extension-linux/releases/download/v0.1.0/git-extensions-0.1.0-1-x86_64.pkg.tar.zst
 sudo pacman -U ./git-extensions-0.1.0-1-x86_64.pkg.tar.zst</pre><button type="button" aria-label="Copy Arch Linux install command to clipboard">Copy</button></div></article>
 <article class="card"><h3>Other distributions</h3><p class="arch">Tarball, x64 and arm64 (no root needed)</p><ul><li><a href="https://github.com/khunder/git-extension-linux/releases/download/v0.1.0/git-extensions-linux-0.1.0-x64.tar.gz">git-extensions-linux-0.1.0-x64.tar.gz</a></li><li><a href="https://github.com/khunder/git-extension-linux/releases/download/v0.1.0/git-extensions-linux-0.1.0-arm64.tar.gz">git-extensions-linux-0.1.0-arm64.tar.gz</a></li></ul><div class="cmd"><pre tabindex="0" aria-label="Other distributions install command">curl -LO https://github.com/khunder/git-extension-linux/releases/download/v0.1.0/git-extensions-linux-0.1.0-x64.tar.gz
@@ -85,14 +85,14 @@ sha256sum --check --ignore-missing SHA256SUMS</pre><button type="button" aria-la
 <li><strong>Askpass bridge.</strong> A small <code>GIT_ASKPASS</code> / <code>SSH_ASKPASS</code> helper lets Git ask for credentials in an in-window prompt.</li>
 </ul>
 <p>Not available yet: plugins, scripts, the hotkeys editor, build server integration and a few less common pages.</p>
-<p>All credit for the original application goes to the Git Extensions team and contributors. This port reuses their GPL code and is licensed under the <a href="https://github.com/khunder/git-extension-linux/blob/main/LICENSE.md">GNU GPL v2.0</a>.</p>
+<p>All credit for the original application goes to the Git Extensions team and contributors. This port reuses their GPL code and is licensed under the <a href="https://github.com/khunder/git-extension-linux/blob/main/LICENSE.md">GNU GPL v3.0</a>.</p>
 </section>
 </div></main>
 <footer><div class="wrap">
 <ul>
 <li><a href="https://github.com/khunder/git-extension-linux">Repository</a></li>
 <li><a href="https://github.com/khunder/git-extension-linux/issues">Issues</a></li>
-<li><a href="https://github.com/khunder/git-extension-linux/blob/main/LICENSE.md">License (GPL-2.0)</a></li>
+<li><a href="https://github.com/khunder/git-extension-linux/blob/main/LICENSE.md">License (GPL-3.0)</a></li>
 <li><a href="https://github.com/gitextensions/gitextensions">Upstream Git Extensions</a></li>
 </ul>
 <p>Icons by Yusuke Kamiyamane (CC BY 3.0).</p>

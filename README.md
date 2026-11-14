@@ -57,15 +57,15 @@ sudo apt install ./git-extensions_0.1.0_arm64.deb
 ### Fedora (.rpm)
 
 ```bash
-curl -LO https://github.com/khunder/git-extension-linux/releases/download/v0.1.0/git-extensions-0.1.0-1.x86_64.rpm
-sudo dnf install ./git-extensions-0.1.0-1.x86_64.rpm
+curl -LO https://github.com/khunder/git-extension-linux/releases/download/v0.1.0/git-extensions-0.1.0-1.fedora.x86_64.rpm
+sudo dnf install ./git-extensions-0.1.0-1.fedora.x86_64.rpm
 ```
 
 ### openSUSE (.rpm)
 
 ```bash
-curl -LO https://github.com/khunder/git-extension-linux/releases/download/v0.1.0/git-extensions-0.1.0-1.x86_64.rpm
-sudo zypper --no-gpg-checks install ./git-extensions-0.1.0-1.x86_64.rpm
+curl -LO https://github.com/khunder/git-extension-linux/releases/download/v0.1.0/git-extensions-0.1.0-1.opensuse.x86_64.rpm
+sudo zypper --no-gpg-checks install ./git-extensions-0.1.0-1.opensuse.x86_64.rpm
 ```
 
 The packages are not signed yet, hence `--no-gpg-checks` on openSUSE (on Fedora, `dnf` may need `--nogpgcheck` as well).
@@ -165,4 +165,4 @@ The icons are by [Yusuke Kamiyamane](http://p.yusukekamiyamane.com/), licensed u
 
 All contributors to Git Extensions formally agree to the certificate of origin in [contributors.txt](contributors.txt).
 
-Licensed under the GNU General Public License v2.0, see [LICENSE.md](LICENSE.md). See also the [code of conduct](CODE_OF_CONDUCT.md) and [contributing guide](CONTRIBUTING.md).
+Licensed under the GNU General Public License v3.0, see [LICENSE.md](LICENSE.md). See also the [code of conduct](CODE_OF_CONDUCT.md) and [contributing guide](CONTRIBUTING.md).

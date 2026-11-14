@@ -1,0 +1,42 @@
+# Maintainer: Git Extensions for Linux <noreply@github.com>
+#
+# Repackages the prebuilt, self-contained tarball (git-extensions-linux-<version>-<x64|arm64>.tar.gz, produced by
+# build-tarball.sh) as an Arch package; nothing is compiled here. build-arch.sh places the tarball next to this file.
+#
+#   GE_VERSION=0.1.0 makepkg -f   # run as a non-root user, with the tarball in the same directory
+
+pkgname=git-extensions
+pkgver=${GE_VERSION:-0.1.0}
+pkgver=${pkgver//-/_}
+pkgrel=1
+pkgdesc='Graphical Git client (Git Extensions for Linux)'
+arch=('x86_64' 'aarch64')
+url='https://github.com/khunder/git-extensions-linux'
+license=('GPL-3.0-or-later')
+depends=('git' 'glibc' 'gcc-libs' 'zlib' 'openssl' 'libx11' 'libxcursor' 'libxi' 'libxrandr' 'fontconfig' 'freetype2' 'libpng' 'libice' 'libsm')
+optdepends=('openssh: SSH remotes')
+options=('!strip' '!debug' '!lto' '!emptydirs')
+source_x86_64=("git-extensions-linux-${GE_VERSION:-0.1.0}-x64.tar.gz")
+source_aarch64=("git-extensions-linux-${GE_VERSION:-0.1.0}-arm64.tar.gz")
+sha256sums_x86_64=('SKIP')
+sha256sums_aarch64=('SKIP')
+
+package() {
+  local src="$srcdir/git-extensions" size
+
+  install -dm755 "$pkgdir/opt/git-extensions"
+  cp -a "$src/app/." "$pkgdir/opt/git-extensions/"
+  chmod 755 "$pkgdir/opt/git-extensions/GitExtensions.Avalonia" "$pkgdir/opt/git-extensions/GitExtensions.AskPass"
+
+  install -dm755 "$pkgdir/usr/bin"
+  ln -s /opt/git-extensions/GitExtensions.Avalonia "$pkgdir/usr/bin/git-extensions"
+
+  sed 's|^Exec=.*|Exec=git-extensions %f|' "$src/git-extensions.desktop" > "$srcdir/git-extensions.desktop"
+  install -Dm644 "$srcdir/git-extensions.desktop" "$pkgdir/usr/share/applications/git-extensions.desktop"
+
+  for size in 16 32 48 64 128 256 512; do
+    install -Dm644 "$src/icons/git-extensions-$size.png" "$pkgdir/usr/share/icons/hicolor/${size}x${size}/apps/git-extensions.png"
+  done
+  install -Dm644 "$src/git-extensions.svg" "$pkgdir/usr/share/icons/hicolor/scalable/apps/git-extensions.svg"
+  install -Dm644 "$src/LICENSE.md" "$pkgdir/usr/share/licenses/git-extensions/LICENSE.md"
+}
