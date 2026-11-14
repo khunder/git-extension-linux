@@ -65,12 +65,36 @@ public sealed partial class MainToolbarView : UserControl
         if (_viewModel is not null)
         {
             _viewModel.UiRequested -= OnUiRequested;
+            _viewModel.PropertyChanged -= OnViewModelChanged;
+            _viewModel.LocalBranches.CollectionChanged -= OnListChanged;
+            _viewModel.Recent.Items.CollectionChanged -= OnListChanged;
         }
 
         _viewModel = viewModel;
         if (viewModel is not null)
         {
             viewModel.UiRequested += OnUiRequested;
+            viewModel.PropertyChanged += OnViewModelChanged;
+            viewModel.LocalBranches.CollectionChanged += OnListChanged;
+            viewModel.Recent.Items.CollectionChanged += OnListChanged;
+            RefillDropdowns();
+        }
+    }
+
+    // The drop-down items are kept current (not only filled when a drop-down opens): the popup is built from them when it is first shown.
+    private void RefillDropdowns()
+    {
+        FillBranches();
+        FillRecent();
+    }
+
+    private void OnListChanged(object? sender, System.Collections.Specialized.NotifyCollectionChangedEventArgs e) => RefillDropdowns();
+
+    private void OnViewModelChanged(object? sender, System.ComponentModel.PropertyChangedEventArgs e)
+    {
+        if (e.PropertyName is nameof(MainWindowViewModel.Branch) or nameof(MainWindowViewModel.RepositoryPath))
+        {
+            RefillDropdowns();
         }
     }
 

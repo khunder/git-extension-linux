@@ -53,6 +53,7 @@ public sealed class StashMenuButton : Button
         }
 
         Content = _stash?.ButtonText ?? "Stash ▾";
+        FillMenu();
     }
 
     private void FillMenu()
@@ -93,5 +94,8 @@ public sealed class StashMenuButton : Button
         {
             Content = _stash!.ButtonText;
         }
+
+        // The items are kept current (not only when the menu opens): the popup is built from them when it is first shown.
+        FillMenu();
     }
 }

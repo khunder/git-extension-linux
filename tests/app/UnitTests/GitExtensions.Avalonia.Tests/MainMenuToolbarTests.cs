@@ -320,6 +320,64 @@ public class MainMenuToolbarTests
     }
 
     [AvaloniaTest]
+    public async Task The_branch_and_stash_dropdowns_render_their_items_in_both_themes()
+    {
+        using TestRepository repository = new();
+        repository.AddBranchesRemoteAndTags();
+        MainWindow window = CreateWindow(out MainWindowViewModel viewModel);
+        window.Width = 1200;
+        window.Height = 720;
+        await viewModel.OpenAsync(repository.Path);
+        Pump();
+        MainToolbarView toolbar = Toolbar(window);
+        StashMenuButton stash = toolbar.GetVisualDescendants().OfType<StashMenuButton>().Single();
+
+        foreach ((ThemeVariant variant, string suffix) in new[] { (ThemeVariant.Light, "light"), (ThemeVariant.Dark, "dark") })
+        {
+            Application.Current!.RequestedThemeVariant = variant;
+            Pump();
+            foreach ((string name, Button button) in new[] { ("branch", (Button)toolbar.BranchList), ("stash", (Button)stash) })
+            {
+                button.Flyout!.ShowAt(button);
+                Pump();
+                Pump();
+                MenuFlyout flyout = (MenuFlyout)button.Flyout;
+                MenuItem[] items = [.. flyout.Items.OfType<MenuItem>()];
+                string directory = Path.Combine(AppContext.BaseDirectory, "screenshots");
+                Directory.CreateDirectory(directory);
+                window.CaptureRenderedFrame()!.Save(Path.Combine(directory, $"dropdown-{name}-{suffix}.png"));
+                items.Should().NotBeEmpty(name);
+                foreach (MenuItem item in items.Where(i => i.IsVisible))
+                {
+                    item.Bounds.Width.Should().BeGreaterThan(40, $"{name} item '{(item.Header as string) ?? item.Tag}' in the {suffix} theme must have a visible width");
+                    item.Bounds.Height.Should().BeGreaterThan(10, name);
+                }
+
+                flyout.Hide();
+                Pump();
+            }
+        }
+
+        // The combo boxes of the filter bar (branches, text filter) open a list with their entries.
+        foreach (ComboBox combo in window.GetVisualDescendants().OfType<ComboBox>().Where(c => c.IsEffectivelyVisible && c.ItemCount > 0))
+        {
+            combo.IsDropDownOpen = true;
+            Pump();
+            Pump();
+            ComboBoxItem[] entries = [.. window.GetVisualDescendants().OfType<ComboBoxItem>().Where(i => i.IsEffectivelyVisible)];
+            entries.Should().NotBeEmpty($"combo box {combo.Name} lists its items");
+            entries.Should().OnlyContain(i => i.Bounds.Width > 20 && i.Bounds.Height > 10, $"combo box {combo.Name} items must be visible");
+            string directory = Path.Combine(AppContext.BaseDirectory, "screenshots");
+            window.CaptureRenderedFrame()!.Save(Path.Combine(directory, $"dropdown-combo-{combo.Name}.png"));
+            combo.IsDropDownOpen = false;
+            Pump();
+        }
+
+        Application.Current!.RequestedThemeVariant = ThemeVariant.Default;
+        window.Close();
+    }
+
+    [AvaloniaTest]
     public async Task The_repository_path_lists_the_recent_repositories_and_opens_the_chosen_one()
     {
         using TestRepository first = new();
