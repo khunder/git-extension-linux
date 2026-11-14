@@ -1,4 +1,4 @@
-﻿using Avalonia.Controls;
+using Avalonia.Controls;
 using Avalonia.Controls.Primitives;
 using Avalonia.Input;
 using GitExtensions.Desktop.Services;
@@ -19,6 +19,7 @@ public sealed partial class MainWindow : Window
         ApplyLayout(_layout);
         InitializeShortcuts();
         InitializeViewOptions();
+        InitializeDialogs();
     }
 
     private const double MinRightAreaWidth = 280;

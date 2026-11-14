@@ -167,16 +167,17 @@ public class RemotesTests
         {
             await viewModel.OpenAsync(repo.Path);
             ShellTestSupport.Settle();
-            window.Find<RemotesView>("RemotesOverlay").IsVisible.Should().BeFalse();
+            DialogWindow.Open.Should().BeEmpty();
 
             await viewModel.ShowRemotesCommand.ExecuteAsync(null);
             ShellTestSupport.Settle();
-            window.Find<RemotesView>("RemotesOverlay").IsVisible.Should().BeTrue();
+            DialogWindow dialog = DialogWindow.Open.Should().ContainSingle().Which;
+            dialog.Title.Should().Be("Remote repositories");
             viewModel.Remotes.SelectedRemote = viewModel.Remotes.Remotes.Single();
             await WaitUntilAsync(() => viewModel.Remotes.Branches.Count == 2);
             ShellTestSupport.Settle();
-            window.Find<ListBox>("BranchList").ItemCount.Should().Be(2);
-            window.Find<TextBox>("UrlBox").Text.Should().Contain("example.invalid");
+            dialog.Find<ListBox>("BranchList").ItemCount.Should().Be(2);
+            dialog.Find<TextBox>("UrlBox").Text.Should().Contain("example.invalid");
 
             foreach ((ThemeVariant variant, string suffix) in new[] { (ThemeVariant.Light, "light"), (ThemeVariant.Dark, "dark") })
             {
@@ -184,12 +185,12 @@ public class RemotesTests
                 ShellTestSupport.Settle();
                 string directory = Path.Combine(AppContext.BaseDirectory, "screenshots");
                 Directory.CreateDirectory(directory);
-                window.CaptureRenderedFrame()!.Save(Path.Combine(directory, $"remotes-{suffix}.png"));
+                dialog.CaptureRenderedFrame()!.Save(Path.Combine(directory, $"remotes-{suffix}.png"));
             }
 
             viewModel.Remotes.CloseCommand.Execute(null);
             ShellTestSupport.Settle();
-            window.Find<RemotesView>("RemotesOverlay").IsVisible.Should().BeFalse();
+            DialogWindow.Open.Should().BeEmpty();
         }
         finally
         {

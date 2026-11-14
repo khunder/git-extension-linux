@@ -78,7 +78,6 @@
     <views:FileHistoryView x:Name="FileHistoryOverlay" DataContext="{Binding FileHistory}" IsVisible="{Binding IsOpen}" />
     <views:CloneView x:Name="CloneOverlay" DataContext="{Binding Clone}" IsVisible="{Binding IsOpen}" />
     <views:InitView x:Name="InitOverlay" DataContext="{Binding Init}" IsVisible="{Binding IsOpen}" />
-    <views:RemotesView x:Name="RemotesOverlay" DataContext="{Binding Remotes}" IsVisible="{Binding IsOpen}" />
     <views:RepositoryListsView x:Name="RepositoryListsOverlay" DataContext="{Binding RepositoryLists}" IsVisible="{Binding IsOpen}" />
     <views:PatchesHostView x:Name="PatchesOverlay" />
     <views:CommandPaletteView x:Name="PaletteOverlay" DataContext="{Binding Palette}" />
