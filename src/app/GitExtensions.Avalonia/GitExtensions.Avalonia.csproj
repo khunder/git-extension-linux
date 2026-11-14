@@ -11,6 +11,8 @@
     <RootNamespace>GitExtensions.Desktop</RootNamespace>
     <AvaloniaUseCompiledBindingsByDefault>true</AvaloniaUseCompiledBindingsByDefault>
     <ApplicationManifest>app.manifest</ApplicationManifest>
+    <!-- The repository disables publishing globally (IsPublishable=false); this app is meant to be published. -->
+    <IsPublishable>true</IsPublishable>
   </PropertyGroup>
 
   <ItemGroup>
@@ -25,5 +27,29 @@
     <ProjectReference Include="..\GitExtensions.Extensibility.Core\GitExtensions.Extensibility.Core.csproj" />
     <ProjectReference Include="..\GitExtUtils\GitExtUtils.csproj" />
   </ItemGroup>
+
+  <!--
+    The askpass helper (GIT_ASKPASS / SSH_ASKPASS target) is built and copied next to the app. It also flows to referencing
+    projects (tests) because it is added as content before the content items are collected.
+  -->
+  <ItemGroup>
+    <ProjectReference Include="..\GitExtensions.AskPass\GitExtensions.AskPass.csproj" ReferenceOutputAssembly="false" OutputItemType="AskPassMain" />
+  </ItemGroup>
+
+  <Target Name="IncludeAskPassHelper" AfterTargets="ResolveProjectReferences" BeforeTargets="AssignTargetPaths">
+    <ItemGroup>
+      <_AskPassDir Include="@(AskPassMain->'%(RootDir)%(Directory)')" />
+    </ItemGroup>
+    <ItemGroup>
+      <AskPassFile Include="%(_AskPassDir.Identity)GitExtensions.AskPass*" Exclude="%(_AskPassDir.Identity)*.pdb;%(_AskPassDir.Identity)*.xml" />
+      <!-- Not during publish: the publish pipeline already sees the helper's apphost through the project reference,
+           which would collide (NETSDK1152). Publishing copies the helper explicitly in CopyAskPassToPublishDir. -->
+      <Content Include="@(AskPassFile)" Link="%(Filename)%(Extension)" CopyToOutputDirectory="PreserveNewest" Visible="false" Condition="'$(_IsPublishing)' != 'true'" />
+    </ItemGroup>
+  </Target>
+
+  <Target Name="CopyAskPassToPublishDir" AfterTargets="Publish" Condition="'$(_IsPublishing)' == 'true'">
+    <Copy SourceFiles="@(AskPassFile)" DestinationFolder="$(PublishDir)" SkipUnchangedFiles="true" />
+  </Target>
 
 </Project>

@@ -57,7 +57,7 @@ public sealed partial class StashViewModel : ObservableObject
 
     public ObservableCollection<ChangedFileViewModel> Files { get; } = [];
 
-    public ObservableCollection<DiffLine> DiffLines { get; } = [];
+    public RangeObservableCollection<DiffLine> DiffLines { get; } = [];
 
     public string ButtonText => Items.Count == 0 ? "Stash ▾" : $"Stash ({Items.Count}) ▾";
 
@@ -218,10 +218,8 @@ public sealed partial class StashViewModel : ObservableObject
                 return;
             }
 
-            foreach (DiffLine line in lines)
-            {
-                DiffLines.Add(line);
-            }
+            DiffLimits.Truncate(ref lines);
+            DiffLines.ReplaceAll(lines);
 
             DiffMessage = lines.Count == 0 ? "No textual changes." : string.Empty;
         }

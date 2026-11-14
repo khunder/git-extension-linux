@@ -11,13 +11,23 @@ namespace GitExtensions.Desktop.Services;
 public static class GitProcessRunner
 {
     /// <summary>
+    ///  Gets or sets the provider used for commands that are not given an explicit <see cref="AskPassOperation"/>.
+    ///  The application sets it so every command it starts can prompt in the window.
+    /// </summary>
+    public static IAskPassProvider? DefaultAskPass { get; set; }
+
+    /// <summary>
     ///  Runs git with <paramref name="arguments"/> in the executable's working directory.
     /// </summary>
     /// <param name="onOutput">Called from background threads with raw chunks (including carriage returns of progress meters).</param>
+    /// <param name="askPass">The askpass registration whose environment is given to git; when null, <see cref="DefaultAskPass"/> is used if set.</param>
     /// <returns>The exit code. If <paramref name="cancellationToken"/> fires, the process tree is killed and an
     /// <see cref="OperationCanceledException"/> is thrown.</returns>
-    public static async Task<int> RunAsync(IExecutable git, IReadOnlyList<string> arguments, Action<string> onOutput, CancellationToken cancellationToken)
+    public static async Task<int> RunAsync(IExecutable git, IReadOnlyList<string> arguments, Action<string> onOutput, CancellationToken cancellationToken, AskPassOperation? askPass = null)
     {
+        using AskPassOperation? ownOperation = askPass is null ? DefaultAskPass?.Begin(cancellationToken) : null;
+        askPass ??= ownOperation;
+
         ProcessStartInfo startInfo = new(git.Command)
         {
             WorkingDirectory = git.WorkingDir,
@@ -33,6 +43,15 @@ public static class GitProcessRunner
         // Fail fast with an authentication error instead of waiting for input nobody can give.
         startInfo.Environment["GIT_TERMINAL_PROMPT"] = "0";
         startInfo.Environment["GCM_INTERACTIVE"] = "never";
+
+        // Credential and passphrase requests go to the in-window prompt through the askpass helper.
+        if (askPass is not null)
+        {
+            foreach ((string name, string value) in askPass.Environment)
+            {
+                startInfo.Environment[name] = value;
+            }
+        }
 
         if (!string.IsNullOrWhiteSpace(git.PrefixArguments))
         {

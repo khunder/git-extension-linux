@@ -20,6 +20,13 @@
                           IsEnabled="{Binding CanCheckout}"
                           Command="{Binding $parent[UserControl].((vm:RefsTreeViewModel)DataContext).CheckoutCommand}"
                           CommandParameter="{Binding}" />
+                <Separator />
+                <MenuItem Header="Merge into current branch" IsEnabled="{Binding CanMergeOrRebase}">
+                  <MenuItem Header="Merge (fast-forward when possible)" Command="{Binding $parent[UserControl].((vm:RefsTreeViewModel)DataContext).MergeIntoCurrentCommand}" CommandParameter="{Binding}" />
+                  <MenuItem Header="Merge, always create a merge commit (--no-ff)" Command="{Binding $parent[UserControl].((vm:RefsTreeViewModel)DataContext).MergeNoFastForwardCommand}" CommandParameter="{Binding}" />
+                  <MenuItem Header="Merge, fast-forward only (--ff-only)" Command="{Binding $parent[UserControl].((vm:RefsTreeViewModel)DataContext).MergeFastForwardOnlyCommand}" CommandParameter="{Binding}" />
+                </MenuItem>
+                <MenuItem Header="Rebase current branch onto this" IsEnabled="{Binding CanMergeOrRebase}" Command="{Binding $parent[UserControl].((vm:RefsTreeViewModel)DataContext).RebaseOntoCommand}" CommandParameter="{Binding}" />
               </ContextMenu>
             </StackPanel.ContextMenu>
             <TextBlock Text="{Binding Marker}" Width="10" Foreground="{DynamicResource SystemAccentColor}" VerticalAlignment="Center" />

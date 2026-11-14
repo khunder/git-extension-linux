@@ -4,17 +4,17 @@
              x:Class="GitExtensions.Desktop.Views.CommitView"
              x:DataType="vm:CommitViewModel">
   <Border Padding="8" BorderThickness="0,1,0,0" BorderBrush="{DynamicResource SystemControlForegroundBaseLowBrush}">
-    <StackPanel Spacing="6">
-      <Grid ColumnDefinitions="*,Auto">
+    <DockPanel>
+      <Grid DockPanel.Dock="Top" ColumnDefinitions="*,Auto" Margin="0,0,0,4">
         <TextBlock Classes="header" Text="Commit" FontWeight="SemiBold" />
         <TextBlock x:Name="SummaryText" Grid.Column="1" Text="{Binding Summary}" Opacity="0.7" />
       </Grid>
-      <TextBox x:Name="MessageBox" Text="{Binding Message}" AcceptsReturn="True" TextWrapping="Wrap"
-               Height="90" Watermark="Commit message" />
-      <Grid ColumnDefinitions="*,Auto" ColumnSpacing="8">
+      <Grid DockPanel.Dock="Bottom" ColumnDefinitions="*,Auto" ColumnSpacing="8" Margin="0,6,0,0">
         <CheckBox x:Name="AmendBox" Content="Amend" IsChecked="{Binding Amend}" IsEnabled="{Binding HasHead}" />
         <Button x:Name="CommitButton" Grid.Column="1" Content="Commit" Command="{Binding CommitCommand}" />
       </Grid>
-    </StackPanel>
+      <TextBox x:Name="MessageBox" Text="{Binding Message}" AcceptsReturn="True" TextWrapping="Wrap"
+               MinHeight="48" Watermark="Commit message" />
+    </DockPanel>
   </Border>
 </UserControl>

@@ -19,6 +19,7 @@ public sealed partial class RefsTreeViewModel : ObservableObject
     private GitModule? _module;
     private IReadOnlyList<RefEntry> _entries = [];
     private string? _currentBranch;
+    private CancellationTokenSource? _filterDebounce;
 
     [ObservableProperty]
     private string _filter = string.Empty;
@@ -40,6 +41,7 @@ public sealed partial class RefsTreeViewModel : ObservableObject
 
     public void Clear()
     {
+        _filterDebounce?.Cancel();
         _module = null;
         _entries = [];
         _currentBranch = null;
@@ -63,7 +65,38 @@ public sealed partial class RefsTreeViewModel : ObservableObject
         Rebuild();
     }
 
-    partial void OnFilterChanged(string value) => Rebuild();
+    /// <summary>Trees with more refs than this are rebuilt after a short pause in typing instead of on every keystroke.</summary>
+    public const int DebounceThreshold = 500;
+
+    public static readonly TimeSpan DebounceDelay = TimeSpan.FromMilliseconds(150);
+
+    partial void OnFilterChanged(string value)
+    {
+        _filterDebounce?.Cancel();
+        if (_entries.Count <= DebounceThreshold)
+        {
+            Rebuild();
+            return;
+        }
+
+        // Rebuilding thousands of tree nodes per keystroke makes typing lag; wait until typing pauses.
+        CancellationTokenSource debounce = new();
+        _filterDebounce = debounce;
+        _ = RebuildAfterPauseAsync(debounce.Token);
+    }
+
+    private async Task RebuildAfterPauseAsync(CancellationToken cancellationToken)
+    {
+        try
+        {
+            await Task.Delay(DebounceDelay, cancellationToken);
+            Rebuild();
+        }
+        catch (OperationCanceledException)
+        {
+            // Another keystroke arrived.
+        }
+    }
 
     partial void OnSelectedNodeChanged(RefNodeViewModel? value)
     {

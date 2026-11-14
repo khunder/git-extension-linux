@@ -9,6 +9,12 @@ public sealed class CommitGraphBuilder
     private readonly List<OpenLane> _lanes = [];
     private int _nextColor;
 
+    /// <summary>
+    ///  Lanes from this index on are drawn in one shared column, so only one pass-through segment is kept for them.
+    ///  A repository with hundreds of open branches would otherwise store hundreds of segments in every row.
+    /// </summary>
+    public int CollapseFromLane { get; init; } = int.MaxValue;
+
     /// <summary>The largest number of columns any appended row needed.</summary>
     public int MaxLaneCount { get; private set; }
 
@@ -28,6 +34,7 @@ public sealed class CommitGraphBuilder
     {
         List<GraphSegment> segments = [];
         int highest = -1;
+        bool collapsedPassAdded = false;
 
         // Lanes that were waiting for this commit converge into its node.
         int nodeLane = -1;
@@ -63,7 +70,12 @@ public sealed class CommitGraphBuilder
             }
             else if (lane.Waiting is not null)
             {
-                segments.Add(new GraphSegment(GraphSegmentKind.Pass, i, lane.Color));
+                if (i < CollapseFromLane || !collapsedPassAdded)
+                {
+                    segments.Add(new GraphSegment(GraphSegmentKind.Pass, i, lane.Color));
+                    collapsedPassAdded |= i >= CollapseFromLane;
+                }
+
                 highest = Math.Max(highest, i);
             }
         }

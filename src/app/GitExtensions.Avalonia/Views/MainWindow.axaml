@@ -29,7 +29,7 @@
 
     <!-- Repository bar -->
     <Border DockPanel.Dock="Top" Padding="8" BorderThickness="0,0,0,1" BorderBrush="{DynamicResource SystemControlForegroundBaseLowBrush}">
-      <Grid ColumnDefinitions="*,Auto,Auto,Auto,Auto,Auto,Auto" ColumnSpacing="8">
+      <Grid ColumnDefinitions="*,Auto,Auto,Auto,Auto,Auto,Auto" ColumnSpacing="6">
         <TextBox x:Name="PathBox" Text="{Binding RepositoryPath}" Watermark="Path to a Git repository">
           <TextBox.KeyBindings>
             <KeyBinding Gesture="Enter" Command="{Binding OpenCurrentCommand}" />
@@ -40,11 +40,13 @@
         <Button x:Name="RecentButton" Grid.Column="3" Content="Recent ▾" />
         <views:ThemeMenuButton Grid.Column="4" />
         <views:StashMenuButton Grid.Column="5" IsVisible="{Binding HasOpenedRepository}" />
-        <Button x:Name="SettingsButton" Grid.Column="6" Content="⚙ Settings" Command="{Binding OpenSettingsCommand}" />
+        <Button x:Name="SettingsButton" Grid.Column="6" Content="⚙" FontSize="16" Padding="8,2" Command="{Binding OpenSettingsCommand}" ToolTip.Tip="Settings" />
       </Grid>
     </Border>
 
     <views:RemoteOperationsView x:Name="RemoteBar" DockPanel.Dock="Top" DataContext="{Binding Remote}" />
+
+    <views:OperationBarView x:Name="OperationBar" DockPanel.Dock="Top" DataContext="{Binding Operation}" />
 
     <!-- Error banner -->
     <Border x:Name="ErrorBanner" DockPanel.Dock="Top" IsVisible="{Binding HasError}" Padding="12,6"
@@ -67,83 +69,85 @@
 
     <Panel>
     <views:RecentRepositoriesView x:Name="StartView" DataContext="{Binding Recent}" IsVisible="{Binding $parent[Window].((vm:MainWindowViewModel)DataContext).ShowStartView}" />
-    <Grid ColumnDefinitions="220,Auto,3*,Auto,2*" IsVisible="{Binding HasOpenedRepository}">
+    <Grid x:Name="MainColumns" ColumnDefinitions="200,Auto,520*,Auto,480*" IsVisible="{Binding HasOpenedRepository}">
 
       <!-- Branches / remotes / tags -->
-      <views:RefsTreeView Grid.Column="0" DataContext="{Binding Refs}" />
+      <views:RefsTreeView x:Name="SidebarPanel" Grid.Column="0" DataContext="{Binding Refs}" />
 
-      <GridSplitter Grid.Column="1" Width="4" />
-
+      <GridSplitter x:Name="SidebarSplitter" Grid.Column="1" Width="5" Background="Transparent" />
 
       <!-- History -->
       <DockPanel Grid.Column="2">
         <Border DockPanel.Dock="Top" Padding="8,6">
           <StackPanel Orientation="Horizontal" Spacing="8">
+            <Button x:Name="SidebarToggle" Content="«" Padding="6,0" MinHeight="22" VerticalAlignment="Center" ToolTip.Tip="Hide or show the branches sidebar" />
             <TextBlock Classes="header" Text="History" />
             <TextBlock Text="{Binding Branch, StringFormat='on {0}'}" IsVisible="{Binding Branch, Converter={x:Static ObjectConverters.IsNotNull}}" Opacity="0.7" />
           </StackPanel>
         </Border>
         <views:CommitActionPromptView x:Name="CommitPrompt" DockPanel.Dock="Top" DataContext="{Binding Actions}" />
-        <Border DockPanel.Dock="Bottom" Height="240" BorderThickness="0,1,0,0" BorderBrush="{DynamicResource SystemControlForegroundBaseLowBrush}">
-          <views:CommitDetailsView x:Name="DetailsView" DataContext="{Binding CommitDetails}" />
-        </Border>
-        <ListBox x:Name="CommitList" ItemsSource="{Binding Commits}" SelectedItem="{Binding SelectedCommit}">
-          <ListBox.Styles>
-            <!-- No vertical padding, so the graph lines of neighbouring rows meet. -->
-            <Style Selector="ListBoxItem">
-              <Setter Property="Padding" Value="8,0" />
-              <Setter Property="MinHeight" Value="26" />
-            </Style>
-          </ListBox.Styles>
-          <ListBox.ItemTemplate>
-            <DataTemplate x:DataType="vm:CommitItemViewModel">
-              <Grid ColumnDefinitions="76,Auto,*,Auto,150" ColumnSpacing="10">
-                <Grid.ContextMenu>
-                  <ContextMenu>
-                    <MenuItem Header="Copy commit hash" Command="{Binding Actions.CopyHashCommand}" CommandParameter="{Binding}" />
-                    <MenuItem Header="Copy subject" Command="{Binding Actions.CopySubjectCommand}" CommandParameter="{Binding}" />
-                    <Separator />
-                    <MenuItem Header="Create branch here…" Command="{Binding Actions.RequestCreateBranchCommand}" CommandParameter="{Binding}" />
-                    <MenuItem Header="Create tag here…" Command="{Binding Actions.RequestCreateTagCommand}" CommandParameter="{Binding}" />
-                    <MenuItem Header="Checkout this commit (detached HEAD)" Command="{Binding Actions.CheckoutCommand}" CommandParameter="{Binding}" />
-                    <Separator />
-                    <MenuItem Header="Reset current branch to here">
-                      <MenuItem Header="Soft (keep index and working tree)" Command="{Binding Actions.ResetSoftCommand}" CommandParameter="{Binding}" />
-                      <MenuItem Header="Mixed (keep working tree)" Command="{Binding Actions.ResetMixedCommand}" CommandParameter="{Binding}" />
-                      <MenuItem Header="Hard (discard all changes)…" Command="{Binding Actions.RequestHardResetCommand}" CommandParameter="{Binding}" />
-                    </MenuItem>
-                    <Separator />
-                    <MenuItem Header="Revert commit" Command="{Binding Actions.RevertCommand}" CommandParameter="{Binding}" />
-                    <MenuItem Header="Cherry-pick commit" Command="{Binding Actions.CherryPickCommand}" CommandParameter="{Binding}" />
-                  </ContextMenu>
-                </Grid.ContextMenu>
-                <TextBlock Classes="mono" Text="{Binding ShortHash}" Opacity="0.65" VerticalAlignment="Center" />
-                <views:CommitGraphCell Grid.Column="1" Row="{Binding Graph}" LaneCount="{Binding $parent[ListBox].((vm:MainWindowViewModel)DataContext).GraphLaneCount}" />
-                <!-- The refs badge is capped and trimmed so a commit with many refs cannot overrun the author column. -->
-                <DockPanel Grid.Column="2" LastChildFill="True" ClipToBounds="True">
-                  <Border DockPanel.Dock="Left" Classes="ref" IsVisible="{Binding HasRefs}" VerticalAlignment="Center" MaxWidth="120" Margin="0,0,8,0">
-                    <TextBlock Text="{Binding Refs}" FontSize="11" TextTrimming="CharacterEllipsis" ToolTip.Tip="{Binding Refs}" />
-                  </Border>
-                  <TextBlock Text="{Binding Subject}" TextTrimming="CharacterEllipsis" VerticalAlignment="Center" />
-                </DockPanel>
-                <TextBlock Grid.Column="3" Text="{Binding Author}" Opacity="0.75" VerticalAlignment="Center" />
-                <TextBlock Grid.Column="4" Text="{Binding Date}" Opacity="0.6" VerticalAlignment="Center" HorizontalAlignment="Right" />
-              </Grid>
-            </DataTemplate>
-          </ListBox.ItemTemplate>
-        </ListBox>
+        <Grid x:Name="MiddleRows" RowDefinitions="330*,Auto,220*">
+          <ListBox x:Name="CommitList" Grid.Row="0" MinHeight="100" ItemsSource="{Binding Commits}" SelectedItem="{Binding SelectedCommit}">
+            <ListBox.Styles>
+              <!-- No vertical padding, so the graph lines of neighbouring rows meet. -->
+              <Style Selector="ListBoxItem">
+                <Setter Property="Padding" Value="8,0" />
+                <Setter Property="MinHeight" Value="26" />
+              </Style>
+            </ListBox.Styles>
+            <ListBox.ItemTemplate>
+              <DataTemplate x:DataType="vm:CommitItemViewModel">
+                <Grid ColumnDefinitions="76,Auto,*,Auto,150" ColumnSpacing="10">
+                  <Grid.ContextMenu>
+                    <ContextMenu>
+                      <MenuItem Header="Copy commit hash" Command="{Binding Actions.CopyHashCommand}" CommandParameter="{Binding}" />
+                      <MenuItem Header="Copy subject" Command="{Binding Actions.CopySubjectCommand}" CommandParameter="{Binding}" />
+                      <Separator />
+                      <MenuItem Header="Create branch here…" Command="{Binding Actions.RequestCreateBranchCommand}" CommandParameter="{Binding}" />
+                      <MenuItem Header="Create tag here…" Command="{Binding Actions.RequestCreateTagCommand}" CommandParameter="{Binding}" />
+                      <MenuItem Header="Checkout this commit (detached HEAD)" Command="{Binding Actions.CheckoutCommand}" CommandParameter="{Binding}" />
+                      <Separator />
+                      <MenuItem Header="Reset current branch to here">
+                        <MenuItem Header="Soft (keep index and working tree)" Command="{Binding Actions.ResetSoftCommand}" CommandParameter="{Binding}" />
+                        <MenuItem Header="Mixed (keep working tree)" Command="{Binding Actions.ResetMixedCommand}" CommandParameter="{Binding}" />
+                        <MenuItem Header="Hard (discard all changes)…" Command="{Binding Actions.RequestHardResetCommand}" CommandParameter="{Binding}" />
+                      </MenuItem>
+                      <Separator />
+                      <MenuItem Header="Revert commit" Command="{Binding Actions.RevertCommand}" CommandParameter="{Binding}" />
+                      <MenuItem Header="Cherry-pick commit" Command="{Binding Actions.CherryPickCommand}" CommandParameter="{Binding}" />
+                    </ContextMenu>
+                  </Grid.ContextMenu>
+                  <TextBlock Classes="mono" Text="{Binding ShortHash}" Opacity="0.65" VerticalAlignment="Center" />
+                  <views:CommitGraphCell Grid.Column="1" Row="{Binding Graph}" LaneCount="{Binding $parent[ListBox].((vm:MainWindowViewModel)DataContext).GraphLaneCount}" />
+                  <!-- The refs badge is capped and trimmed so a commit with many refs cannot overrun the author column. -->
+                  <DockPanel Grid.Column="2" LastChildFill="True" ClipToBounds="True">
+                    <Border DockPanel.Dock="Left" Classes="ref" IsVisible="{Binding HasRefs}" VerticalAlignment="Center" MaxWidth="120" Margin="0,0,8,0">
+                      <TextBlock Text="{Binding Refs}" FontSize="11" TextTrimming="CharacterEllipsis" ToolTip.Tip="{Binding Refs}" />
+                    </Border>
+                    <TextBlock Text="{Binding Subject}" TextTrimming="CharacterEllipsis" VerticalAlignment="Center" />
+                  </DockPanel>
+                  <TextBlock Grid.Column="3" Text="{Binding Author}" Opacity="0.75" VerticalAlignment="Center" />
+                  <TextBlock Grid.Column="4" Text="{Binding Date}" Opacity="0.6" VerticalAlignment="Center" HorizontalAlignment="Right" />
+                </Grid>
+              </DataTemplate>
+            </ListBox.ItemTemplate>
+          </ListBox>
+          <GridSplitter x:Name="DetailsSplitter" Grid.Row="1" Height="5" Background="Transparent" HorizontalAlignment="Stretch" />
+          <Border Grid.Row="2" MinHeight="80" BorderThickness="0,1,0,0" BorderBrush="{DynamicResource SystemControlForegroundBaseLowBrush}">
+            <views:CommitDetailsView x:Name="DetailsView" DataContext="{Binding CommitDetails}" />
+          </Border>
+        </Grid>
       </DockPanel>
 
-      <GridSplitter Grid.Column="3" Width="4" />
+      <GridSplitter x:Name="RightSplitter" Grid.Column="3" Width="5" Background="Transparent" />
 
       <!-- Working tree changes -->
       <DockPanel Grid.Column="4">
         <Border DockPanel.Dock="Top" Padding="8,6">
           <TextBlock Classes="header" Text="Changes" />
         </Border>
-        <views:CommitView DockPanel.Dock="Bottom" DataContext="{Binding Commit}" />
-        <Grid RowDefinitions="*,Auto,2*">
-          <ListBox x:Name="ChangeList" ItemsSource="{Binding ChangedFiles}" SelectedItem="{Binding SelectedChangedFile}">
+        <Grid x:Name="RightRows" RowDefinitions="130*,Auto,330*,Auto,150*">
+          <ListBox x:Name="ChangeList" MinHeight="60" ItemsSource="{Binding ChangedFiles}" SelectedItem="{Binding SelectedChangedFile}">
             <ListBox.ItemTemplate>
               <DataTemplate x:DataType="vm:ChangedFileViewModel">
                 <Grid ColumnDefinitions="22,*,Auto" ColumnSpacing="8">
@@ -156,18 +160,23 @@
                   <TextBlock Classes="mono" Text="{Binding Status}" FontWeight="Bold" HorizontalAlignment="Center" />
                   <TextBlock Grid.Column="1" Text="{Binding Name}" TextTrimming="CharacterEllipsis" />
                   <TextBlock Grid.Column="2" Text="staged" FontSize="11" Opacity="0.6" IsVisible="{Binding IsStaged}" />
+                  <TextBlock Grid.Column="2" Text="conflict" FontSize="11" FontWeight="SemiBold" Foreground="{DynamicResource ErrorTextForeground}" IsVisible="{Binding IsConflicted}" />
                 </Grid>
               </DataTemplate>
             </ListBox.ItemTemplate>
           </ListBox>
-          <GridSplitter Grid.Row="1" Height="4" HorizontalAlignment="Stretch" />
-          <views:DiffView Grid.Row="2" DataContext="{Binding Diff}" />
+          <GridSplitter x:Name="ChangesSplitter" Grid.Row="1" Height="5" Background="Transparent" HorizontalAlignment="Stretch" />
+          <views:DiffView x:Name="DiffPanel" Grid.Row="2" MinHeight="120" DataContext="{Binding Diff}" />
+          <views:ConflictResolverView Grid.Row="2" x:Name="ResolverView" DataContext="{Binding Resolver}" IsVisible="{Binding IsActive}" />
+          <GridSplitter x:Name="CommitSplitter" Grid.Row="3" Height="5" Background="Transparent" HorizontalAlignment="Stretch" />
+          <views:CommitView x:Name="CommitPanel" Grid.Row="4" MinHeight="110" DataContext="{Binding Commit}" />
         </Grid>
       </DockPanel>
 
     </Grid>
     <views:SettingsView x:Name="SettingsOverlay" DataContext="{Binding Settings}" IsVisible="{Binding IsOpen}" />
     <views:FileHistoryView x:Name="FileHistoryOverlay" DataContext="{Binding FileHistory}" IsVisible="{Binding IsOpen}" />
+    <views:CredentialPromptView x:Name="CredentialOverlay" DataContext="{Binding Credentials}" />
     </Panel>
   </DockPanel>
 </Window>

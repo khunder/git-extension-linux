@@ -561,6 +561,26 @@ public sealed partial class GitModuleTests
     // TODO: add GetTagMessage "sad-path" tests, ones that test what happens if we try to execute it on a non-tag object.
     //       I expect we will need to do some refactoring in order to get such tests to pass (GetTagMessage is not robust at the moment)
 
+    [TestCase("plain.txt", "\"plain.txt\"")]
+    [TestCase("dir with spaces/\u00fcn\u00efcode.txt", "\"dir with spaces/\u00fcn\u00efcode.txt\"")]
+    [TestCase("quote\"d.txt", "\"quote\\\"d.txt\"")]
+    [TestCase("tab\tname\nline.txt", "\"tab\\tname\\nline.txt\"")]
+    public void QuotePathForUpdateIndex_escapes_characters_git_would_reject(string fileName, string expected)
+    {
+        GitModule.TestAccessor.QuotePathForUpdateIndex(fileName).Should().Be(expected);
+    }
+
+    [Test]
+    public void QuotePathForUpdateIndex_escapes_backslash_in_names_on_Linux()
+    {
+        if (OperatingSystem.IsWindows())
+        {
+            Assert.Ignore("A backslash is a path separator on Windows and becomes a slash.");
+        }
+
+        GitModule.TestAccessor.QuotePathForUpdateIndex("back\\slash.txt").Should().Be("\"back\\\\slash.txt\"");
+    }
+
     [TestCase(false, @"-c core.safecrlf=false update-index --add --stdin")]
     [TestCase(true, @"update-index --add --stdin")]
     public void UpdateIndexCmd_should_add_core_safecrlf(bool showErrorsWhenStagingFiles, string? expected)

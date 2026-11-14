@@ -1,0 +1,11 @@
+[Desktop Entry]
+Type=Application
+Name=Git Extensions
+GenericName=Git Client
+Comment=Browse history, stage changes and commit with Git Extensions
+Exec=GitExtensions.Avalonia %f
+Icon=git-extensions
+Terminal=false
+Categories=Development;RevisionControl;
+Keywords=git;version control;commit;branch;diff;
+StartupWMClass=GitExtensions.Avalonia

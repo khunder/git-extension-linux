@@ -26,8 +26,17 @@ public sealed class App : Application
             window.DataContext = viewModel;
             desktop.MainWindow = window;
 
+            // A failure in an event handler or command must not close the application: show it in the error banner.
+            Avalonia.Threading.Dispatcher.UIThread.UnhandledException += (_, e) =>
+            {
+                System.Diagnostics.Trace.TraceError(e.Exception.ToString());
+                viewModel.ReportUnexpectedError(e.Exception);
+                e.Handled = true;
+            };
+
             WindowStateStore windowState = new();
             windowState.Apply(window);
+            window.UseLayoutStore(new LayoutStore());
             window.Closing += (_, _) => windowState.Capture(window);
 
             _ = viewModel.Recent.LoadAsync();

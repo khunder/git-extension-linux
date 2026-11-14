@@ -12,6 +12,9 @@ public static class FileHistoryGit
 {
     public const int MaxEntries = 5000;
 
+    /// <summary>The most lines a blame shows.</summary>
+    public const int MaxBlameLines = 250_000;
+
     public static string LogFormat { get; } = $"--format={FileLogParser.RecordMarker}%H{FileLogParser.FieldSeparator}%an{FileLogParser.FieldSeparator}%aI{FileLogParser.FieldSeparator}%s";
 
     /// <summary>
@@ -76,6 +79,13 @@ public static class FileHistoryGit
         }
 
         IReadOnlyList<BlameEntry> entries = BlameParser.Parse(result.StandardOutput);
+        if (entries.Count > MaxBlameLines)
+        {
+            // The notice is a last, uncommitted-looking row (all-zero hash) so it does not cover the lines like the message overlay would.
+            BlameEntry notice = new(0, new string('0', 40), string.Empty, DateTimeOffset.UnixEpoch, string.Empty, $"… file too large: showing the first {MaxBlameLines:N0} of {entries.Count:N0} lines.");
+            return new BlameResult([.. entries.Take(MaxBlameLines), notice], string.Empty);
+        }
+
         return new BlameResult(entries, entries.Count == 0 ? "The file is empty." : string.Empty);
     }
 }

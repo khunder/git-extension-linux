@@ -1981,11 +1981,34 @@ public sealed partial class GitModule : IGitModule
         return await process.WaitForExitAsync() == 0;
     }
 
+    /// <summary>
+    ///  Quotes a path the way <c>git update-index --stdin</c> expects it (C style): backslash, double quote and control
+    ///  characters in a file name are escaped, otherwise one such file name makes git reject the whole list.
+    /// </summary>
+    private static string QuotePathForUpdateIndex(string? filename)
+    {
+        StringBuilder quoted = new("\"");
+        foreach (char c in filename?.ToPosixPath() ?? string.Empty)
+        {
+            quoted.Append(c switch
+            {
+                '\\' => "\\\\",
+                '"' => "\\\"",
+                '\n' => "\\n",
+                '\r' => "\\r",
+                '\t' => "\\t",
+                _ => c.ToString()
+            });
+        }
+
+        return quoted.Append('"').ToString();
+    }
+
     private static void UpdateIndex(StreamWriter inputWriter, string? filename)
     {
         byte[] bytes = EncodingHelper.ConvertTo(
             SystemEncoding,
-            $"\"{filename.ToPosixPath()}\"{inputWriter.NewLine}");
+            $"{QuotePathForUpdateIndex(filename)}{inputWriter.NewLine}");
 
         inputWriter.BaseStream.Write(bytes, 0, bytes.Length);
     }
@@ -4181,6 +4204,8 @@ public sealed partial class GitModule : IGitModule
         public FrozenDictionary<string, Color>? RemoteColors => _gitModule._remoteColors;
 
         public GitArgumentBuilder UpdateIndexCmd(bool showErrorsWhenStagingFiles) => GitModule.UpdateIndexCmd(showErrorsWhenStagingFiles);
+
+        public static string QuotePathForUpdateIndex(string? filename) => GitModule.QuotePathForUpdateIndex(filename);
 
         public List<GitItemStatus> GetDiffChangedFilesFromString(string statusString, StagedStatus staged)
             => _gitModule.GetDiffChangedFilesFromString(statusString, staged);

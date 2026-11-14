@@ -10,11 +10,11 @@ public sealed class ChangedFileViewModel
         Name = item.Name;
         Status = item switch
         {
+            { IsUnmerged: true } => "U",
             { IsNew: true } => "A",
             { IsDeleted: true } => "D",
             { IsRenamed: true } => "R",
             { IsCopied: true } => "C",
-            { IsUnmerged: true } => "U",
             _ => "M"
         };
         IsStaged = item.Staged == StagedStatus.Index;
@@ -30,4 +30,7 @@ public sealed class ChangedFileViewModel
     public string Status { get; }
 
     public bool IsStaged { get; }
+
+    /// <summary>The file has an unresolved merge conflict.</summary>
+    public bool IsConflicted => Item.IsUnmerged;
 }

@@ -1,0 +1,40 @@
+<UserControl xmlns="https://github.com/avaloniaui"
+             xmlns:x="http://schemas.microsoft.com/winfx/2006/xaml"
+             xmlns:vm="using:GitExtensions.Desktop.ViewModels"
+             x:Class="GitExtensions.Desktop.Views.OperationBarView"
+             x:DataType="vm:OperationBarViewModel"
+             IsVisible="{Binding IsActive}">
+  <UserControl.Resources>
+    <ResourceDictionary>
+      <ResourceDictionary.ThemeDictionaries>
+        <ResourceDictionary x:Key="Light">
+          <SolidColorBrush x:Key="OperationBarBackground" Color="#FFF1C6" />
+          <SolidColorBrush x:Key="OperationBarForeground" Color="#4A3200" />
+        </ResourceDictionary>
+        <ResourceDictionary x:Key="Dark">
+          <SolidColorBrush x:Key="OperationBarBackground" Color="#5A4410" />
+          <SolidColorBrush x:Key="OperationBarForeground" Color="#FFEBB5" />
+        </ResourceDictionary>
+      </ResourceDictionary.ThemeDictionaries>
+    </ResourceDictionary>
+  </UserControl.Resources>
+  <Border Background="{DynamicResource OperationBarBackground}" Padding="12,6" BorderThickness="0,0,0,1" BorderBrush="{DynamicResource SubtleBorderBrush}">
+    <StackPanel Spacing="6">
+      <Grid ColumnDefinitions="Auto,*,Auto" ColumnSpacing="12">
+        <TextBlock x:Name="OperationTitle" Text="{Binding Title}" FontWeight="SemiBold" VerticalAlignment="Center" Foreground="{DynamicResource OperationBarForeground}" />
+        <TextBlock x:Name="OperationDetail" Grid.Column="1" Text="{Binding Detail}" VerticalAlignment="Center" TextTrimming="CharacterEllipsis" Foreground="{DynamicResource OperationBarForeground}" />
+        <StackPanel Grid.Column="2" Orientation="Horizontal" Spacing="8">
+          <ProgressBar IsIndeterminate="True" Width="60" IsVisible="{Binding IsRunning}" VerticalAlignment="Center" />
+          <Button x:Name="ContinueButton" Content="Continue" Command="{Binding ContinueCommand}" />
+          <Button x:Name="SkipButton" Content="Skip" Command="{Binding SkipCommand}" IsVisible="{Binding CanSkip}" />
+          <Button x:Name="AbortButton" Content="Abort" Command="{Binding RequestAbortCommand}" />
+        </StackPanel>
+      </Grid>
+      <Grid x:Name="AbortConfirmation" ColumnDefinitions="*,Auto,Auto" ColumnSpacing="8" IsVisible="{Binding IsConfirmingAbort}">
+        <TextBlock Text="{Binding AbortConfirmText}" TextWrapping="Wrap" VerticalAlignment="Center" Foreground="{DynamicResource ErrorTextForeground}" FontWeight="SemiBold" />
+        <Button x:Name="ConfirmAbortButton" Grid.Column="1" Content="Abort it" Command="{Binding ConfirmAbortCommand}" />
+        <Button x:Name="CancelAbortButton" Grid.Column="2" Content="Cancel" Command="{Binding CancelAbortCommand}" />
+      </Grid>
+    </StackPanel>
+  </Border>
+</UserControl>

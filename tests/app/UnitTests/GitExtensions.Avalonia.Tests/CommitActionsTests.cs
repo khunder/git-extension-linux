@@ -212,7 +212,7 @@ public class CommitActionsTests
     }
 
     [AvaloniaTest]
-    public async Task Cherry_pick_conflict_is_aborted_and_reported()
+    public async Task Cherry_pick_conflict_is_left_in_progress_for_the_operation_bar()
     {
         (TestRepository repository, MainWindowViewModel viewModel) = await OpenMergedAsync();
         using (repository)
@@ -225,10 +225,17 @@ public class CommitActionsTests
             CommitItemViewModel pick = new(new GitRevision(ObjectId.Parse(side)), string.Empty);
 
             (await viewModel.Actions.CherryPickAsync(pick)).Should().BeFalse();
+            await viewModel.Operation.RefreshAsync();
 
-            viewModel.HasError.Should().BeTrue();
+            viewModel.HasError.Should().BeFalse();
+            viewModel.Operation.Kind.Should().Be(OperationKind.CherryPick);
             repository.GitOutput("rev-parse", "HEAD").Trim().Should().Be(head);
-            repository.GitOutput("status", "--porcelain").Should().NotContain("UU");
+            repository.GitOutput("status", "--porcelain").Should().Contain("m.txt");
+            File.Exists(Path.Combine(repository.Path, ".git", "CHERRY_PICK_HEAD")).Should().BeTrue();
+
+            (await viewModel.Operation.AbortAsync(confirmed: true)).Should().BeTrue();
+            repository.GitOutput("status", "--porcelain").Should().NotContain("m.txt");
+            File.Exists(Path.Combine(repository.Path, ".git", "CHERRY_PICK_HEAD")).Should().BeFalse();
         }
     }
 

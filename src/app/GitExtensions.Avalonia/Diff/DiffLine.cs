@@ -32,6 +32,9 @@ public sealed record DiffLine(DiffLineKind Kind, string Text, int? OldLineNumber
 
     public string NewNumber => NewLineNumber?.ToString() ?? string.Empty;
 
+    /// <summary>Gets the text to draw: truncated for very long lines, control characters made visible.</summary>
+    public string DisplayText => DiffLimits.ToDisplayText(Text);
+
     public int HunkIndex { get; init; } = -1;
 
     /// <summary>Gets a value indicating whether this is an added or removed line (the only lines that can be selected).</summary>

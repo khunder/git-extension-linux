@@ -41,7 +41,7 @@
               <TextBlock Grid.Column="1" Text="{Binding Author}" FontSize="12" Opacity="0.85" TextTrimming="CharacterEllipsis" Margin="0,0,8,0" />
               <TextBlock Grid.Column="2" Text="{Binding Date}" FontSize="12" Opacity="0.6" />
               <TextBlock Grid.Column="3" Text="{Binding LineNumber}" FontFamily="Cascadia Mono, Consolas, DejaVu Sans Mono, monospace" FontSize="12" Opacity="0.5" TextAlignment="Right" Margin="0,0,8,0" />
-              <TextBlock Grid.Column="4" Text="{Binding Text}" FontFamily="Cascadia Mono, Consolas, DejaVu Sans Mono, monospace" FontSize="12" TextWrapping="NoWrap" />
+              <TextBlock Grid.Column="4" Text="{Binding DisplayText}" FontFamily="Cascadia Mono, Consolas, DejaVu Sans Mono, monospace" FontSize="12" TextWrapping="NoWrap" />
             </Grid>
           </Border>
         </DataTemplate>

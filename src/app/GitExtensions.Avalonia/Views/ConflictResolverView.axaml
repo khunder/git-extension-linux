@@ -1,0 +1,64 @@
+<UserControl xmlns="https://github.com/avaloniaui"
+             xmlns:x="http://schemas.microsoft.com/winfx/2006/xaml"
+             xmlns:vm="using:GitExtensions.Desktop.ViewModels"
+             x:Class="GitExtensions.Desktop.Views.ConflictResolverView"
+             x:DataType="vm:ConflictResolverViewModel">
+  <UserControl.Resources>
+    <ResourceDictionary>
+      <ResourceDictionary.ThemeDictionaries>
+        <ResourceDictionary x:Key="Light">
+          <SolidColorBrush x:Key="ConflictMarkerBackground" Color="#F6D58B" />
+          <SolidColorBrush x:Key="ConflictOursBackground" Color="#D5F0DA" />
+          <SolidColorBrush x:Key="ConflictTheirsBackground" Color="#DAE6FA" />
+          <SolidColorBrush x:Key="ConflictPanelBackground" Color="#FFFFFF" />
+        </ResourceDictionary>
+        <ResourceDictionary x:Key="Dark">
+          <SolidColorBrush x:Key="ConflictMarkerBackground" Color="#7A5A14" />
+          <SolidColorBrush x:Key="ConflictOursBackground" Color="#1C4A2A" />
+          <SolidColorBrush x:Key="ConflictTheirsBackground" Color="#1F3A5F" />
+          <SolidColorBrush x:Key="ConflictPanelBackground" Color="#1E1E1E" />
+        </ResourceDictionary>
+      </ResourceDictionary.ThemeDictionaries>
+    </ResourceDictionary>
+  </UserControl.Resources>
+
+  <DockPanel Background="{DynamicResource ConflictPanelBackground}">
+    <Border DockPanel.Dock="Top" Padding="8,4" BorderThickness="0,1,0,1" BorderBrush="{DynamicResource SubtleBorderBrush}">
+      <StackPanel Spacing="4">
+        <StackPanel Orientation="Horizontal" Spacing="8">
+          <TextBlock Text="U" FontWeight="Bold" Foreground="{DynamicResource ErrorTextForeground}" VerticalAlignment="Center" />
+          <TextBlock x:Name="ConflictFileName" Text="{Binding FileName}" FontWeight="SemiBold" TextTrimming="CharacterEllipsis" VerticalAlignment="Center" />
+        </StackPanel>
+        <TextBlock x:Name="ConflictSummary" Text="{Binding Summary}" Opacity="0.75" />
+        <WrapPanel Orientation="Horizontal">
+          <Button x:Name="UseOursButton" Content="Use ours" Command="{Binding UseOursCommand}" IsVisible="{Binding CanChooseSides}" Margin="0,0,6,0"
+                  ToolTip.Tip="Take the version of the current branch (git checkout --ours, then git add). During a rebase this is the branch being rebased onto." />
+          <Button x:Name="UseTheirsButton" Content="Use theirs" Command="{Binding UseTheirsCommand}" IsVisible="{Binding CanChooseSides}" Margin="0,0,6,0"
+                  ToolTip.Tip="Take the incoming version (git checkout --theirs, then git add). During a rebase this is your commit being replayed." />
+          <Button x:Name="KeepFileButton" Content="{Binding KeepText}" Command="{Binding KeepFileCommand}" IsVisible="{Binding IsDeleteConflict}" Margin="0,0,6,0" />
+          <Button x:Name="DeleteFileButton" Content="Delete file" Command="{Binding DeleteFileCommand}" IsVisible="{Binding IsDeleteConflict}" Margin="0,0,6,0" />
+          <Button x:Name="MarkResolvedButton" Content="Mark as resolved" Command="{Binding MarkResolvedCommand}" IsVisible="{Binding CanChooseSides}" Margin="0,0,6,0"
+                  ToolTip.Tip="Stage the working tree file as it is now (git add), e.g. after editing it in your editor." />
+          <Button x:Name="ReloadButton" Content="Reload" Command="{Binding ReloadCommand}" IsVisible="{Binding CanChooseSides}" />
+        </WrapPanel>
+        <TextBlock x:Name="MarkerWarning" Text="The file still contains conflict markers." IsVisible="{Binding HasMarkers}" Foreground="{DynamicResource ErrorTextForeground}" />
+        <TextBlock x:Name="ConflictMessage" Text="{Binding Message}" IsVisible="{Binding HasMessage}" TextWrapping="Wrap" Opacity="0.8" />
+      </StackPanel>
+    </Border>
+
+    <ScrollViewer HorizontalScrollBarVisibility="Auto" VerticalScrollBarVisibility="Auto">
+      <ItemsControl x:Name="ConflictLines" ItemsSource="{Binding Lines}">
+        <ItemsControl.ItemTemplate>
+          <DataTemplate x:DataType="vm:ConflictLine">
+            <Panel>
+              <Border Background="{DynamicResource ConflictMarkerBackground}" IsVisible="{Binding IsMarker}" />
+              <Border Background="{DynamicResource ConflictOursBackground}" IsVisible="{Binding IsOurs}" />
+              <Border Background="{DynamicResource ConflictTheirsBackground}" IsVisible="{Binding IsTheirs}" />
+              <TextBlock Text="{Binding Text}" Padding="8,0" FontFamily="Cascadia Mono, Consolas, DejaVu Sans Mono, monospace" />
+            </Panel>
+          </DataTemplate>
+        </ItemsControl.ItemTemplate>
+      </ItemsControl>
+    </ScrollViewer>
+  </DockPanel>
+</UserControl>

@@ -1,10 +1,10 @@
-using System.Collections.ObjectModel;
 using System.Text;
 using CommunityToolkit.Mvvm.ComponentModel;
 using CommunityToolkit.Mvvm.Input;
 using GitCommands;
 using GitCommands.Git;
 using GitExtensions.Desktop.Diff;
+using GitExtensions.Desktop.Services;
 using GitExtensions.Extensibility;
 using GitExtensions.Extensibility.Git;
 using GitExtUtils;
@@ -20,6 +20,7 @@ public sealed partial class FileDiffViewModel : ObservableObject
 
     private readonly GitModule _module;
     private readonly Func<Task> _refreshAsync;
+    private readonly Action<string> _reportError;
     private CancellationTokenSource? _loadCancellation;
     private string[]? _rawLines;
     private bool _canSelectLines;
@@ -54,13 +55,15 @@ public sealed partial class FileDiffViewModel : ObservableObject
     [ObservableProperty]
     private bool _isConfirmingDiscard;
 
-    public FileDiffViewModel(GitModule module, Func<Task> refreshAsync)
+    /// <param name="reportError">Shows an error in the main error banner (optional).</param>
+    public FileDiffViewModel(GitModule module, Func<Task> refreshAsync, Action<string>? reportError = null)
     {
         _module = module;
         _refreshAsync = refreshAsync;
+        _reportError = reportError ?? (static _ => { });
     }
 
-    public ObservableCollection<DiffLine> Lines { get; } = [];
+    public RangeObservableCollection<DiffLine> Lines { get; } = [];
 
     public bool HasSelection => SelectedLineCount > 0;
 
@@ -101,17 +104,18 @@ public sealed partial class FileDiffViewModel : ObservableObject
             }
 
             IReadOnlyList<DiffLine> lines = loaded.Lines;
-            _rawLines = loaded.Raw;
-            _canSelectLines = loaded.Raw is not null;
-            bool canStageHunk = loaded.CanPatch && !file.IsStaged;
-            bool canUnstageHunk = loaded.CanPatch && file.IsStaged;
-            bool canDiscardHunk = loaded.Raw is not null && !file.IsStaged;
-            foreach (DiffLine line in lines)
-            {
-                Lines.Add(line.Kind == DiffLineKind.Hunk
-                    ? line with { CanStageHunk = canStageHunk, CanUnstageHunk = canUnstageHunk, CanDiscardHunk = canDiscardHunk }
-                    : line);
-            }
+
+            // A cut-off diff cannot be turned into partial patches: its raw text no longer lines up.
+            bool truncated = DiffLimits.Truncate(ref lines);
+            string[]? raw = truncated ? null : loaded.Raw;
+            _rawLines = raw;
+            _canSelectLines = raw is not null;
+            bool canStageHunk = loaded.CanPatch && !truncated && !file.IsStaged;
+            bool canUnstageHunk = loaded.CanPatch && !truncated && file.IsStaged;
+            bool canDiscardHunk = raw is not null && !file.IsStaged;
+            Lines.ReplaceAll(lines.Select(line => line.Kind == DiffLineKind.Hunk
+                ? line with { CanStageHunk = canStageHunk, CanUnstageHunk = canUnstageHunk, CanDiscardHunk = canDiscardHunk }
+                : line));
 
             Message = lines.Count == 0 ? "No textual changes." : string.Empty;
         }
@@ -133,39 +137,46 @@ public sealed partial class FileDiffViewModel : ObservableObject
     }
 
     [RelayCommand(CanExecute = nameof(CanStage))]
-    private Task StageAsync() => File is { } file ? ChangeIndexAsync(module => module.StageFiles([file.Item], out _)) : Task.CompletedTask;
+    private Task StageAsync() => File is { } file ? ChangeIndexAsync(module => module.StageFiles([file.Item], out string output) ? null : output) : Task.CompletedTask;
 
     [RelayCommand(CanExecute = nameof(CanUnstage))]
-    private Task UnstageAsync() => File is { } file ? ChangeIndexAsync(module => module.UnstageFiles([file.Item], out _)) : Task.CompletedTask;
+    private Task UnstageAsync() => File is { } file ? ChangeIndexAsync(module => module.UnstageFiles([file.Item], out string output) ? null : output) : Task.CompletedTask;
 
     [RelayCommand]
     private Task StageAllAsync() => ChangeIndexAsync(module =>
     {
         // Stage by status of the working tree; staged entries are already in the index.
-        List<GitItemStatus> items = [.. module.GetAllChangedFiles().Where(item => item.Staged != StagedStatus.Index)];
-        module.StageFiles(items, out _);
+        List<GitItemStatus> items = [.. module.GetAllChangedFiles().Where(item => !item.IsStatusOnly && item.Staged != StagedStatus.Index)];
+        return module.StageFiles(items, out string output) ? null : output;
     });
 
     [RelayCommand]
     private Task UnstageAllAsync() => ChangeIndexAsync(module =>
     {
-        List<GitItemStatus> items = [.. module.GetAllChangedFiles().Where(item => item.Staged == StagedStatus.Index)];
-        module.UnstageFiles(items, out _);
+        List<GitItemStatus> items = [.. module.GetAllChangedFiles().Where(item => !item.IsStatusOnly && item.Staged == StagedStatus.Index)];
+        return module.UnstageFiles(items, out string output) ? null : output;
     });
 
     private bool CanStage() => File is { IsStaged: false };
 
     private bool CanUnstage() => File is { IsStaged: true };
 
-    private async Task ChangeIndexAsync(Action<GitModule> change)
+    private async Task ChangeIndexAsync(Func<GitModule, string?> change)
     {
         try
         {
-            await Task.Run(() => change(_module));
+            string? error = await Task.Run(() => change(_module));
+            if (error is not null)
+            {
+                string message = GitErrorMessages.Describe(string.IsNullOrWhiteSpace(error) ? "git reported an error." : error, _module.WorkingDir);
+                _reportError($"Failed to update the index: {message}");
+                return;
+            }
         }
         catch (Exception ex)
         {
             Message = $"Failed to update the index: {ex.Message}";
+            _reportError(Message);
             return;
         }
 

@@ -180,14 +180,14 @@ public sealed partial class CommitActionsViewModel : ObservableObject
         => commit is null ? Task.FromResult(false) : RunAsync(
             $"Reverted {commit.ShortHash}",
             new GitArgumentBuilder("revert") { "--no-edit", { IsMerge(commit), "-m 1" }, commit.ObjectId.ToString() },
-            abortCommand: "revert");
+            keepsStateOnConflict: true);
 
     [RelayCommand]
     public Task<bool> CherryPickAsync(CommitItemViewModel? commit)
         => commit is null ? Task.FromResult(false) : RunAsync(
             $"Cherry-picked {commit.ShortHash}",
             new GitArgumentBuilder("cherry-pick") { { IsMerge(commit), "-m 1" }, commit.ObjectId.ToString() },
-            abortCommand: "cherry-pick");
+            keepsStateOnConflict: true);
 
     private static bool IsMerge(CommitItemViewModel commit) => commit.Revision.ParentIds?.Count > 1;
 
@@ -201,10 +201,10 @@ public sealed partial class CommitActionsViewModel : ObservableObject
     }
 
     /// <summary>
-    ///  Runs git on a background thread; on success refreshes the lists. When <paramref name="abortCommand"/> is set, a failed
-    ///  revert/cherry-pick (typically a conflict) is aborted so the repository is not left half-way, since the UI cannot resolve conflicts yet.
+    ///  Runs git on a background thread; on success refreshes the lists. A revert/cherry-pick that stops on conflicts
+    ///  (<paramref name="keepsStateOnConflict"/>) is left in progress so the operation bar can continue or abort it.
     /// </summary>
-    private async Task<bool> RunAsync(string successMessage, ArgumentString arguments, string? abortCommand = null)
+    private async Task<bool> RunAsync(string successMessage, ArgumentString arguments, bool keepsStateOnConflict = false)
     {
         GitModule? module = _getModule();
         if (module is null)
@@ -214,22 +214,23 @@ public sealed partial class CommitActionsViewModel : ObservableObject
 
         try
         {
-            (ExecutionResult result, bool aborted) = await Task.Run(() =>
+            (ExecutionResult result, OperationKind state) = await Task.Run(() =>
             {
                 ExecutionResult run = module.GitExecutable.Execute(arguments, throwOnErrorExit: false);
-                bool abort = false;
-                if (!run.ExitedSuccessfully && abortCommand is not null)
-                {
-                    abort = module.GitExecutable.Execute($"{abortCommand} --abort", throwOnErrorExit: false).ExitedSuccessfully;
-                }
-
-                return (run, abort);
+                return (run, keepsStateOnConflict && !run.ExitedSuccessfully ? RepositoryOperationState.Detect(module.WorkingDirGitDir) : OperationKind.None);
             });
 
             if (!result.ExitedSuccessfully)
             {
+                if (state != OperationKind.None)
+                {
+                    _reportStatus($"{arguments.Arguments?.Split(' ')[0]} stopped on conflicts. Resolve them, then continue or abort in the operation bar.");
+                    await _refresh();
+                    return false;
+                }
+
                 string error = string.IsNullOrWhiteSpace(result.StandardError) ? result.StandardOutput : result.StandardError;
-                _reportError($"git {arguments.Arguments?.Split(' ')[0]} failed: {error.Trim()}{(aborted ? $" ({abortCommand} was aborted; nothing changed.)" : string.Empty)}");
+                _reportError($"git {arguments.Arguments?.Split(' ')[0]} failed: {error.Trim()}");
                 return false;
             }
         }

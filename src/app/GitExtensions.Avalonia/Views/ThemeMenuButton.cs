@@ -15,7 +15,9 @@ public sealed class ThemeMenuButton : Button
 
     public ThemeMenuButton()
     {
-        Content = "View ▾";
+        Content = "◐";
+        FontSize = 16;
+        ToolTip.SetTip(this, "Theme: system, light or dark");
         Name = "ViewButton";
 
         MenuFlyout flyout = new();

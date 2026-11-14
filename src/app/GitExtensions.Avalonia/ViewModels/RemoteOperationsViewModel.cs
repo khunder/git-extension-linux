@@ -18,6 +18,7 @@ public sealed partial class RemoteOperationsViewModel : ObservableObject
     private readonly Action<string> _reportStatus;
     private readonly IMessageDialogs? _messages;
     private readonly Func<Task> _refreshAll;
+    private readonly IAskPassProvider? _askPass;
     private readonly OutputAccumulator _output = new();
     private readonly object _outputLock = new();
     private CancellationTokenSource? _cancellation;
@@ -61,8 +62,10 @@ public sealed partial class RemoteOperationsViewModel : ObservableObject
     /// <param name="reportStatus">Shows a message in the status bar.</param>
     /// <param name="messages">Receives failures so they show up in the error banner.</param>
     /// <param name="refreshAll">Reloads branch, history, changes and refs after a successful operation.</param>
-    public RemoteOperationsViewModel(Func<GitModule?> moduleProvider, Action<string>? reportStatus = null, IMessageDialogs? messages = null, Func<Task>? refreshAll = null)
+    /// <param name="askPass">Lets git prompt for credentials in the window; when null, git fails fast instead.</param>
+    public RemoteOperationsViewModel(Func<GitModule?> moduleProvider, Action<string>? reportStatus = null, IMessageDialogs? messages = null, Func<Task>? refreshAll = null, IAskPassProvider? askPass = null)
     {
+        _askPass = askPass;
         _moduleProvider = moduleProvider;
         _reportStatus = reportStatus ?? (static _ => { });
         _messages = messages;
@@ -241,9 +244,10 @@ public sealed partial class RemoteOperationsViewModel : ObservableObject
         int exitCode = -1;
         string? exception = null;
         bool cancelled = false;
+        using AskPassOperation? askPassOperation = _askPass?.Begin(cancellation.Token);
         try
         {
-            exitCode = await Task.Run(() => GitProcessRunner.RunAsync(module.GitExecutable, args, OnOutput, cancellation.Token));
+            exitCode = await Task.Run(() => GitProcessRunner.RunAsync(module.GitExecutable, args, OnOutput, cancellation.Token, askPassOperation));
         }
         catch (OperationCanceledException)
         {
@@ -267,7 +271,7 @@ public sealed partial class RemoteOperationsViewModel : ObservableObject
         }
         else if (exitCode != 0)
         {
-            failure = DescribeFailure(firstLine);
+            failure = DescribeFailure(firstLine, askPassOperation);
             summary = $"{title} failed: {failure}";
         }
         else
@@ -299,7 +303,7 @@ public sealed partial class RemoteOperationsViewModel : ObservableObject
         await ReloadStateAsync();
     }
 
-    private string DescribeFailure(int firstLine)
+    private string DescribeFailure(int firstLine, AskPassOperation? askPass)
     {
         string[] lines;
         lock (_outputLock)
@@ -317,7 +321,11 @@ public sealed partial class RemoteOperationsViewModel : ObservableObject
             || text.Contains("Authentication failed", StringComparison.OrdinalIgnoreCase)
             || text.Contains("Permission denied", StringComparison.OrdinalIgnoreCase))
         {
-            text += " Authentication is required: Git Extensions never prompts, so configure a credential helper or an SSH key.";
+            text += askPass is null
+                ? " Authentication is required: Git Extensions never prompts, so configure a credential helper or an SSH key."
+                : askPass.UserCancelled
+                    ? " The credential prompt was cancelled."
+                    : " Authentication failed: check the credentials you entered.";
         }
 
         return text;

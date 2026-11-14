@@ -57,7 +57,7 @@ public sealed partial class FileHistoryViewModel : ObservableObject
 
     public ObservableCollection<FileHistoryEntry> Entries { get; } = [];
 
-    public ObservableCollection<DiffLine> DiffLines { get; } = [];
+    public RangeObservableCollection<DiffLine> DiffLines { get; } = [];
 
     public BlameViewModel Blame { get; }
 
@@ -228,10 +228,8 @@ public sealed partial class FileHistoryViewModel : ObservableObject
                 return;
             }
 
-            foreach (DiffLine line in lines)
-            {
-                DiffLines.Add(line);
-            }
+            DiffLimits.Truncate(ref lines);
+            DiffLines.ReplaceAll(lines);
 
             DiffMessage = lines.Count == 0 ? "No textual changes." : string.Empty;
         }

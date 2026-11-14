@@ -1,6 +1,7 @@
 using System.Globalization;
 using CommunityToolkit.Mvvm.ComponentModel;
 using GitCommands;
+using GitExtensions.Desktop.Diff;
 using GitExtensions.Desktop.FileHistory;
 using GitExtensions.Extensibility.Git;
 
@@ -21,7 +22,6 @@ public sealed class BlameLineViewModel
         ShortHash = isBlockStart ? (entry.CommitHash.Length > 8 ? entry.CommitHash[..8] : entry.CommitHash) : string.Empty;
         Author = isBlockStart ? entry.Author : string.Empty;
         Date = isBlockStart ? entry.Date.ToString("d", CultureInfo.CurrentCulture) : string.Empty;
-        ToolTip = $"{entry.CommitHash[..Math.Min(8, entry.CommitHash.Length)]}  {entry.Author}  {entry.Date:g}\n{entry.Summary}";
     }
 
     public BlameEntry Entry { get; }
@@ -41,7 +41,11 @@ public sealed class BlameLineViewModel
 
     public string Date { get; }
 
-    public string ToolTip { get; }
+    /// <summary>Gets the text to draw: truncated for very long lines, control characters made visible.</summary>
+    public string DisplayText => DiffLimits.ToDisplayText(Text);
+
+    // Built on demand: a blame has one row per line of the file, but only hovered rows need a tooltip.
+    public string ToolTip => $"{Entry.CommitHash[..Math.Min(8, Entry.CommitHash.Length)]}  {Entry.Author}  {Entry.Date:g}\n{Entry.Summary}";
 }
 
 /// <summary>

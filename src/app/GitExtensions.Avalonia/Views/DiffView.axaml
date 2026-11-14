@@ -51,7 +51,7 @@
         <ItemsControl.Template>
           <ControlTemplate>
             <ScrollViewer HorizontalScrollBarVisibility="Auto" VerticalScrollBarVisibility="Auto">
-              <ItemsPresenter />
+              <ItemsPresenter Name="PART_ItemsPresenter" ItemsPanel="{TemplateBinding ItemsPanel}" />
             </ScrollViewer>
           </ControlTemplate>
         </ItemsControl.Template>
@@ -70,7 +70,7 @@
                 <TextBlock Text="{Binding OldNumber}" FontFamily="Cascadia Mono, Consolas, DejaVu Sans Mono, monospace" FontSize="12" Opacity="0.5" TextAlignment="Right" Margin="0,0,6,0" />
                 <TextBlock Grid.Column="1" Text="{Binding NewNumber}" FontFamily="Cascadia Mono, Consolas, DejaVu Sans Mono, monospace" FontSize="12" Opacity="0.5" TextAlignment="Right" Margin="0,0,6,0" />
                 <StackPanel Grid.Column="2" Orientation="Horizontal">
-                  <TextBlock Text="{Binding Text}" FontFamily="Cascadia Mono, Consolas, DejaVu Sans Mono, monospace" FontSize="12" TextWrapping="NoWrap" VerticalAlignment="Center" />
+                  <TextBlock Text="{Binding DisplayText}" FontFamily="Cascadia Mono, Consolas, DejaVu Sans Mono, monospace" FontSize="12" TextWrapping="NoWrap" VerticalAlignment="Center" />
                   <Button Classes="hunkAction" Content="Stage hunk" Tag="stage" Click="OnHunkAction" IsVisible="{Binding CanStageHunk}" />
                   <Button Classes="hunkAction" Content="Unstage hunk" Tag="unstage" Click="OnHunkAction" IsVisible="{Binding CanUnstageHunk}" />
                   <Button Classes="hunkAction" Content="Discard hunk" Tag="discard" Click="OnHunkAction" IsVisible="{Binding CanDiscardHunk}" />

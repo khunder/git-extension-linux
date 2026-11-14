@@ -1,9 +1,9 @@
-﻿using System.Collections.ObjectModel;
-using Avalonia.Threading;
+﻿using Avalonia.Threading;
 using CommunityToolkit.Mvvm.ComponentModel;
 using CommunityToolkit.Mvvm.Input;
 using GitCommands;
 using GitCommands.UserRepositoryHistory;
+using GitExtensions.Desktop.History;
 using GitExtensions.Desktop.Services;
 using GitExtensions.Extensibility;
 using GitExtensions.Extensibility.Git;
@@ -59,6 +59,7 @@ public sealed partial class MainWindowViewModel : ObservableObject
         git.Messages.MessageReported += message => ErrorMessage = message;
         Refs = new RefsTreeViewModel(message => Status = message, SelectCommit, () => OpenAsync(RepositoryPath));
         InitializeHistoryExtras();
+        InitializeOperations();
     }
 
     public RecentRepositoriesViewModel Recent { get; }
@@ -69,6 +70,12 @@ public sealed partial class MainWindowViewModel : ObservableObject
     ///  The "Recent repositories" start view replaces the empty lists until a repository has been opened.
     /// </summary>
     public bool ShowStartView => !HasOpenedRepository;
+
+    /// <summary>
+    ///  Shows an exception nobody handled in the error banner instead of letting it end the application.
+    /// </summary>
+    public void ReportUnexpectedError(Exception exception)
+        => ErrorMessage = $"Unexpected error: {exception.Message}";
 
     [RelayCommand]
     private void DismissError() => ErrorMessage = null;
@@ -81,11 +88,11 @@ public sealed partial class MainWindowViewModel : ObservableObject
     public void SelectCommit(ObjectId id)
         => SelectedCommit = Commits.FirstOrDefault(commit => commit.ObjectId == id) ?? SelectedCommit;
 
-    public ObservableCollection<CommitItemViewModel> Commits { get; } = [];
+    public RangeObservableCollection<CommitItemViewModel> Commits { get; } = [];
 
     public CommitDetailsViewModel CommitDetails { get; } = new();
 
-    public ObservableCollection<ChangedFileViewModel> ChangedFiles { get; } = [];
+    public RangeObservableCollection<ChangedFileViewModel> ChangedFiles { get; } = [];
 
     /// <summary>
     ///  Opens the repository containing <paramref name="path"/> and loads its branch, history and changes.
@@ -104,6 +111,7 @@ public sealed partial class MainWindowViewModel : ObservableObject
         _module = null;
         SelectedCommit = null;
         Commits.Clear();
+        GraphLaneCount = 1;
         ChangedFiles.Clear();
         Diff = null;
         Branch = null;
@@ -114,6 +122,9 @@ public sealed partial class MainWindowViewModel : ObservableObject
         try
         {
             GitModule? module = await Task.Run(() => _git.OpenRepository(path), cancellationToken);
+
+            // A Task.Run that already started is not interrupted by the token: never let an outdated open touch the state.
+            cancellationToken.ThrowIfCancellationRequested();
             if (module is null)
             {
                 Status = $"{path} is not inside a Git repository.";
@@ -122,25 +133,29 @@ public sealed partial class MainWindowViewModel : ObservableObject
 
             RepositoryPath = module.WorkingDir;
             _module = module;
-            Diff = new FileDiffViewModel(module, RefreshChangesAsync);
+            Diff = new FileDiffViewModel(module, RefreshChangesAsync, message => ErrorMessage = message);
             Commit = CreateCommitViewModel(module);
             HasOpenedRepository = true;
             _ = RecordRecentAsync(module.WorkingDir);
 
             // The git calls block, so keep them off the UI thread.
-            (string branch, IReadOnlyList<ChangedFileViewModel> changes, Dictionary<ObjectId, string> refs) = await Task.Run(
+            (string branch, (List<ChangedFileViewModel> changes, string? statusError), Dictionary<ObjectId, string> refs) = await Task.Run(
                 () => (
                     module.GetSelectedBranch(),
-                    module.GetAllChangedFiles().Select(item => new ChangedFileViewModel(item)).ToList(),
+                    ReadChanges(module),
                     GetRefsByCommit(module)),
                 cancellationToken);
 
+            cancellationToken.ThrowIfCancellationRequested();
             Branch = branch;
-            await Refs.LoadAsync(module);
-            foreach (ChangedFileViewModel change in changes)
+            if (statusError is not null)
             {
-                ChangedFiles.Add(change);
+                ErrorMessage = statusError;
             }
+
+            await Refs.LoadAsync(module);
+            cancellationToken.ThrowIfCancellationRequested();
+            ChangedFiles.AddRange(changes);
 
             Status = "Loading history…";
             await Task.Run(() => LoadHistory(module, refs, cancellationToken), cancellationToken);
@@ -179,13 +194,24 @@ public sealed partial class MainWindowViewModel : ObservableObject
         }
 
         ChangedFileViewModel? previous = SelectedChangedFile;
-        List<ChangedFileViewModel> changes = await Task.Run(() => module.GetAllChangedFiles().Select(item => new ChangedFileViewModel(item)).ToList());
-
-        ChangedFiles.Clear();
-        foreach (ChangedFileViewModel change in changes)
+        List<ChangedFileViewModel> changes;
+        try
         {
-            ChangedFiles.Add(change);
+            string? statusError;
+            (changes, statusError) = await Task.Run(() => ReadChanges(module));
+            if (statusError is not null)
+            {
+                ErrorMessage = statusError;
+            }
         }
+        catch (Exception ex)
+        {
+            // E.g. the repository folder vanished: keep the app alive and say so.
+            ErrorMessage = $"Could not read the changes of {module.WorkingDir}: {ex.Message}";
+            return;
+        }
+
+        ChangedFiles.ReplaceAll(changes);
 
         // Prefer the same entry; a file that just moved between index and work tree keeps its name.
         SelectedChangedFile = previous is null
@@ -241,6 +267,13 @@ public sealed partial class MainWindowViewModel : ObservableObject
         }
     }
 
+    // git status failures arrive as a fake "Git Error" entry; show them as an error instead of as a file.
+    private static (List<ChangedFileViewModel> Changes, string? Error) ReadChanges(GitModule module)
+    {
+        (List<GitItemStatus> items, string? error) = GitErrorMessages.SplitStatusError(module.GetAllChangedFiles(), module.WorkingDir);
+        return (items.Select(item => new ChangedFileViewModel(item)).ToList(), error);
+    }
+
     // git log does not report which branches and tags point at a commit, so look them up once and join by commit id.
     private static Dictionary<ObjectId, string> GetRefsByCommit(GitModule module)
         => module.GetRefs(RefsFilter.Heads | RefsFilter.Tags | RefsFilter.Remotes)
@@ -250,20 +283,41 @@ public sealed partial class MainWindowViewModel : ObservableObject
     private void LoadHistory(GitModule module, Dictionary<ObjectId, string> refs, CancellationToken cancellationToken)
     {
         RevisionReader reader = new(module);
-        BatchObserver observer = new(batch => Dispatcher.UIThread.Post(() =>
+
+        // The graph lanes and row view-models are computed here, on the reader's thread, so the UI thread only has to
+        // insert the finished batch. The builder belongs to this load: a newer load never shares it.
+        CommitGraphBuilder graphBuilder = new() { CollapseFromLane = Views.CommitGraphCell.MaxVisibleLanes - 1 };
+        BatchObserver observer = new(batch =>
         {
             if (cancellationToken.IsCancellationRequested)
             {
                 return;
             }
 
+            List<CommitItemViewModel> items = new(batch.Count);
             foreach (GitRevision revision in batch)
             {
-                Commits.Add(new CommitItemViewModel(revision, refs.GetValueOrDefault(revision.ObjectId, string.Empty)));
+                CommitItemViewModel item = new(revision, refs.GetValueOrDefault(revision.ObjectId, string.Empty))
+                {
+                    Actions = Actions,
+                };
+                item.Graph = graphBuilder.Append(item.ObjectId.ToString(), revision.ParentIds?.Select(id => id.ToString()).ToList() ?? []);
+                items.Add(item);
             }
 
-            Status = $"Loading history… {Commits.Count} commits";
-        }));
+            int laneCount = Math.Max(1, graphBuilder.MaxLaneCount);
+            Dispatcher.UIThread.Post(() =>
+            {
+                if (cancellationToken.IsCancellationRequested)
+                {
+                    return;
+                }
+
+                Commits.AddRange(items);
+                GraphLaneCount = laneCount;
+                Status = $"Loading history… {Commits.Count} commits";
+            });
+        });
 
         reader.GetLog(observer, RevisionFilter, pathFilter: string.Empty, hasNotes: false, autostashLabel: "autostash", cancellationToken);
     }
