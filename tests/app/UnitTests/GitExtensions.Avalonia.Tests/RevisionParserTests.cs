@@ -108,7 +108,7 @@ public class RevisionParserTests
         CommitAvatar.GetInitials("Donatas", "d@x.com").Should().Be("D");
         CommitAvatar.GetInitials("", "jane.doe@x.com").Should().Be("JD");
         CommitAvatar.GetInitials("", "").Should().Be("?");
-        ((Avalonia.Media.SolidColorBrush)CommitAvatar.GetBrush("a@b.c")).Color.Should().Be(((Avalonia.Media.SolidColorBrush)CommitAvatar.GetBrush("A@B.C")).Color);
+        ((Avalonia.Media.ISolidColorBrush)CommitAvatar.GetBrush("a@b.c")).Color.Should().Be(((Avalonia.Media.ISolidColorBrush)CommitAvatar.GetBrush("A@B.C")).Color);
     }
 
     [Test]

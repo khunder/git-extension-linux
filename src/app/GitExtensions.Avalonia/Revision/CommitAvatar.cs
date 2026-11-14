@@ -1,4 +1,5 @@
 using Avalonia.Media;
+using Avalonia.Media.Immutable;
 
 namespace GitExtensions.Desktop.Revision;
 
@@ -27,6 +28,7 @@ public static class CommitAvatar
             hash = (hash ^ c) * 16777619;
         }
 
-        return new SolidColorBrush(new HsvColor(1, hash % 360, 0.55, 0.55).ToRgb());
+        // Immutable: usable from any thread (a SolidColorBrush may only be created on the UI thread).
+        return new ImmutableSolidColorBrush(new HsvColor(1, hash % 360, 0.55, 0.55).ToRgb());
     }
 }

@@ -1,5 +1,6 @@
 using System.Globalization;
 using Avalonia.Media;
+using Avalonia.Media.Immutable;
 using CommunityToolkit.Mvvm.ComponentModel;
 using GitExtensions.Desktop.Diff;
 using GitExtensions.Desktop.FileHistory;
@@ -102,7 +103,7 @@ public sealed class FileHistoryRowViewModel
         RenamedFrom = string.Equals(entry.Path, currentPath, StringComparison.Ordinal) ? string.Empty : entry.Path;
         RelativeDate = FormatRelative(entry.Date, now);
         Initials = GetInitials(entry.Author);
-        AvatarBrush = new SolidColorBrush(AvatarColors[(uint)StableHash(entry.Author) % (uint)AvatarColors.Length]);
+        AvatarBrush = new ImmutableSolidColorBrush(AvatarColors[(uint)StableHash(entry.Author) % (uint)AvatarColors.Length]);
     }
 
     public FileHistoryEntry Entry { get; }
