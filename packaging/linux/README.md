@@ -2,16 +2,16 @@
 
 Git Extensions for Linux is shipped as self-contained builds of `GitExtensions.Avalonia` (plus the `GitExtensions.AskPass` helper): the .NET runtime is bundled, the only hard requirement besides the native libraries listed below is `git`. Invariant globalization is enabled, so there is no `libicu` dependency.
 
-Release assets (version 0.1.0 shown; builds exist for x86-64 and arm64):
+Packages are not built by hand: every release is produced by the [Release workflow](../../.github/workflows/release.yml) and published as assets of the [GitHub release](https://github.com/khunder/git-extension-linux/releases/latest). Download them from there (version 0.1.0 shown; builds exist for x86-64 and arm64):
 
 | Asset | For |
 | --- | --- |
-| `git-extensions-linux-0.1.0-x64.tar.gz`, `-arm64.tar.gz` | any distribution, user-level install |
-| `git-extensions_0.1.0_amd64.deb`, `_arm64.deb` | Debian, Ubuntu and derivatives |
-| `git-extensions-0.1.0-1.fedora.x86_64.rpm`, `.aarch64.rpm` | Fedora |
-| `git-extensions-0.1.0-1.opensuse.x86_64.rpm`, `.aarch64.rpm` | openSUSE (Tumbleweed, Leap) |
-| `git-extensions-0.1.0-1-x86_64.pkg.tar.zst` | Arch Linux and derivatives |
-| `SHA256SUMS` | checksums of all of the above |
+| [`git-extensions-linux-0.1.0-x64.tar.gz`](https://github.com/khunder/git-extension-linux/releases/download/v0.1.0/git-extensions-linux-0.1.0-x64.tar.gz), `-arm64.tar.gz` | any distribution, user-level install |
+| [`git-extensions_0.1.0_amd64.deb`](https://github.com/khunder/git-extension-linux/releases/download/v0.1.0/git-extensions_0.1.0_amd64.deb), `_arm64.deb` | Debian, Ubuntu and derivatives |
+| [`git-extensions-0.1.0-1.fedora.x86_64.rpm`](https://github.com/khunder/git-extension-linux/releases/download/v0.1.0/git-extensions-0.1.0-1.fedora.x86_64.rpm), `.aarch64.rpm` | Fedora |
+| [`git-extensions-0.1.0-1.opensuse.x86_64.rpm`](https://github.com/khunder/git-extension-linux/releases/download/v0.1.0/git-extensions-0.1.0-1.opensuse.x86_64.rpm), `.aarch64.rpm` | openSUSE (Tumbleweed, Leap) |
+| [`git-extensions-0.1.0-1-x86_64.pkg.tar.zst`](https://github.com/khunder/git-extension-linux/releases/download/v0.1.0/git-extensions-0.1.0-1-x86_64.pkg.tar.zst) | Arch Linux and derivatives |
+| [`SHA256SUMS`](https://github.com/khunder/git-extension-linux/releases/download/v0.1.0/SHA256SUMS) | checksums of all of the above |
 
 Verify a download with `sha256sum -c SHA256SUMS --ignore-missing`.
 

@@ -4,6 +4,10 @@
 
 # Git Extensions for Linux
 
+[![Release](https://img.shields.io/github/v/release/khunder/git-extension-linux?sort=semver)](https://github.com/khunder/git-extension-linux/releases/latest)
+[![CI](https://github.com/khunder/git-extension-linux/actions/workflows/ci.yml/badge.svg)](https://github.com/khunder/git-extension-linux/actions/workflows/ci.yml)
+[![License: GPL v3](https://img.shields.io/badge/license-GPL--3.0-blue.svg)](LICENSE.md)
+
 A native Linux port of [Git Extensions](https://github.com/gitextensions/gitextensions), the graphical Git client.
 
 Git Extensions was written for Windows with WinForms. This project takes the portable core of Git Extensions (`GitCommands`, `GitExtUtils` and the plugin interfaces) and puts a new user interface on top of it, built with [Avalonia](https://avaloniaui.net/), a cross-platform .NET UI framework. The WinForms UI is not used any more, so the application runs natively on Linux, with no Wine and no Mono.
@@ -38,9 +42,22 @@ Git Extensions was written for Windows with WinForms. This project takes the por
 
 ## Install
 
-Version 0.1.0 packages are attached to the [v0.1.0 release](https://github.com/khunder/git-extension-linux/releases/tag/v0.1.0). All packages are self-contained: no .NET runtime is needed. You need `git` installed.
+Download the package for your distribution from the [**latest GitHub release**](https://github.com/khunder/git-extension-linux/releases/latest) (all release assets are built by the [Release workflow](https://github.com/khunder/git-extension-linux/actions/workflows/release.yml)). All packages are self-contained: no .NET runtime is needed, only `git`.
 
-Download links below use `https://github.com/khunder/git-extension-linux/releases/download/v0.1.0/<file>`. The RPM and Arch file names may carry a distro suffix; check the release page for the exact names.
+| Distribution | Architecture | Release artifact |
+| --- | --- | --- |
+| Ubuntu / Debian | amd64 | [`git-extensions_0.1.0_amd64.deb`](https://github.com/khunder/git-extension-linux/releases/download/v0.1.0/git-extensions_0.1.0_amd64.deb) |
+| Ubuntu / Debian | arm64 | [`git-extensions_0.1.0_arm64.deb`](https://github.com/khunder/git-extension-linux/releases/download/v0.1.0/git-extensions_0.1.0_arm64.deb) |
+| Fedora | x86_64 | [`git-extensions-0.1.0-1.fedora.x86_64.rpm`](https://github.com/khunder/git-extension-linux/releases/download/v0.1.0/git-extensions-0.1.0-1.fedora.x86_64.rpm) |
+| Fedora | aarch64 | [`git-extensions-0.1.0-1.fedora.aarch64.rpm`](https://github.com/khunder/git-extension-linux/releases/download/v0.1.0/git-extensions-0.1.0-1.fedora.aarch64.rpm) |
+| openSUSE | x86_64 | [`git-extensions-0.1.0-1.opensuse.x86_64.rpm`](https://github.com/khunder/git-extension-linux/releases/download/v0.1.0/git-extensions-0.1.0-1.opensuse.x86_64.rpm) |
+| openSUSE | aarch64 | [`git-extensions-0.1.0-1.opensuse.aarch64.rpm`](https://github.com/khunder/git-extension-linux/releases/download/v0.1.0/git-extensions-0.1.0-1.opensuse.aarch64.rpm) |
+| Arch Linux | x86_64 | [`git-extensions-0.1.0-1-x86_64.pkg.tar.zst`](https://github.com/khunder/git-extension-linux/releases/download/v0.1.0/git-extensions-0.1.0-1-x86_64.pkg.tar.zst) |
+| Any distribution (tarball) | x64 | [`git-extensions-linux-0.1.0-x64.tar.gz`](https://github.com/khunder/git-extension-linux/releases/download/v0.1.0/git-extensions-linux-0.1.0-x64.tar.gz) |
+| Any distribution (tarball) | arm64 | [`git-extensions-linux-0.1.0-arm64.tar.gz`](https://github.com/khunder/git-extension-linux/releases/download/v0.1.0/git-extensions-linux-0.1.0-arm64.tar.gz) |
+| Checksums | all | [`SHA256SUMS`](https://github.com/khunder/git-extension-linux/releases/download/v0.1.0/SHA256SUMS) |
+
+With the GitHub CLI you can also fetch an artifact directly: `gh release download v0.1.0 --repo khunder/git-extension-linux --pattern '*.deb'`.
 
 ### Ubuntu / Debian (.deb)
 
