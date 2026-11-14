@@ -19,6 +19,7 @@ public class RepositoryDescriptionProviderTests
         Directory.Delete(_tempDir, recursive: true);
     }
 
+    [Platform("Win")]
     [Test]
     public void RepositoryDescriptionProvider_should_handle_subrepos()
     {
@@ -45,6 +46,7 @@ public class RepositoryDescriptionProviderTests
             .Should().Be("leafsubmodule < test_repo");
     }
 
+    [Platform("Win")]
     [Test]
     public void RepositoryDescriptionProvider_should_skip_uninformative_submodule_name([Values("app", "repo", "repository")] string uninformative)
     {
@@ -60,6 +62,7 @@ public class RepositoryDescriptionProviderTests
             .Should().Be($"{parent} < {rootrepo}");
     }
 
+    [Platform("Win")]
     [Test]
     public void RepositoryDescriptionProvider_should_not_skip_uninformative_submodule_name_to_parent_repo([Values("app", "repo", "repository")] string uninformative)
     {
@@ -74,6 +77,7 @@ public class RepositoryDescriptionProviderTests
             .Should().Be($"{uninformative} < {parentrepo}");
     }
 
+    [Platform("Win")]
     [Test]
     public void RepositoryDescriptionProvider_should_not_skip_uninformative_root_repo_name([Values("app", "repo", "repository")] string uninformative)
     {

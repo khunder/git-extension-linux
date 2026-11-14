@@ -26,7 +26,9 @@ public class ReferenceRepository : IDisposable
     private readonly GitModuleTestHelper _moduleTestHelper;
 
     // We don't expect any failures so that we won't be switching to the main thread or showing messages
+#if !PORTABLE_TESTS
     public static Control DummyOwner { get; } = new();
+#endif
 
     public GitModule Module => _moduleTestHelper.Module;
 

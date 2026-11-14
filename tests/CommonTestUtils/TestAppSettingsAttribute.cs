@@ -7,13 +7,17 @@ namespace CommonTestUtils;
 [AttributeUsage(AttributeTargets.Assembly)]
 public sealed class TestAppSettingsAttribute : Attribute, ITestAction
 {
-    private readonly Semaphore _semaphore = new(initialCount: 1, maximumCount: 1, "GitExtensionsTestAssemblySerializer");
+    private const string SerializerName = "GitExtensionsTestAssemblySerializer";
+
+    // Named semaphores are only supported on Windows; elsewhere an exclusive lock file serializes test assemblies.
+    private readonly Semaphore? _semaphore = OperatingSystem.IsWindows() ? new(initialCount: 1, maximumCount: 1, SerializerName) : null;
+    private FileStream? _lockFile;
 
     public ActionTargets Targets => ActionTargets.Suite;
 
     public void BeforeTest(ITest test)
     {
-        _semaphore.WaitOne();
+        Acquire();
 
         // A test host may run under the shared dotnet runtime rather than a native testhost.exe apphost (e.g. on the
         // arm64 CI runner, which has no native testhost.exe). In that case Application.ExecutablePath — and therefore
@@ -36,6 +40,41 @@ public sealed class TestAppSettingsAttribute : Attribute, ITestAction
     {
         AppSettings.SettingsContainer.SettingsCache.Dispose();
 
-        _semaphore.Release();
+        Release();
+    }
+
+    private void Acquire()
+    {
+        if (_semaphore is not null)
+        {
+            _semaphore.WaitOne();
+            return;
+        }
+
+        string lockPath = Path.Combine(Path.GetTempPath(), SerializerName + ".lock");
+        while (true)
+        {
+            try
+            {
+                _lockFile = new FileStream(lockPath, FileMode.OpenOrCreate, FileAccess.ReadWrite, FileShare.None);
+                return;
+            }
+            catch (IOException)
+            {
+                Thread.Sleep(100);
+            }
+        }
+    }
+
+    private void Release()
+    {
+        if (_semaphore is not null)
+        {
+            _semaphore.Release();
+            return;
+        }
+
+        _lockFile?.Dispose();
+        _lockFile = null;
     }
 }

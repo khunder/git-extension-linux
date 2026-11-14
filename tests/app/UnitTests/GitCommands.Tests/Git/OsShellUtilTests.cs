@@ -35,6 +35,7 @@ public class OsShellUtilTests
         OsShellUtil.TestAccessor.MockExecutable = null;
     }
 
+    [Platform("Win")]
     [Test]
     public void Open_should_start_with_shell_execute()
     {
@@ -51,6 +52,7 @@ public class OsShellUtilTests
             Arg.Any<CancellationToken>());
     }
 
+    [Platform("Win")]
     [Test]
     public void Open_should_fall_back_to_OpenAs_when_Start_throws()
     {
@@ -88,6 +90,7 @@ public class OsShellUtilTests
             Arg.Any<CancellationToken>());
     }
 
+    [Platform("Win")]
     [Test]
     public void OpenAs_should_start_rundll32_with_correct_arguments()
     {
@@ -104,6 +107,7 @@ public class OsShellUtilTests
             Arg.Any<CancellationToken>());
     }
 
+    [Platform("Win")]
     [Test]
     public void SelectPathInFileExplorer_should_pass_quoted_path_with_select()
     {
@@ -136,6 +140,7 @@ public class OsShellUtilTests
             Arg.Any<CancellationToken>());
     }
 
+    [Platform("Win")]
     [Test]
     public void OpenWithFileExplorer_should_not_quote_when_quote_is_false()
     {
@@ -152,6 +157,7 @@ public class OsShellUtilTests
             Arg.Any<CancellationToken>());
     }
 
+    [Platform("Win")]
     [Test]
     public void OpenUrlInDefaultBrowser_should_start_with_shell_execute()
     {
@@ -184,5 +190,62 @@ public class OsShellUtilTests
             Arg.Any<bool>(),
             Arg.Any<bool>(),
             Arg.Any<CancellationToken>());
+    }
+
+    // Outside Windows, files, folders and URLs are handed to the desktop's default handler (xdg-open / open).
+    private void VerifyDesktopHandlerStartedWith(string expectedQuotedTarget)
+        => _executable.Received(1).Start(
+            Arg.Is<ArgumentString>(a => (string)a == expectedQuotedTarget),
+            Arg.Any<bool>(),
+            Arg.Any<bool>(),
+            Arg.Any<bool>(),
+            Arg.Any<Encoding?>(),
+            Arg.Any<bool>(),
+            Arg.Any<bool>(),
+            Arg.Any<CancellationToken>());
+
+    [Platform(Exclude = "Win")]
+    [Test]
+    public void Open_should_pass_the_quoted_path_to_the_desktop_handler()
+    {
+        OsShellUtil.Open("/tmp/some file.txt");
+
+        VerifyDesktopHandlerStartedWith("\"/tmp/some file.txt\"");
+    }
+
+    [Platform(Exclude = "Win")]
+    [Test]
+    public void OpenAs_should_fall_back_to_the_desktop_handler()
+    {
+        OsShellUtil.OpenAs("/tmp/some file.txt");
+
+        VerifyDesktopHandlerStartedWith("\"/tmp/some file.txt\"");
+    }
+
+    [Platform(Exclude = "Win")]
+    [Test]
+    public void SelectPathInFileExplorer_should_open_the_containing_folder()
+    {
+        OsShellUtil.SelectPathInFileExplorer("/tmp/some folder/file.txt");
+
+        VerifyDesktopHandlerStartedWith("\"/tmp/some folder\"");
+    }
+
+    [Platform(Exclude = "Win")]
+    [Test]
+    public void OpenWithFileExplorer_should_open_the_folder()
+    {
+        OsShellUtil.OpenWithFileExplorer("/tmp/some folder");
+
+        VerifyDesktopHandlerStartedWith("\"/tmp/some folder\"");
+    }
+
+    [Platform(Exclude = "Win")]
+    [Test]
+    public void OpenUrlInDefaultBrowser_should_pass_the_quoted_url_to_the_desktop_handler()
+    {
+        OsShellUtil.OpenUrlInDefaultBrowser("https://example.com/a?b=c");
+
+        VerifyDesktopHandlerStartedWith("\"https://example.com/a?b=c\"");
     }
 }

@@ -22,7 +22,7 @@ internal class NumberSettingNumericUpDownBinding : SettingControlBinding<NumberS
         };
 
         Setting.CustomControl = numericUpDown;
-        return (NumericUpDown)Setting.CustomControl;
+        return numericUpDown;
     }
 
     public override void LoadSetting(SettingsSource settings, NumericUpDown control)

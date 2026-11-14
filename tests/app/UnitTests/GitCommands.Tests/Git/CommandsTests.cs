@@ -20,6 +20,7 @@ public partial class CommandsTests
         yield return new TestCaseData("-c protocol.file.allow=always ", Commands.GetAllowFileConfig());
     }
 
+    [Platform("Win")]
     [Test, TestCaseSource(nameof(AddSubmoduleTestCases))]
     public void AddSubmoduleCmd(string config, IEnumerable<GitConfigItem> configs)
     {
@@ -32,6 +33,7 @@ public partial class CommandsTests
         Commands.AddSubmodule("remote\\path", "local\\path", "branch", force: true, configs).Arguments.Should().Be($"{config}submodule add -f -b \"branch\" \"remote/path\" \"local/path\"");
     }
 
+    [Platform("Win")]
     [Test]
     public void ApplyDiffPatchCmd()
     {
@@ -39,6 +41,7 @@ public partial class CommandsTests
         Commands.ApplyDiffPatch(true, "hello\\world.patch", PathUtil.ToPosixPath).Arguments.Should().Be("apply --ignore-whitespace \"hello/world.patch\"");
     }
 
+    [Platform("Win")]
     [TestCase(false, false, "hello\\world.patch", "am --3way \"hello/world.patch\"")]
     [TestCase(false, true, "hello\\world.patch", "am --3way --ignore-whitespace \"hello/world.patch\"")]
     [TestCase(true, false, "hello\\world.patch", "am --3way --signoff \"hello/world.patch\"")]
@@ -269,6 +272,7 @@ public partial class CommandsTests
     [TestCase(false, true, false, null, false, "D:\\myrepo\\.git\\file", null, "merge --no-ff --squash -F \"D:/myrepo/.git/file\" --no-edit branch")]
 
     // log parameter
+    [Platform("Win")]
     [TestCase(true, true, false, null, false, null, -1, "merge --ff --squash --no-edit branch")]
     [TestCase(true, true, false, null, false, null, 0, "merge --ff --squash --no-edit branch")]
     [TestCase(true, true, false, null, false, null, 5, "merge --ff --squash --log=5 --no-edit branch")]
@@ -318,6 +322,7 @@ public partial class CommandsTests
         Commands.Push("remote", "from-branch", "to-branch", ForcePushOptions.DoNotForce, track: false, recursiveSubmodules: 2).Arguments.Should().Be("push --recurse-submodules=on-demand --progress \"remote\" from-branch:refs/heads/to-branch");
     }
 
+    [Platform("Win")]
     [Test]
     public void PushTagCmd()
     {

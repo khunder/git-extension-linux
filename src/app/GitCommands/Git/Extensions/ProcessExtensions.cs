@@ -23,7 +23,8 @@ public static class ProcessExtensions
 
         if (!process.HasExited)
         {
-            process.Kill();
+            // Git commonly spawns helpers (ssh, credential helpers, hooks); end them with the parent.
+            process.Kill(entireProcessTree: !OperatingSystem.IsWindows());
         }
     }
 

@@ -1,0 +1,52 @@
+<Project Sdk="Microsoft.NET.Sdk">
+
+  <!--
+    Platform-neutral build of CommonTestUtils (same assembly name, so existing InternalsVisibleTo entries apply).
+    Links the original sources; files that need WinForms are excluded.
+  -->
+  <PropertyGroup>
+    <TargetFramework>net10.0</TargetFramework>
+    <UseWindowsForms>false</UseWindowsForms>
+    <AssemblyName>CommonTestUtils</AssemblyName>
+    <RootNamespace>CommonTestUtils</RootNamespace>
+    <DefineConstants>$(DefineConstants);PORTABLE_TESTS</DefineConstants>
+    <GenerateAssemblyInfo>false</GenerateAssemblyInfo>
+    <TreatWarningsAsErrors>false</TreatWarningsAsErrors>
+    <GenerateDocumentationFile>false</GenerateDocumentationFile>
+    <!-- Documentation files are intentionally not generated for the portable test builds -->
+    <NoWarn>$(NoWarn);SA0001</NoWarn>
+
+    <!-- Not a test project -->
+    <TestProject>false</TestProject>
+    <IsTestProject>false</IsTestProject>
+  </PropertyGroup>
+
+  <ItemGroup>
+    <Using Include="System.Drawing" />
+  </ItemGroup>
+
+  <ItemGroup>
+    <Compile Include="..\CommonTestUtils\**\*.cs" Exclude="..\CommonTestUtils\obj\**;..\CommonTestUtils\bin\**;..\CommonTestUtils\WinFormsTestHelper.cs" LinkBase="." />
+  </ItemGroup>
+
+  <ItemGroup>
+    <PackageReference Include="LibGit2Sharp" />
+    <PackageReference Include="Microsoft.CodeAnalysis.Workspaces.Common" />
+    <PackageReference Include="AwesomeAssertions" />
+    <PackageReference Include="NUnit" />
+    <PackageReference Include="System.Drawing.Common" />
+    <PackageReference Include="JetBrains.Annotations" />
+  </ItemGroup>
+
+  <ItemGroup>
+    <ProjectReference Include="..\..\src\app\GitCommands\GitCommands.csproj" />
+    <ProjectReference Include="..\..\src\app\GitExtUtils\GitExtUtils.csproj" />
+    <ProjectReference Include="..\..\src\plugins\GitUIPluginInterfaces\GitUIPluginInterfaces.csproj" />
+  </ItemGroup>
+
+  <ItemGroup>
+    <!-- This project depends on NUnit, which adds the TestContainer capability, but this is not a test project -->
+    <ProjectCapability Remove="TestContainer" />
+  </ItemGroup>
+
+</Project>

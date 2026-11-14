@@ -1,7 +1,9 @@
 using System.Globalization;
+using System.Runtime.Versioning;
 
 namespace GitExtensions.Extensibility;
 
+[SupportedOSPlatform("windows6.1")]
 public static class FontParser
 {
     private const string InvariantCultureId = "_IC_";

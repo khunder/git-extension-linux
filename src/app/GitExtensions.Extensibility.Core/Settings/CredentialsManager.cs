@@ -98,7 +98,7 @@ internal class CredentialsManager : ICredentialsManager
 
         public static bool TryGetCredentials(string target, [NotNullWhen(true)] out NetworkCredential? credentials)
         {
-            credentials = CredentialManager.GetCredentials(GetTarget(target));
+            credentials = OperatingSystem.IsWindows() ? CredentialManager.GetCredentials(GetTarget(target)) : null;
             return credentials is not null;
         }
 
@@ -109,12 +109,14 @@ internal class CredentialsManager : ICredentialsManager
                 return false;
             }
 
-            return CredentialManager.SaveCredentials(GetTarget(target), new NetworkCredential(userName.Trim(), password)) != null;
+            // The Windows Credential Manager is the only supported store for now.
+            return OperatingSystem.IsWindows()
+                && CredentialManager.SaveCredentials(GetTarget(target), new NetworkCredential(userName.Trim(), password)) != null;
         }
 
         private static bool RemoveCredentials(string target)
         {
-            if (string.IsNullOrWhiteSpace(target) || CredentialManager.GetCredentials(GetTarget(target)) is null)
+            if (!OperatingSystem.IsWindows() || string.IsNullOrWhiteSpace(target) || CredentialManager.GetCredentials(GetTarget(target)) is null)
             {
                 return false;
             }

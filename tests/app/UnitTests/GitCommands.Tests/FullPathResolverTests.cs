@@ -20,12 +20,14 @@ public class FullPathResolverTests
         _resolver.Resolve(path).Should().BeNull();
     }
 
+    [Platform("Win")]
     [TestCase(@"c:\")]
     public void Resolve_should_return_original_path_if_rooted(string? path)
     {
         _resolver.Resolve(path).Should().Be(path);
     }
 
+    [Platform("Win")]
     [TestCase(@"folder\", 10000)]
     public void Resolve_should_return_long_full_path(string dir, int repeats)
     {
@@ -33,6 +35,7 @@ public class FullPathResolverTests
         _resolver.Resolve(path).Should().Be($"{_workingDir}\\{path}");
     }
 
+    [Platform("Win")]
     [TestCase(@"file")]
     [TestCase("folder\\folder\\folder\\folder\\folder\\folder\\folder\\folder\\folder\\filename.txt")]
     [TestCase("folder\\folder\\folder\\folder\\folder\\folder\\folder\\folder\\folder#\\filename.txt")]
@@ -42,12 +45,14 @@ public class FullPathResolverTests
         _resolver.Resolve(path).Should().Be($"{_workingDir}\\{path}");
     }
 
+    [Platform("Win")]
     [TestCase("drivers/gpu/drm/nouveau/nvkm/subdev/i2c/aux.c")]
     public void Resolve_handles_system_filenames(string? path)
     {
         _resolver.Resolve(path).Should().Be($"{_workingDir}\\{path!.Replace("/", "\\")}");
     }
 
+    [Platform("Win")]
     [TestCase(@"C:\dev\repo")]
     [TestCase(@"C:\dev\repo\")]
     [TestCase(@"C:\dev\repo/")]
@@ -58,6 +63,7 @@ public class FullPathResolverTests
         resolver.Resolve("file.txt").Should().Be(Path.Combine(workingDir!, "file.txt").Replace("/", "\\"));
     }
 
+    [Platform("Win")]
     [TestCase(null)]
     [TestCase("")]
     [TestCase(" ")]

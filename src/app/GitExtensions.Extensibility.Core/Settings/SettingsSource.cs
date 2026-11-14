@@ -1,5 +1,6 @@
 using System.Diagnostics.CodeAnalysis;
 using System.Globalization;
+using System.Runtime.Versioning;
 using GitExtensions.Extensibility.Configurations;
 
 namespace GitExtensions.Extensibility.Settings;
@@ -111,9 +112,11 @@ public abstract class SettingsSource : IConfigValueStore
         SetValue(name, stringValue);
     }
 
+    [SupportedOSPlatform("windows6.1")]
     [return: NotNullIfNotNull("defaultValue")]
     public Font? GetFont(string name, Font? defaultValue) => FontParser.Parse(GetValue(name), defaultValue!);
 
+    [SupportedOSPlatform("windows6.1")]
     public void SetFont(string name, Font? value) => SetValue(name, value?.AsString());
 
     public Color GetColor(string name, Color defaultValue)

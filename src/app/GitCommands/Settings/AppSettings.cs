@@ -2,6 +2,8 @@
 using System.Diagnostics.CodeAnalysis;
 using System.Globalization;
 using System.Reflection;
+using System.Runtime.Versioning;
+using System.Security.Cryptography;
 using System.Text;
 using System.Text.RegularExpressions;
 using GitCommands.Git;
@@ -13,7 +15,6 @@ using GitExtensions.Extensibility.Settings;
 using GitExtUtils.GitUI.Theming;
 using GitUIPluginInterfaces;
 using Microsoft;
-using Microsoft.Win32;
 
 namespace GitCommands;
 
@@ -21,12 +22,12 @@ public static partial class AppSettings
 {
     // semi-constants
     public static Version AppVersion => Assembly.GetCallingAssembly().GetName().Version!;
-    public static string ProductVersion => Application.ProductVersion;
+    public static string ProductVersion => ApplicationInfo.ProductVersion;
     public static readonly string ApplicationName = "Git Extensions";
     public static readonly string ApplicationId = ApplicationName.Replace(" ", "");
     public static readonly string SettingsFileName = ApplicationId + ".settings";
     public static readonly string UserPluginsDirectoryName = "UserPlugins";
-    private static string _applicationExecutablePath = Application.ExecutablePath;
+    private static string _applicationExecutablePath = ApplicationInfo.ExecutablePath;
     private static string? _documentationBaseUrl;
 
     public static Lazy<string?> ApplicationDataPath { get; private set; }
@@ -54,7 +55,7 @@ public static partial class AppSettings
             }
 
             // Make ApplicationDataPath version independent
-            return Application.UserAppDataPath.Replace(Application.ProductVersion, string.Empty)
+            return ApplicationInfo.UserAppDataPath.Replace(ApplicationInfo.ProductVersion, string.Empty)
                                               .Replace(ApplicationName, ApplicationId); // 'GitExtensions' has been changed to 'Git Extensions' in v3.0
         });
 
@@ -245,34 +246,30 @@ public static partial class AppSettings
 
     private static bool ReadBoolRegKey(string key, bool defaultValue)
     {
-        object? obj = VersionIndependentRegKey.GetValue(key);
-        if (obj is not string)
-        {
-            obj = null;
-        }
+        string? obj = UserRegistry.GetValue(key);
 
         if (obj is null)
         {
             return defaultValue;
         }
 
-        return ((string)obj).Equals("true", StringComparison.CurrentCultureIgnoreCase);
+        return obj.Equals("true", StringComparison.CurrentCultureIgnoreCase);
     }
 
     private static void WriteBoolRegKey(string key, bool value)
     {
-        VersionIndependentRegKey.SetValue(key, value ? "true" : "false");
+        UserRegistry.SetValue(key, value ? "true" : "false");
     }
 
     [return: NotNullIfNotNull(nameof(defaultValue))]
     private static string? ReadStringRegValue(string key, string? defaultValue)
     {
-        return (string?)VersionIndependentRegKey.GetValue(key, defaultValue);
+        return UserRegistry.GetValue(key) ?? defaultValue;
     }
 
     private static void WriteStringRegValue(string key, string value)
     {
-        VersionIndependentRegKey.SetValue(key, value);
+        UserRegistry.SetValue(key, value);
     }
 
     #endregion
@@ -1429,30 +1426,35 @@ public static partial class AppSettings
 
     #region Fonts
 
+    [SupportedOSPlatform("windows6.1")]
     public static Font FixedWidthFont
     {
         get => GetFont("difffont", new Font("Consolas", 10));
         set => SetFont("difffont", value);
     }
 
+    [SupportedOSPlatform("windows6.1")]
     public static Font CommitFont
     {
         get => GetFont("commitfont", SystemFonts.MessageBoxFont!);
         set => SetFont("commitfont", value);
     }
 
+    [SupportedOSPlatform("windows6.1")]
     public static Font MonospaceFont
     {
         get => GetFont("monospacefont", new Font("Consolas", 9));
         set => SetFont("monospacefont", value);
     }
 
+    [SupportedOSPlatform("windows6.1")]
     public static Font Font
     {
         get => GetFont("font", SystemFonts.MessageBoxFont!);
         set => SetFont("font", value);
     }
 
+    [SupportedOSPlatform("windows6.1")]
     public static Font? ConEmuConsoleFont
     {
         get => GetFont("conemuconsolefont", null);
@@ -1578,8 +1580,7 @@ public static partial class AppSettings
         {
             SettingsContainer.LockedAction(() =>
             {
-                // prepend "Global\" in order to be safe in preparation for non-Windows OS, too
-                _globalMutex ??= new Mutex(initiallyOwned: false, name: @$"Global\Mutex{SettingsFilePath.ToPosixPath()}");
+                _globalMutex ??= new Mutex(initiallyOwned: false, name: GetSettingsMutexName(SettingsFilePath));
 
                 try
                 {
@@ -1594,9 +1595,31 @@ public static partial class AppSettings
 
             Saved?.Invoke();
         }
-        catch
+        catch (Exception ex)
         {
+            // Saving is best-effort, but make failures diagnosable.
+            Trace.WriteLine($"Failed to save settings: {ex}");
         }
+    }
+
+    /// <summary>
+    ///  Name of the machine-wide mutex that serializes writes to the settings file.
+    /// </summary>
+    /// <remarks>
+    ///  Windows keeps the historical path-based name so that different versions keep excluding each other.
+    ///  Named mutexes elsewhere live in the file system, so a name containing path separators is rejected;
+    ///  use a hash of the path instead.
+    /// </remarks>
+    internal static string GetSettingsMutexName(string settingsFilePath)
+    {
+        if (OperatingSystem.IsWindows())
+        {
+            // prepend "Global\" in order to be safe in preparation for non-Windows OS, too
+            return @$"Global\Mutex{settingsFilePath.ToPosixPath()}";
+        }
+
+        byte[] hash = SHA256.HashData(Encoding.UTF8.GetBytes(settingsFilePath));
+        return $"Global\\GitExtensionsSettings_{Convert.ToHexString(hash, 0, 16)}";
     }
 
     public static void LoadSettings()
@@ -1832,22 +1855,6 @@ public static partial class AppSettings
         return Path.GetDirectoryName(GetGitExtensionsFullPath());
     }
 
-    private static RegistryKey? _versionIndependentRegKey;
-
-    private static RegistryKey VersionIndependentRegKey
-    {
-        get
-        {
-            if (_versionIndependentRegKey is null)
-            {
-                _versionIndependentRegKey = Registry.CurrentUser.CreateSubKey("Software\\GitExtensions", RegistryKeyPermissionCheck.ReadWriteSubTree);
-                Validates.NotNull(_versionIndependentRegKey);
-            }
-
-            return _versionIndependentRegKey;
-        }
-    }
-
     public static bool RepoObjectsTreeShowBranches
     {
         get => GetBool("RepoObjectsTree.ShowBranches", true);
@@ -2009,7 +2016,7 @@ public static partial class AppSettings
 
     // There is a bug in .NET/.NET Designer that fails to execute Properties.Settings.Default call.
     // Return false whilst we're in the designer.
-    public static bool IsPortable() => !IsDesignMode && Properties.Settings.Default.IsPortable;
+    public static bool IsPortable() => !IsDesignMode && PortableModeConfig.IsPortable;
 
     // Currently not configurable in UI (Set manually in settings file)
     public static bool WriteErrorLog
@@ -2032,29 +2039,9 @@ public static partial class AppSettings
 
     public static TextSetting UninformativeRepoNameRegex { get; } = new(DetailedSettingsPath, nameof(UninformativeRepoNameRegex), defaultValue: "app|(repo(sitory)?)");
 
-    private static IEnumerable<(string name, string? value)> GetSettingsFromRegistry()
-    {
-        RegistryKey? oldSettings = VersionIndependentRegKey.OpenSubKey("GitExtensions");
-
-        if (oldSettings is null)
-        {
-            yield break;
-        }
-
-        foreach (string name in oldSettings.GetValueNames())
-        {
-            object? value = oldSettings.GetValue(name, null);
-
-            if (value is not null)
-            {
-                yield return (name, value.ToString());
-            }
-        }
-    }
-
     private static void ImportFromRegistry()
     {
-        SettingsContainer.SettingsCache.Import(GetSettingsFromRegistry());
+        SettingsContainer.SettingsCache.Import(UserRegistry.GetLegacySettings());
     }
 
     #region Save in settings file
@@ -2083,8 +2070,10 @@ public static partial class AppSettings
     public static void SetDate(string name, DateTime? value) => SettingsContainer.SetDate(name, value);
 
     // Font
+    [SupportedOSPlatform("windows6.1")]
     [return: NotNullIfNotNull("defaultValue")]
     public static Font? GetFont(string name, Font? defaultValue) => SettingsContainer.GetFont(name, defaultValue);
+    [SupportedOSPlatform("windows6.1")]
     public static void SetFont(string name, Font? value) => SettingsContainer.SetFont(name, value);
 
     [Obsolete("AppSettings is no longer responsible for colors, ThemeModule is. Only used by ThemeMigration.")]

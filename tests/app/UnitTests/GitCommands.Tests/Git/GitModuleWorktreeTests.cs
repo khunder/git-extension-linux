@@ -26,6 +26,7 @@ public sealed class GitModuleWorktreeTests
         _executable.Verify();
     }
 
+    [Platform("Win")]
     [Test]
     public void GetWorktrees_should_parse_single_worktree_with_branch()
     {
@@ -87,6 +88,7 @@ public sealed class GitModuleWorktreeTests
         }
     }
 
+    [Platform("Win")]
     [Test]
     public void GetWorktrees_should_parse_multiple_worktrees()
     {
@@ -141,6 +143,7 @@ public sealed class GitModuleWorktreeTests
         }
     }
 
+    [Platform("Win")]
     [Test]
     public void GetWorktrees_should_handle_path_with_spaces()
     {

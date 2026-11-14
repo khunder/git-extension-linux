@@ -10,6 +10,7 @@
     <ProjectReference Include="..\..\src\app\BugReporter\BugReporter.csproj" />
     <ProjectReference Include="..\..\src\app\GitCommands\GitCommands.csproj" />
     <ProjectReference Include="..\..\src\app\GitExtUtils\GitExtUtils.csproj" />
+    <ProjectReference Include="..\..\src\app\GitExtUtils.WinForms\GitExtUtils.WinForms.csproj" />
     <ProjectReference Include="..\..\src\app\GitUI\GitUI.csproj" />
     <ProjectReference Include="..\..\src\app\ResourceManager\ResourceManager.csproj" />
   </ItemGroup>

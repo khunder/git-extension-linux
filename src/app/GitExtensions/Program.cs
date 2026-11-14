@@ -2,6 +2,7 @@
 using System.Configuration;
 using System.Diagnostics;
 using GitCommands;
+using GitCommands.UserRepositoryHistory;
 using GitExtensions.Extensibility;
 using GitExtensions.Extensibility.Git;
 using GitExtUtils;
@@ -106,6 +107,9 @@ internal static class Program
         using (new Form())
         {
             // Store the shared JoinableTaskContext
+            TaskManager.ExceptionReporter = Application.OnThreadException;
+            MessageDialogs.Instance = new WinFormsMessageDialogs();
+            RecentRepoSplitter.MeasureTextWidth = static (text, font) => TextRenderer.MeasureText(text, font).Width;
             ThreadHelper.JoinableTaskContext = new JoinableTaskContext();
         }
 

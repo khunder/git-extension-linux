@@ -8,3 +8,5 @@ using System.Runtime.CompilerServices;
 [assembly: InternalsVisibleTo("GitCommands.Tests")]
 [assembly: InternalsVisibleTo("GitUI.Tests")]
 [assembly: InternalsVisibleTo("UI.IntegrationTests")]
+[assembly: InternalsVisibleTo("GitCommands.WinForms")]
+[assembly: InternalsVisibleTo("GitCommands.Portable.Tests")]

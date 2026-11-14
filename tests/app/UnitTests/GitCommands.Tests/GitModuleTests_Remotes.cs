@@ -80,6 +80,7 @@ partial class GitModuleTests
         }
     }
 
+    [Platform("Win")]
     [Test]
     public async Task GetRemotes_should_parse_correctly_configured_remotes()
     {

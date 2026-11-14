@@ -19,6 +19,7 @@ public sealed class ExecutableTests
     {
     }
 
+    [Platform("Win")]
     [Test]
     public async Task Process_shall_be_killed_on_cancellation()
     {
@@ -60,6 +61,7 @@ public sealed class ExecutableTests
         (cmd?.Exception?.Message).Should().Be("Process killed");
     }
 
+    [Platform("Win")]
     [Test]
     public async Task WaitForProcessExitAsync_shall_return_latest_after_timeout()
     {
@@ -94,6 +96,7 @@ public sealed class ExecutableTests
         durationExit.Should().BeGreaterThan(1.5 * halfRuntime).And.BeLessThan(2.5 * halfRuntime);
     }
 
+    [Platform("Win")]
     [Test]
     public async Task ExecuteAsync_shall_return_latest_after_timeout([Values("cmd.exe", "ping.exe")] string exeFile)
     {

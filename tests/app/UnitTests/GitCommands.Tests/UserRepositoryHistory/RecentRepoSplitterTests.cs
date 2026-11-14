@@ -11,6 +11,7 @@ public class RecentRepoSplitterTests
     private static readonly string repoNotAnchoredPath = @"C:\this\is\a\repo_not_anchored_path\";
 
     #region Shortening strategy
+    [Platform("Win")]
     [Test]
     public void SplitRecentRepos_Should_use_most_significant_folder_as_caption()
     {
@@ -33,6 +34,7 @@ public class RecentRepoSplitterTests
         recentRepoList.Should().ContainSingle();
     }
 
+    [Platform("Win")]
     [TestCase(@"\\wsl$\Ubuntu\home\user\repo\")]
     [TestCase(@"\\wsl.localhost\Ubuntu\home\user\repo\")]
     public void SplitRecentRepos_should_not_mark_unique_wsl_captions(string path)
@@ -47,6 +49,7 @@ public class RecentRepoSplitterTests
         topRepoList.Should().ContainSingle().Which.Caption.Should().Be("repo");
     }
 
+    [Platform("Win")]
     [TestCase(@"\\wsl$\Ubuntu\home\user\repo\", "repo (wsl)", false)]
     [TestCase(@"\\wsl$\Ubuntu\home\user\repo\", "repo (wsl)", true)]
     [TestCase(@"\\wsl.localhost\Ubuntu\home\user\repo\", "repo (wsl)", false)]
@@ -74,6 +77,7 @@ public class RecentRepoSplitterTests
         topRepoList.Single(repo => repo.Repo.Path == windowsPath).Caption.Should().Be("repo (X:)");
     }
 
+    [Platform("Win")]
     [TestCase(@"\\wsl$\Ubuntu\home\user\repo\", @"\\wsl$\Debian\home\user\repo\", "repo (Ubuntu)", "repo (Debian)")]
     [TestCase(@"\\srv.a.tld\share\home\user\repo\", @"\\srv.b.tld\share\home\user\repo\", "repo (a)", "repo (b)")]
     [TestCase(@"\\srv\one\home\user\repo\", @"\\srv\two\home\user\repo\", "repo (one)", "repo (two)")]
@@ -94,6 +98,7 @@ public class RecentRepoSplitterTests
         topRepoList.Single(repo => repo.Repo.Path == path2).Caption.Should().Be(caption2);
     }
 
+    [Platform("Win")]
     [Test]
     public void SplitRecentRepos_should_extend_unc_labels_until_unique()
     {
@@ -115,6 +120,7 @@ public class RecentRepoSplitterTests
         topRepoList.Single(repo => repo.Repo.Path == paths[2]).Caption.Should().Be(@"repo (y\s1)");
     }
 
+    [Platform("Win")]
     [Test]
     public void SplitRecentRepos_should_label_drive_and_unc_with_same_suffix()
     {
@@ -135,6 +141,7 @@ public class RecentRepoSplitterTests
         topRepoList.Single(repo => repo.Repo.Path == uncPath).Caption.Should().Be("repo (server)");
     }
 
+    [Platform("Win")]
     [TestCase(false)]
     [TestCase(true)]
     public void SplitRecentRepos_should_mark_colliding_drives(bool reverseOrder)
@@ -161,6 +168,7 @@ public class RecentRepoSplitterTests
         topRepoList.Single(repo => repo.Repo.Path == pathY).Caption.Should().Be("repo (Y:)");
     }
 
+    [Platform("Win")]
     [TestCase(@"X:\home\other\repo\", "repo (user)", "repo (other)", false)]
     [TestCase(@"X:\home\other\repo\", "repo (user)", "repo (other)", true)]
     [TestCase(@"X:\projects\user\repo\", @"repo (home\user)", @"repo (projects\user)", false)]
@@ -188,6 +196,7 @@ public class RecentRepoSplitterTests
         topRepoList.Single(repo => repo.Repo.Path == windowsPath).Caption.Should().Be(windowsCaption);
     }
 
+    [Platform("Win")]
     [TestCase(@"\\wsl$", "wsl", false)]
     [TestCase(@"\\wsl$", "wsl", true)]
     [TestCase(@"\\wsl.localhost", "wsl.localhost", false)]
@@ -241,6 +250,7 @@ public class RecentRepoSplitterTests
         recentRepoList.Should().ContainSingle();
     }
 
+    [Platform("Win")]
     [Test]
     public void SplitRecentRepos_Should_not_shorten_but_handle_user_folder_as_caption()
     {
@@ -263,6 +273,7 @@ public class RecentRepoSplitterTests
         recentRepoList.Should().ContainSingle();
     }
 
+    [Platform("Win")]
     [Test]
     public void SplitRecentRepos_Should_display_middle_dots_in_caption()
     {
@@ -290,6 +301,7 @@ public class RecentRepoSplitterTests
     #endregion
 
     #region Split repositories
+    [Platform("Win")]
     [Test]
     public void SplitRecentRepos_Should_split_depending_anchor()
     {
@@ -322,6 +334,7 @@ public class RecentRepoSplitterTests
         recentRepoList[3].Caption.Should().Be("repo_not_anchored_path");
     }
 
+    [Platform("Win")]
     [Test]
     public void SplitRecentRepos_Should_split_depending_anchor_and_sort_alphabetically()
     {
@@ -355,6 +368,7 @@ public class RecentRepoSplitterTests
         recentRepoList[3].Caption.Should().Be("repo_not_anchored_path");
     }
 
+    [Platform("Win")]
     [Test]
     public void SplitRecentRepos_Should_split_depending_anchor_and_sort_alphabetically_Hiding_Top_Repo_In_Recent_list()
     {

@@ -1,5 +1,6 @@
 ﻿using System.Diagnostics;
 using System.Diagnostics.CodeAnalysis;
+using System.Reflection;
 using System.Runtime.CompilerServices;
 
 namespace GitExtensions.Extensibility;
@@ -53,6 +54,17 @@ public static class DebugHelpers
         }
     }
 
-    private static bool IsTestRunning
-        => Application.ExecutablePath.EndsWith("testhost.exe");
+    private static bool IsTestRunning { get; } = DetectTestHost();
+
+    private static bool DetectTestHost()
+    {
+        if (Path.GetFileNameWithoutExtension(Environment.ProcessPath) is "testhost" or "testhost.x86")
+        {
+            return true;
+        }
+
+        // A test host may run under the shared dotnet runtime ("dotnet testhost.dll") rather than a native apphost,
+        // for example on arm64 CI runners and on non-Windows platforms.
+        return Assembly.GetEntryAssembly()?.GetName().Name is "testhost" or "testhost.x86";
+    }
 }

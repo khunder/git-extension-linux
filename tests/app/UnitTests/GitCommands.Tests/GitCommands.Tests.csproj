@@ -8,7 +8,9 @@
 
   <ItemGroup>
     <ProjectReference Include="..\..\..\..\src\app\GitCommands\GitCommands.csproj" />
+    <ProjectReference Include="..\..\..\..\src\app\GitCommands.WinForms\GitCommands.WinForms.csproj" />
     <ProjectReference Include="..\..\..\..\src\app\GitExtUtils\GitExtUtils.csproj" />
+    <ProjectReference Include="..\..\..\..\src\app\GitExtUtils.WinForms\GitExtUtils.WinForms.csproj" />
     <ProjectReference Include="..\..\..\..\src\plugins\GitUIPluginInterfaces\GitUIPluginInterfaces.csproj" />
     <ProjectReference Include="..\..\..\..\src\app\ResourceManager\ResourceManager.csproj" />
     <ProjectReference Include="..\..\..\CommonTestUtils\CommonTestUtils.csproj" />

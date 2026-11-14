@@ -27,7 +27,7 @@
     <OutDir>$(BaseOutputPath)</OutDir>
   </PropertyGroup>
 
-  <ItemGroup>
+  <ItemGroup Condition=" '$(MSBuildProjectName)' != 'GitUIPluginInterfaces' ">
     <ProjectReference Include="$(RepoRoot)\src\app\GitExtensions.Extensibility\GitExtensions.Extensibility.csproj" />
   </ItemGroup>
 

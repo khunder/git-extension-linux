@@ -33,6 +33,7 @@ public class LocalRepositoryManagerTests
         AppSettings.RecentRepositoriesHistorySize = _userSetting;
     }
 
+    [Platform("Win")]
     [Test]
     public async Task AddAsMostRecentAsync_should_add_new_path_as_top_entry()
     {
@@ -52,6 +53,7 @@ public class LocalRepositoryManagerTests
         newHistory[0].Path.Should().Be(repoToAdd);
     }
 
+    [Platform("Win")]
     [Test]
     public async Task AddAsMostRecentAsync_should_move_existing_path_as_top_entry()
     {
@@ -72,6 +74,7 @@ public class LocalRepositoryManagerTests
         newHistory[0].Path.Should().Be(repoToAdd);
     }
 
+    [Platform("Win")]
     [Test]
     public async Task AddAsMostRecentAsync_should_move_only_first_existing_path_as_top_entry()
     {
@@ -94,6 +97,7 @@ public class LocalRepositoryManagerTests
         newHistory[4].Path.Should().Be(repoToAdd);
     }
 
+    [Platform("Win")]
     [Test]
     public async Task AddAsMostRecentAsync_should_not_move_if_path_already_as_top_entry()
     {

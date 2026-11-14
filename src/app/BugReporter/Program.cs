@@ -1,4 +1,4 @@
-using System.Text;
+﻿using System.Text;
 using BugReporter.Serialization;
 using GitUI;
 using Microsoft.VisualStudio.Threading;
@@ -20,6 +20,7 @@ internal static class Program
         using (new Form())
         {
             // Store the shared JoinableTaskContext
+            TaskManager.ExceptionReporter = Application.OnThreadException;
             ThreadHelper.JoinableTaskContext = new JoinableTaskContext();
         }
 

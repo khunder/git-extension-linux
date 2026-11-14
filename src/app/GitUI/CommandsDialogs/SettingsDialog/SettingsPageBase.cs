@@ -200,6 +200,6 @@ public class StringComboBoxAdapter : ChoiceSetting
     public StringComboBoxAdapter(ISetting<string> setting, ComboBox comboBox)
         : base(setting.FullPath, [.. comboBox.Items.Cast<string>()], setting.Default)
     {
-        CustomControl = comboBox;
+        this.CustomControl = comboBox;
     }
 }

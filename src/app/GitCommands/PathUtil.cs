@@ -30,11 +30,11 @@ public static partial class PathUtil
     /// </summary>
     public static bool IsValidPathChar(char c)
     {
-        // '"', '<' and '>' have to be named explicitly since .NET Core, which removed them from
-        // Path.GetInvalidPathChars(). Windows still refuses them in a file name, so a branch using
-        // one of them could not be written as a loose ref.
-        return c is (> ' ' and < '~' and not ('^' or ':' or '"' or '<' or '>')) &&
-                Array.IndexOf(Path.GetInvalidPathChars(), c) < 0;
+        // Deliberately a fixed set rather than Path.GetInvalidPathChars(), which differs per platform:
+        // a branch must be usable on every platform. '"', '<', '>' and '|' are refused by Windows in a file
+        // name, so a branch using one of them could not be written as a loose ref there.
+        // (Control characters are excluded by the range check.)
+        return c is > ' ' and < '~' and not ('^' or ':' or '"' or '<' or '>' or '|');
     }
 
     /// <summary>Replaces native path separator with posix path separator (/).</summary>

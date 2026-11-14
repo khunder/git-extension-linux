@@ -1,9 +1,11 @@
 ﻿using System.Diagnostics;
+using System.Runtime.Versioning;
 using GitCommands.Git.Extensions;
 
 namespace GitCommandsTests.Git.Extensions;
 
 [Platform(Include = "Win")]
+[SupportedOSPlatform("windows")]
 public class ProcessExtensionsTests
 {
     [Test]

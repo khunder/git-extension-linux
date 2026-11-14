@@ -3770,7 +3770,9 @@ public sealed partial class GitModule : IGitModule
             Process[] processes = Process.GetProcessesByName("git");
 
             // A process whose command line cannot be read is considered a running git command.
+#pragma warning disable CA1416 // Guarded by OperatingSystem.IsWindows() above; the analyzer does not flow the guard into the lambda.
             bool running = processes.Any(p => !IsGitFsMonitorDaemon(p.TryGetCommandLine()));
+#pragma warning restore CA1416
             foreach (Process p in processes)
             {
                 p.Dispose();

@@ -87,7 +87,7 @@ public static class SettingControlBindingsProvider
     /// </exception>
     public static ISettingControlBinding CreateControlBinding(ISetting setting)
     {
-        if (setting.CreateControlBinding() is { } customBinding)
+        if (setting is ISettingWithControlBinding customBindingSetting && customBindingSetting.CreateControlBinding() is { } customBinding)
         {
             return customBinding;
         }
@@ -106,7 +106,7 @@ public static class SettingControlBindingsProvider
             NumberSetting<long> s => CreateControlBinding(s, s.CustomControl as TextBox),
             _ => throw new NotSupportedException($"""
                 No control binding registered for {setting.GetType().Name}.
-                Consider implementing ISetting.CreateControlBinding and provide your own control binding in your plugin.
+                Consider implementing ISettingWithControlBinding and provide your own control binding in your plugin.
                 """)
         };
     }

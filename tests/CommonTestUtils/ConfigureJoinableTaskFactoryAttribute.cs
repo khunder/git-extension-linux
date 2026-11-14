@@ -22,7 +22,13 @@ public sealed class ConfigureJoinableTaskFactoryAttribute : Attribute, ITestActi
 
     public ConfigureJoinableTaskFactoryAttribute()
     {
+#if PORTABLE_TESTS
+        TaskManager.ExceptionReporter = StoreThreadException;
+#else
+        // Capture exceptions that escape fire-and-forget operations (reported through TaskManager.ExceptionReporter) and unhandled UI-thread exceptions.
+        TaskManager.ExceptionReporter = Application.OnThreadException;
         Application.ThreadException += HandleApplicationThreadException;
+#endif
     }
 
     public void BeforeTest(ITest test)
@@ -49,7 +55,7 @@ public sealed class ConfigureJoinableTaskFactoryAttribute : Attribute, ITestActi
         Thread.CurrentThread.GetApartmentState().Should().Be(ApartmentState.STA);
 
         // This form is created to obtain a UI synchronization context only.
-        using (new Form())
+        using (CreateUiSynchronizationContextProvider())
         {
             // Store the shared JoinableTaskContext
             ThreadHelper.JoinableTaskContext = new JoinableTaskContext();
@@ -106,8 +112,17 @@ public sealed class ConfigureJoinableTaskFactoryAttribute : Attribute, ITestActi
         }
     }
 
+#if !PORTABLE_TESTS
     private void HandleApplicationThreadException(object? sender, ThreadExceptionEventArgs e)
         => StoreThreadException(e.Exception);
+#endif
+
+    private static IDisposable? CreateUiSynchronizationContextProvider()
+#if PORTABLE_TESTS
+        => null;
+#else
+        => new Form();
+#endif
 
     private void StoreThreadException(Exception ex)
     {

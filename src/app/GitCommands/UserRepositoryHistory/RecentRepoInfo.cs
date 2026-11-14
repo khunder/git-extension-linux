@@ -1,4 +1,5 @@
-﻿using Microsoft;
+﻿using System.Runtime.Versioning;
+using Microsoft;
 
 namespace GitCommands.UserRepositoryHistory;
 
@@ -51,7 +52,14 @@ public class RecentRepoSplitter
     public bool SortRecentRepos { get; set; }
     public int RecentReposComboMinWidth { get; set; }
 
+    [SupportedOSPlatform("windows6.1")]
     public Font? MeasureFont { get; set; }
+
+    /// <summary>
+    ///  Measures the rendered width of a caption. The UI host replaces this at startup
+    ///  (WinForms: <c>TextRenderer.MeasureText</c>); the default is a rough per-character estimate.
+    /// </summary>
+    public static Func<string, Font?, float> MeasureTextWidth { get; set; } = static (text, _) => text.Length * 7f;
 
     public RecentRepoSplitter()
     {
@@ -463,7 +471,9 @@ public class RecentRepoSplitter
                 {
                     canShorten = ShortenPath(skipCount);
                     skipCount++;
-                    captionSize = TextRenderer.MeasureText(repoInfo.Caption, MeasureFont);
+#pragma warning disable CA1416 // MeasureFont is only set by a UI host that registered MeasureTextWidth for its platform.
+                    captionSize = new SizeF(MeasureTextWidth(repoInfo.Caption ?? string.Empty, MeasureFont), 0);
+#pragma warning restore CA1416
                 }
                 while (captionSize.Width > RecentReposComboMinWidth - 10 && canShorten);
             }

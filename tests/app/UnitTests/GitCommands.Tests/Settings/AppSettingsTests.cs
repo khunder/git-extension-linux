@@ -508,4 +508,33 @@ internal sealed class AppSettingsTests
     }
 
     #endregion Test Cases
+
+    [TestCase("/home/user/.config/GitExtensions/GitExtensions.settings")]
+    [TestCase(@"C:\Users\user\AppData\Roaming\GitExtensions\GitExtensions.settings")]
+    public void GetSettingsMutexName_should_be_accepted_by_the_OS(string settingsFilePath)
+    {
+        // A name the OS rejects makes saving settings fail (and was swallowed silently), so prove it can be used.
+        using Mutex mutex = new(initiallyOwned: false, AppSettings.GetSettingsMutexName(settingsFilePath));
+
+        mutex.WaitOne(0).Should().BeTrue();
+        mutex.ReleaseMutex();
+    }
+
+    [Test]
+    public void GetSettingsMutexName_should_differ_per_settings_file()
+    {
+        AppSettings.GetSettingsMutexName("/home/a/GitExtensions.settings")
+            .Should().NotBe(AppSettings.GetSettingsMutexName("/home/b/GitExtensions.settings"));
+    }
+
+    [Platform(Exclude = "Win")]
+    [Test]
+    public void GetSettingsMutexName_should_not_contain_path_separators_outside_Windows()
+    {
+        // Named mutexes live in the file system outside Windows, which rejects names containing path separators.
+        string name = AppSettings.GetSettingsMutexName("/home/user/.config/GitExtensions/GitExtensions.settings");
+
+        name.Should().StartWith(@"Global\");
+        name[@"Global\".Length..].Should().NotContainAny("/", @"\");
+    }
 }

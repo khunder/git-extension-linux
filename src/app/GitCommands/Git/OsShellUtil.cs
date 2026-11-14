@@ -16,6 +16,12 @@ public static class OsShellUtil
     /// <param name="filePath">Pathname of the file to open.</param>
     public static void Open(string filePath)
     {
+        if (!OperatingSystem.IsWindows())
+        {
+            OpenWithDesktopHandler(filePath);
+            return;
+        }
+
         try
         {
             _ = CreateExecutable(filePath).Start(useShellExecute: true, throwOnErrorExit: false);
@@ -32,6 +38,13 @@ public static class OsShellUtil
     /// <param name="filePath">Pathname of the file to open.</param>
     public static void OpenAs(string filePath)
     {
+        if (!OperatingSystem.IsWindows())
+        {
+            // There is no generic "choose an application" dialog outside Windows; use the default handler.
+            OpenWithDesktopHandler(filePath);
+            return;
+        }
+
         // filePath must not be quoted
         _ = CreateExecutable("rundll32.exe").Start("shell32.dll,OpenAs_RunDLL " + filePath, redirectOutput: true, outputEncoding: System.Text.Encoding.UTF8);
     }
@@ -41,7 +54,16 @@ public static class OsShellUtil
     /// </summary>
     /// <param name="filePath">The full path of the file to select.</param>
     public static void SelectPathInFileExplorer(string filePath)
-        => OpenWithFileExplorer($"/select, {filePath.Quote()}", quote: false);
+    {
+        if (!OperatingSystem.IsWindows())
+        {
+            // File managers have no portable "reveal this file" command; open the containing folder instead.
+            OpenWithDesktopHandler(Path.GetDirectoryName(filePath) ?? filePath);
+            return;
+        }
+
+        OpenWithFileExplorer($"/select, {filePath.Quote()}", quote: false);
+    }
 
     /// <summary>
     ///  Opens Windows File Explorer with the specified arguments.
@@ -50,6 +72,13 @@ public static class OsShellUtil
     /// <param name="quote">Whether to quote the <paramref name="arguments"/>.</param>
     public static void OpenWithFileExplorer(string arguments, bool quote = true)
     {
+        if (!OperatingSystem.IsWindows())
+        {
+            // Outside Windows the argument is the folder to show.
+            OpenWithDesktopHandler(arguments);
+            return;
+        }
+
         _ = CreateExecutable("explorer.exe").Start(quote ? arguments.Quote() : arguments);
     }
 
@@ -59,34 +88,28 @@ public static class OsShellUtil
     /// <param name="url">The URL to open, or <see langword="null"/> to do nothing.</param>
     public static void OpenUrlInDefaultBrowser(string? url)
     {
-        if (!string.IsNullOrWhiteSpace(url))
+        if (string.IsNullOrWhiteSpace(url))
         {
-            _ = CreateExecutable(url).Start(useShellExecute: true, throwOnErrorExit: false);
+            return;
         }
+
+        if (!OperatingSystem.IsWindows())
+        {
+            OpenWithDesktopHandler(url);
+            return;
+        }
+
+        _ = CreateExecutable(url).Start(useShellExecute: true, throwOnErrorExit: false);
     }
 
     /// <summary>
-    ///  Prompts the user to select a directory.
+    ///  Opens a file, folder or URL with the desktop environment's default handler
+    ///  (<c>xdg-open</c> on Linux and BSD, <c>open</c> on macOS).
     /// </summary>
-    /// <param name="ownerWindow">The owner window.</param>
-    /// <param name="selectedPath">The initially selected path.</param>
-    /// <returns>The path selected by the user, or <see langword="null"/> if the user cancels the dialog.</returns>
-    public static string? PickFolder(IWin32Window ownerWindow, string? selectedPath = null)
+    private static void OpenWithDesktopHandler(string target)
     {
-        using FolderBrowserDialog dialog = new();
-        if (selectedPath is not null)
-        {
-            dialog.SelectedPath = selectedPath;
-        }
-
-        DialogResult result = dialog.ShowDialog(ownerWindow);
-        if (result == DialogResult.OK)
-        {
-            return dialog.SelectedPath;
-        }
-
-        // return null if the user cancelled
-        return null;
+        string opener = OperatingSystem.IsMacOS() ? "open" : "xdg-open";
+        _ = CreateExecutable(opener).Start(target.Quote(), throwOnErrorExit: false);
     }
 
     internal struct TestAccessor

@@ -95,6 +95,7 @@ public class PathUtilTest
         }
     }
 
+    [Platform("Win")]
     [Test]
     public void ToWslPathTest()
     {
@@ -104,6 +105,7 @@ public class PathUtilTest
         "/var/tmp/".Should().Be(@"/var/tmp/".ToWslPath());
     }
 
+    [Platform("Win")]
     [Test]
     public void ToCygwinPathTest()
     {
@@ -113,6 +115,7 @@ public class PathUtilTest
         "/var/tmp/".Should().Be(@"/var/tmp/".ToCygwinPath());
     }
 
+    [Platform("Win")]
     [Test]
     public void ToMountPathTest()
     {
@@ -358,6 +361,7 @@ public class PathUtilTest
         PathUtil.GetWslDistro(path).Should().Be(expected);
     }
 
+    [Platform("Win")]
     [TestCase(@"\\wsl$\Ubuntu\work\..\GitExtensions\", "", @"//wsl$/Ubuntu/work/../GitExtensions/")]
     [TestCase(@"C:\work\..\GitExtensions\", "", @"C:/work/../GitExtensions/")]
     [TestCase(@"work\..\GitExtensions\", "", @"work/../GitExtensions/")]
@@ -367,6 +371,7 @@ public class PathUtilTest
         PathUtil.GetWindowsPath(expected, wslDistro).Should().Be(path);
     }
 
+    [Platform("Win")]
     [TestCase(@"\\Wsl$\Ubuntu\work\..\GitExtensions\", "Ubuntu", @"/work/../GitExtensions/")]
     [TestCase(@"\\wsl$\Ubuntu\work/../GitExtensions", "Ubuntu", @"/work/../GitExtensions")]
     [TestCase(@"\\wsl$\Ubuntu-20.04\work\..\GitExtensions\", "Ubuntu-20.04", @"/work/../GitExtensions/")]
@@ -377,6 +382,7 @@ public class PathUtilTest
         PathUtil.GetPathForGitExecution(path, wslDistro).Should().Be(expected);
     }
 
+    [Platform("Win")]
     [TestCase(@"\\wsl$/Ubuntu/work/../GitExtensions", "Ubuntu", @"//wsl$/Ubuntu/work/../GitExtensions")]
     [TestCase(@"\\wsl$\Ubuntu-20.04\work\..\GitExtensions\", "Ubuntu", @"//wsl$/Ubuntu-20.04/work/../GitExtensions/")]
     public void GetPathForGitExecution_unexpected_usage(string? path, string wslDistro, string expected)
@@ -385,6 +391,7 @@ public class PathUtilTest
     }
 
     // Mostly opposite to GetRepoPath_wsl
+    [Platform("Win")]
     [TestCase(@"\\wsl$\Ubuntu\work\..\GitExtensions\", "Ubuntu", @"/work/../GitExtensions/")]
     [TestCase(@"\\wsl$\Ubuntu\work\..\GitExtensions", "Ubuntu", @"/work/../GitExtensions")]
     [TestCase(@"\\wsl$\Ubuntu-20.04\work\..\GitExtensions\", "Ubuntu-20.04", @"/work/../GitExtensions/")]
@@ -423,6 +430,7 @@ public class PathUtilTest
         }
     }
 
+    [Platform("Win")]
     [Test]
     public void GetDisplayPath()
     {
@@ -432,6 +440,7 @@ public class PathUtilTest
         PathUtil.GetDisplayPath("c:\\SomePath").Should().Be("c:\\SomePath");
     }
 
+    [Platform("Win")]
     [TestCase("/foo/bar", new[] { "\\foo\\", "\\" })]
     [TestCase("/foo/bar/", new[] { "\\foo\\", "\\" })]
     [TestCase("/foo", new[] { "\\" })]

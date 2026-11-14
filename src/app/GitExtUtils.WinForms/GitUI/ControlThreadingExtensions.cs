@@ -68,6 +68,14 @@ public static class ControlThreadingExtensions
     }
 #pragma warning restore VSTHRD004 // Await SwitchToMainThreadAsync
 
+    /// <summary>
+    /// A token that is cancelled when <paramref name="control"/> is disposed (already cancelled if it is disposed now).
+    /// </summary>
+    internal static CancellationToken GetDisposedCancellationToken(this Control control)
+        => control.IsDisposed
+            ? _preCancelledToken
+            : ControlIsDisposedCancellationFactory.Instance.GetOrCreateCancellationToken(control);
+
     public readonly struct ControlMainThreadAwaitable
     {
         private readonly JoinableTaskFactory.MainThreadAwaitable _awaitable;

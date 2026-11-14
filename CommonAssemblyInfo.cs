@@ -1,7 +1,8 @@
 ﻿using System.Reflection;
 using System.Runtime.InteropServices;
 
-#if NET6_0_OR_GREATER
+// Only assemblies that target Windows (net*-windows) are Windows-only; the portable core is not.
+#if WINDOWS7_0_OR_GREATER
 [assembly: System.Runtime.Versioning.SupportedOSPlatform("windows7.0")]
 #endif
 

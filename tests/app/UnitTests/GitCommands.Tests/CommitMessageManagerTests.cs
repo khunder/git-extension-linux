@@ -3,6 +3,8 @@ using System.IO.Abstractions;
 using System.Text;
 using CommonTestUtils;
 using GitCommands;
+using GitExtensions.Extensibility;
+using GitUI;
 using NSubstitute;
 
 namespace GitCommandsTests;
@@ -30,7 +32,7 @@ public class CommitMessageManagerTests
     private CommitMessageManager _manager = null!;
 
     // We don't expect any failures so that we won't be switching to the main thread or showing messages
-    private readonly Control _owner = ReferenceRepository.DummyOwner;
+    private readonly IUiOwner _owner = ReferenceRepository.DummyOwner.AsUiOwner();
 
     public CommitMessageManagerTests()
     {

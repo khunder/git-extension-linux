@@ -1,0 +1,13 @@
+<Project>
+  <!-- GitCommands.Tests sources that need WinForms and are therefore not part of the portable test run. -->
+  <ItemGroup>
+    <!-- IGitUICommands / IWin32Window (GitCommands.WinForms) -->
+    <ExcludedTests Include="..\GitCommands.Tests\Git\Tag\GitTagControllerTest.cs" />
+    <!-- ResourceManager project (WinForms) -->
+    <ExcludedTests Include="..\GitCommands.Tests\Git\Commands\GitCommandHelpersTest.cs" />
+    <!-- Icon extraction is Windows-only (GitCommands.WinForms) -->
+    <ExcludedTests Include="..\GitCommands.Tests\FileAssociatedIconProviderTests.cs" />
+    <!-- Uses a WinForms Control as owner -->
+    <ExcludedTests Include="..\GitCommands.Tests\CommitMessageManagerTests.cs" />
+  </ItemGroup>
+</Project>

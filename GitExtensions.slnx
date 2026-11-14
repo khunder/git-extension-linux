@@ -71,7 +71,9 @@
   <Folder Name="/src/app/">
     <Project Path="src/app/BugReporter/BugReporter.csproj" />
     <Project Path="src/app/GitCommands/GitCommands.csproj" />
+    <Project Path="src/app/GitCommands.WinForms/GitCommands.WinForms.csproj" />
     <Project Path="src/app/GitExtensions.Extensibility/GitExtensions.Extensibility.csproj" />
+    <Project Path="src/app/GitExtensions.Extensibility.Core/GitExtensions.Extensibility.Core.csproj" />
     <Project Path="src/app/GitExtensions/GitExtensions.csproj">
       <BuildDependency Project="externals/conemu-inside/ConEmuWinForms/ConEmuWinForms.csproj" />
       <BuildDependency Project="externals/Git.hub/Git.hub/Git.hub.csproj" />
@@ -96,6 +98,7 @@
       <BuildDependency Project="src/plugins/Statistics/GitStatistics/GitExtensions.Plugins.GitStatistics.csproj" />
     </Project>
     <Project Path="src/app/GitExtUtils/GitExtUtils.csproj" />
+    <Project Path="src/app/GitExtUtils.WinForms/GitExtUtils.WinForms.csproj" />
     <Project Path="src/app/GitUI/GitUI.csproj" />
     <Project Path="src/app/ResourceManager/ResourceManager.csproj" />
   </Folder>
@@ -130,6 +133,7 @@
   <Folder Name="/tests/">
     <File Path="tests/Directory.Build.props" />
     <Project Path="tests/CommonTestUtils/CommonTestUtils.csproj" />
+    <Project Path="tests/CommonTestUtils.Portable/CommonTestUtils.Portable.csproj" />
   </Folder>
   <Folder Name="/tests/app/" />
   <Folder Name="/tests/app/IntegrationTests/">
@@ -141,6 +145,7 @@
     <File Path="tests/app/UnitTests/Directory.Build.props" />
     <Project Path="tests/app/UnitTests/BugReporter.Tests/BugReporter.Tests.csproj" />
     <Project Path="tests/app/UnitTests/GitCommands.Tests/GitCommands.Tests.csproj" />
+    <Project Path="tests/app/UnitTests/GitCommands.Portable.Tests/GitCommands.Portable.Tests.csproj" />
     <Project Path="tests/app/UnitTests/GitExtensions.Extensibility.Tests/GitExtensions.Extensibility.Tests.csproj" />
     <Project Path="tests/app/UnitTests/GitExtUtils.Tests/GitExtUtils.Tests.csproj" />
     <Project Path="tests/app/UnitTests/GitUI.Tests/GitUI.Tests.csproj" />

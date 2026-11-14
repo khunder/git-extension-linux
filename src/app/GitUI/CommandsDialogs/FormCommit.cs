@@ -224,7 +224,7 @@ public sealed partial class FormCommit : GitModuleForm
 
         splitRight.Panel2MinSize = DpiUtil.Scale(100);
 
-        _commitMessageManager = new CommitMessageManager(this, Module.WorkingDirGitDir, Module.CommitEncoding, commitMessage);
+        _commitMessageManager = new CommitMessageManager(this.AsUiOwner(), Module.WorkingDirGitDir, Module.CommitEncoding, commitMessage);
 
         Message.TextChanged += Message_TextChanged;
         Message.TextAssigned += Message_TextAssigned;
