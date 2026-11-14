@@ -32,7 +32,7 @@
     </Style>
   </UserControl.Styles>
 
-  <Menu x:Name="MainMenu">
+  <Menu x:Name="MainMenu" Background="{DynamicResource MenuBarBackground}">
     <!-- Start -->
     <MenuItem x:Name="StartMenu" Header="_Start">
       <MenuItem x:Name="OpenMenuItem" Header="_Open…" InputGesture="Ctrl+O" Command="{Binding BrowseCommand}" >

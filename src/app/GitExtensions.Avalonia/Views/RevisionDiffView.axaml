@@ -18,8 +18,15 @@
     </Style>
   </UserControl.Styles>
 
-  <Grid ColumnDefinitions="260,4,*">
-    <DockPanel Grid.Column="0">
+  <Grid ColumnDefinitions="260,4,*" RowDefinitions="Auto,*">
+    <Border x:Name="RevertConfirmation" Grid.ColumnSpan="3" Padding="8,6" IsVisible="{Binding IsConfirmingRevert}" Background="{DynamicResource ErrorBannerBackground}">
+      <Grid ColumnDefinitions="*,Auto,Auto">
+        <TextBlock x:Name="RevertConfirmationMessage" Text="{Binding RevertConfirmationText}" Foreground="{DynamicResource ErrorBannerForeground}" VerticalAlignment="Center" TextWrapping="Wrap" />
+        <Button x:Name="ConfirmRevertButton" Grid.Column="1" Content="Revert" Command="{Binding ConfirmRevertCommand}" Margin="8,0,6,0" />
+        <Button x:Name="CancelRevertButton" Grid.Column="2" Content="Cancel" Command="{Binding CancelRevertCommand}" />
+      </Grid>
+    </Border>
+    <DockPanel Grid.Row="1" Grid.Column="0">
       <TextBox x:Name="FilterBox" DockPanel.Dock="Top" Margin="4" MinHeight="24" Padding="6,2" FontSize="12" Watermark="Filter files…" Text="{Binding FilterText}" />
       <ListBox x:Name="FileList" ItemsSource="{Binding Files}" SelectedItem="{Binding SelectedFile}" Padding="0">
         <ListBox.ItemTemplate>
@@ -27,6 +34,9 @@
             <Grid ColumnDefinitions="16,*,Auto" ColumnSpacing="6" Background="Transparent">
               <Grid.ContextMenu>
                 <ContextMenu>
+                  <MenuItem Header="Stage" InputGesture="S" Command="{Binding $parent[UserControl].((vm:RevisionDiffViewModel)DataContext).StageSelectedFileCommand}" />
+                  <MenuItem Header="Revert changes…" InputGesture="R" Command="{Binding $parent[UserControl].((vm:RevisionDiffViewModel)DataContext).RevertSelectedFileCommand}" />
+                  <Separator />
                   <MenuItem Header="File history" Click="OnFileHistoryClick" />
                   <MenuItem Header="Blame" Click="OnBlameClick" />
                   <Separator />
@@ -45,9 +55,9 @@
       </ListBox>
     </DockPanel>
 
-    <GridSplitter Grid.Column="1" Width="4" Background="Transparent" />
+    <GridSplitter Grid.Row="1" Grid.Column="1" Width="4" Background="Transparent" />
 
-    <DockPanel Grid.Column="2">
+    <DockPanel Grid.Row="1" Grid.Column="2">
       <Border x:Name="NoticeBanner" DockPanel.Dock="Top" Padding="8,3" Background="{DynamicResource DiffHunkBackground}"
               IsVisible="{Binding Notice, Converter={x:Static StringConverters.IsNotNullOrEmpty}}">
         <TextBlock Text="{Binding Notice}" FontSize="12" TextWrapping="Wrap" />

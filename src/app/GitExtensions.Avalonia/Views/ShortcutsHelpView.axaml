@@ -5,11 +5,11 @@
              x:DataType="vm:ShortcutsHelpViewModel"
              Focusable="True"
              IsVisible="{Binding IsOpen}">
-  <Panel x:Name="Scrim" Background="#80000000">
+  <Panel x:Name="Scrim" Background="{DynamicResource ScrimBrush}">
     <Border x:Name="Card" MaxWidth="620" MinWidth="280" Margin="16" Padding="16"
             VerticalAlignment="Center" HorizontalAlignment="Center"
             CornerRadius="8" BorderThickness="1"
-            Background="{DynamicResource SystemControlBackgroundAltHighBrush}"
+            Background="{DynamicResource DialogBackground}"
             BorderBrush="{DynamicResource SubtleBorderBrush}"
             KeyboardNavigation.TabNavigation="Cycle"
             AutomationProperties.Name="Keyboard shortcuts">

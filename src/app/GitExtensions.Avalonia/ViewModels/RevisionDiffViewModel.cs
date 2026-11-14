@@ -83,6 +83,7 @@ public sealed partial class RevisionDiffViewModel : ObservableObject
     public Task ShowWorkingTreeAsync(GitModule module)
     {
         // The existing working tree diff (untracked files, staged versus unstaged, size guards) does the rendering.
+        _workingModule = module;
         FileDiffViewModel workingDiff = new(module, () => Task.CompletedTask);
         return ShowAsync(
             null,
@@ -109,6 +110,8 @@ public sealed partial class RevisionDiffViewModel : ObservableObject
         CancelAll();
         _diffLoader = null;
         Revision = null;
+        _workingModule = null;
+        CancelRevert();
         _allFiles.Clear();
         Files.Clear();
         Lines.Clear();

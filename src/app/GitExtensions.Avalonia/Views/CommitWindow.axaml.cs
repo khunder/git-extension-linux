@@ -85,42 +85,48 @@ public sealed partial class CommitWindow : Window
             viewModel.RefreshCommand.Execute(null);
             e.Handled = true;
         }
-        else if (e.KeyModifiers == KeyModifiers.None && (e.Key is Key.S or Key.U or Key.R) && FocusedList() is { } list)
+        else if (e.KeyModifiers == KeyModifiers.None && e.Key is Key.S or Key.U or Key.R)
         {
-            // Like the original: S stages, U unstages and R resets the selected files of the focused pane.
-            if (e.Key == Key.S && list == UnstagedList)
-            {
-                viewModel.StageSelectedCommand.Execute(null);
-            }
-            else if (e.Key == Key.U && list == StagedList)
-            {
-                viewModel.UnstageSelectedCommand.Execute(null);
-            }
-            else if (e.Key == Key.R && list == UnstagedList)
-            {
-                viewModel.BeginReset(viewModel.UnstagedSelection);
-            }
-            else
-            {
-                return;
-            }
-
-            e.Handled = true;
+            e.Handled = RunFileShortcut(viewModel, e.Key);
         }
     }
 
-    // The file list that has the keyboard focus (none while a text box or other control has it).
-    private ListBox? FocusedList()
+    // S stages, U unstages and R resets the selected file(s), whichever control has the focus. Not while typing, and not when
+    // the diff view has the focus with selected lines: its own handler then stages, unstages or resets those lines.
+    private bool RunFileShortcut(CommitWindowViewModel viewModel, Key key)
     {
-        if (FocusManager?.GetFocusedElement() is not Avalonia.Visual focused)
+        IInputElement? focused = FocusManager?.GetFocusedElement();
+        if (focused is TextBox || IsWithin(focused, ConflictPanel) || (viewModel.Diff.HasSelection && IsWithin(focused, DiffPanel)))
         {
-            return null;
+            return false;
         }
 
-        return focused == UnstagedList || focused.GetVisualAncestors().Contains(UnstagedList) ? UnstagedList
-            : focused == StagedList || focused.GetVisualAncestors().Contains(StagedList) ? StagedList
-            : null;
+        // The side of the file that is selected: the staged list when it has the focus or holds the selected file.
+        bool staged = IsWithin(focused, StagedList) || (!IsWithin(focused, UnstagedList) && viewModel.SelectedStaged is not null && viewModel.SelectedUnstaged is null);
+        IReadOnlyList<ChangedFileViewModel> files = staged ? viewModel.StagedSelection : viewModel.UnstagedSelection;
+        if (files.Count == 0)
+        {
+            return false;
+        }
+
+        switch (key)
+        {
+            case Key.S when !staged:
+                viewModel.StageSelectedCommand.Execute(null);
+                return true;
+            case Key.U when staged:
+                viewModel.UnstageSelectedCommand.Execute(null);
+                return true;
+            case Key.R:
+                viewModel.BeginReset(files);
+                return true;
+            default:
+                return false;
+        }
     }
+
+    private static bool IsWithin(IInputElement? focused, Control container)
+        => focused is Avalonia.Visual visual && (visual == container || visual.GetVisualAncestors().Contains(container));
 
     private void OnUnstagedSelectionChanged(object? sender, SelectionChangedEventArgs e)
     {

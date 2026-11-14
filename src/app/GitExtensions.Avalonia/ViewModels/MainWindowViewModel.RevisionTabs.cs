@@ -21,6 +21,7 @@ public sealed partial class MainWindowViewModel
     {
         RevisionTabsViewModel tabs = new((path, blame, revision) => FileHistory.OpenAsync(path, blame, revision), options: ViewOptions);
         _revisionTabs = tabs;
+        tabs.Diff.WorkingTreeChanged = RefreshChangesAsync;
         PropertyChanged += (_, e) =>
         {
             if (e.PropertyName is nameof(SelectedCommit) or nameof(IsWorkingTreeSelected))

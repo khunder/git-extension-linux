@@ -6,10 +6,10 @@
              x:DataType="vm:ToolDialogsViewModel"
              IsVisible="{Binding IsOpen}">
   <!-- Scrim over the content area; the card shows the current dialog (go to commit, bisect, recover lost objects). -->
-  <Panel x:Name="Scrim" Background="#80000000">
+  <Panel x:Name="Scrim" Background="{DynamicResource ScrimBrush}">
     <Border x:Name="Card" MaxWidth="900" Margin="24" Padding="16" VerticalAlignment="Center" HorizontalAlignment="Center"
             CornerRadius="8" BorderThickness="1"
-            Background="{DynamicResource SystemControlBackgroundAltHighBrush}"
+            Background="{DynamicResource DialogBackground}"
             BorderBrush="{DynamicResource SubtleBorderBrush}"
             KeyboardNavigation.TabNavigation="Cycle">
       <ContentControl x:Name="Host" Content="{Binding Current}">

@@ -10,10 +10,10 @@
     <Style Selector="Border.removed"><Setter Property="Background" Value="{DynamicResource DiffRemovedBackground}" /></Style>
     <Style Selector="Border.hunk"><Setter Property="Background" Value="{DynamicResource DiffHunkBackground}" /></Style>
   </UserControl.Styles>
-  <Panel Background="#80000000">
+  <Panel Background="{DynamicResource ScrimBrush}">
     <Border x:Name="Card" MaxWidth="1000" Margin="24" Padding="16" HorizontalAlignment="Stretch" VerticalAlignment="Stretch"
             CornerRadius="8" BorderThickness="1"
-            Background="{DynamicResource SystemControlBackgroundAltHighBrush}"
+            Background="{DynamicResource DialogBackground}"
             BorderBrush="{DynamicResource SubtleBorderBrush}">
       <DockPanel>
         <TextBlock DockPanel.Dock="Top" Text="View patch file" FontSize="18" FontWeight="SemiBold" Margin="0,0,0,8" />

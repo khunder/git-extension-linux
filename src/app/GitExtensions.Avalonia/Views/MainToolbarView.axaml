@@ -54,7 +54,7 @@
     </Style>
   </UserControl.Styles>
 
-  <Border Padding="4,2" BorderThickness="0,0,0,1" BorderBrush="{DynamicResource SubtleBorderBrush}">
+  <Border Padding="4,2" BorderThickness="0,0,0,1" Background="{DynamicResource ToolbarBackground}" BorderBrush="{DynamicResource SubtleBorderBrush}">
     <!-- One left-aligned strip in the original order (FormBrowse ToolStripMain): refresh | left panel, split layout, commit info |
          submodules/level up, worktrees, working directory, branch | pull, push, commit, stash | file explorer, shell, settings. -->
     <views:ToolStripPanel x:Name="ToolStrip" Spacing="1">

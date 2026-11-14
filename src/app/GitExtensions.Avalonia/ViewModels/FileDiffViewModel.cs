@@ -84,6 +84,7 @@ public sealed partial class FileDiffViewModel : ObservableObject
         _rawLines = null;
         _canSelectLines = false;
         _selectionAnchor = null;
+        _selectionCursor = null;
         CancelDiscard();
         UpdateSelectionState();
 
@@ -226,6 +227,7 @@ public sealed partial class FileDiffViewModel : ObservableObject
             _selectionAnchor = line;
         }
 
+        _selectionCursor = line;
         UpdateSelectionState();
     }
 
@@ -233,6 +235,7 @@ public sealed partial class FileDiffViewModel : ObservableObject
     {
         ClearSelectionCore();
         _selectionAnchor = null;
+        _selectionCursor = null;
         UpdateSelectionState();
     }
 

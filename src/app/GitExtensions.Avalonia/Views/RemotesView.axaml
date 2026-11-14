@@ -3,10 +3,10 @@
              xmlns:vm="using:GitExtensions.Desktop.ViewModels"
              x:Class="GitExtensions.Desktop.Views.RemotesView"
              x:DataType="vm:RemotesViewModel">
-  <Panel Background="#80000000">
+  <Panel Background="{DynamicResource ScrimBrush}">
     <Border x:Name="Card" MaxWidth="820" MaxHeight="560" Margin="24" Padding="20" VerticalAlignment="Center" HorizontalAlignment="Stretch"
             CornerRadius="8" BorderThickness="1"
-            Background="{DynamicResource SystemControlBackgroundAltHighBrush}"
+            Background="{DynamicResource DialogBackground}"
             BorderBrush="{DynamicResource SubtleBorderBrush}">
       <DockPanel>
         <TextBlock DockPanel.Dock="Top" Text="Remote repositories" FontSize="18" FontWeight="SemiBold" Margin="0,0,0,10" />

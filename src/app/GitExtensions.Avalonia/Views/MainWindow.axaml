@@ -44,7 +44,7 @@
     </Border>
 
     <!-- Status bar -->
-    <Border DockPanel.Dock="Bottom" Padding="8,4" BorderThickness="0,1,0,0" BorderBrush="{DynamicResource SystemControlForegroundBaseLowBrush}">
+    <Border DockPanel.Dock="Bottom" Padding="8,4" BorderThickness="0,1,0,0" Background="{DynamicResource StatusBarBackground}" BorderBrush="{DynamicResource SystemControlForegroundBaseLowBrush}">
       <Grid ColumnDefinitions="*,Auto,Auto" ColumnSpacing="12">
         <TextBlock x:Name="StatusText" Text="{Binding Status}" VerticalAlignment="Center" TextTrimming="CharacterEllipsis" />
         <TextBlock x:Name="BranchTrackText" Grid.Column="1" Text="{Binding Refs.CurrentTrackText}" IsVisible="{Binding Refs.HasCurrentTrack}" VerticalAlignment="Center" ToolTip.Tip="{Binding Refs.CurrentTrackToolTip}" />

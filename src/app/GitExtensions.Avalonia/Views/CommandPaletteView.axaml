@@ -5,11 +5,11 @@
              x:DataType="vm:CommandPaletteViewModel"
              IsVisible="{Binding IsOpen}">
   <!-- Scrim over the whole content area; clicking it closes the palette. The card hangs from the top, like a quick-open box. -->
-  <Panel x:Name="Scrim" Background="#80000000">
+  <Panel x:Name="Scrim" Background="{DynamicResource ScrimBrush}">
     <Border x:Name="Card" MaxWidth="560" MinWidth="280" Margin="16,48,16,16" Padding="8"
             VerticalAlignment="Top" HorizontalAlignment="Center"
             CornerRadius="8" BorderThickness="1"
-            Background="{DynamicResource SystemControlBackgroundAltHighBrush}"
+            Background="{DynamicResource DialogBackground}"
             BorderBrush="{DynamicResource SubtleBorderBrush}"
             KeyboardNavigation.TabNavigation="Cycle"
             AutomationProperties.Name="Command palette"

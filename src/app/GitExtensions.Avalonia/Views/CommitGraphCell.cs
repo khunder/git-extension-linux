@@ -2,6 +2,7 @@
 using Avalonia.Controls;
 using Avalonia.Media;
 using Avalonia.Media.Immutable;
+using Avalonia.Styling;
 using GitExtensions.Desktop.History;
 
 namespace GitExtensions.Desktop.Views;
@@ -47,8 +48,26 @@ public sealed class CommitGraphCell : Control
         Color.FromRgb(0xC2, 0x4D, 0x8F),
     ];
 
+    // Lighter variants of the same hues so the lanes stay distinguishable on the dark surfaces.
+    private static readonly Color[] DarkPalette =
+    [
+        Color.FromRgb(0x6A, 0xA9, 0xFF),
+        Color.FromRgb(0xC1, 0x83, 0xEE),
+        Color.FromRgb(0xFF, 0x6B, 0x6B),
+        Color.FromRgb(0xAA, 0xB0, 0xB8),
+        Color.FromRgb(0x3F, 0xC4, 0x8A),
+        Color.FromRgb(0xF2, 0xA0, 0x4A),
+        Color.FromRgb(0x2C, 0xC4, 0xD8),
+        Color.FromRgb(0xE0, 0x72, 0xB0),
+    ];
+
+    private static readonly IBrush[] DarkBrushes = DarkPalette.Select(c => (IBrush)new ImmutableSolidColorBrush(c)).ToArray();
+    private static readonly IPen[] DarkPens = DarkPalette.Select(c => (IPen)new ImmutablePen(new ImmutableSolidColorBrush(c), LineThickness, lineCap: PenLineCap.Round)).ToArray();
+
     private static readonly IBrush[] Brushes = Palette.Select(c => (IBrush)new ImmutableSolidColorBrush(c)).ToArray();
     private static readonly IPen[] Pens = Palette.Select(c => (IPen)new ImmutablePen(new ImmutableSolidColorBrush(c), LineThickness, lineCap: PenLineCap.Round)).ToArray();
+
+    public CommitGraphCell() => ActualThemeVariantChanged += (_, _) => InvalidateVisual();
 
     static CommitGraphCell()
     {
@@ -98,9 +117,12 @@ public sealed class CommitGraphCell : Control
         double middle = height / 2;
         double nodeX = X(row.Lane);
 
+        bool dark = ActualThemeVariant == ThemeVariant.Dark;
+        IPen[] pens = dark ? DarkPens : Pens;
+        IBrush[] brushes = dark ? DarkBrushes : Brushes;
         foreach (GraphSegment segment in row.Segments)
         {
-            IPen pen = Pens[segment.Color % Pens.Length];
+            IPen pen = pens[segment.Color % Pens.Length];
             double x = X(segment.Lane);
             switch (segment.Kind)
             {
@@ -116,7 +138,7 @@ public sealed class CommitGraphCell : Control
             }
         }
 
-        IBrush fill = Brushes[row.Color % Brushes.Length];
+        IBrush fill = brushes[row.Color % Brushes.Length];
         Point center = new(nodeX, middle);
         if (IsMerge)
         {
@@ -129,7 +151,7 @@ public sealed class CommitGraphCell : Control
 
         if (IsHead)
         {
-            context.DrawEllipse(null, Pens[row.Color % Pens.Length], center, NodeRadius + 2.5, NodeRadius + 2.5);
+            context.DrawEllipse(null, pens[row.Color % Pens.Length], center, NodeRadius + 2.5, NodeRadius + 2.5);
         }
     }
 

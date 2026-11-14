@@ -43,7 +43,7 @@
           <SolidColorBrush x:Key="RefTagForeground" Color="#F2DB86" />
           <SolidColorBrush x:Key="RefOverflowBackground" Color="#3A3A3A" />
           <SolidColorBrush x:Key="RefOverflowForeground" Color="#DDDDDD" />
-          <SolidColorBrush x:Key="GridHeaderBackground" Color="#2B2B2B" />
+          <SolidColorBrush x:Key="GridHeaderBackground" Color="#2D2D30" />
           <SolidColorBrush x:Key="RowMineBackground" Color="#33B8A02A" />
           <SolidColorBrush x:Key="RowMergeBackground" Color="#18FFFFFF" />
           <SolidColorBrush x:Key="RowAlternateBackground" Color="#0CFFFFFF" />

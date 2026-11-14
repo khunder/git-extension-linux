@@ -14,7 +14,7 @@
       <Setter Property="FontWeight" Value="Bold" />
       <Setter Property="HorizontalAlignment" Value="Center" />
       <Setter Property="VerticalAlignment" Value="Center" />
-      <Setter Property="Foreground" Value="{DynamicResource SystemAccentColor}" />
+      <Setter Property="Foreground" Value="{DynamicResource AccentTextForeground}" />
     </Style>
     <Style Selector="TextBlock.glyph.added"><Setter Property="Foreground" Value="{DynamicResource SuccessTextForeground}" /></Style>
     <Style Selector="TextBlock.glyph.deleted"><Setter Property="Foreground" Value="{DynamicResource ErrorTextForeground}" /></Style>
@@ -105,7 +105,7 @@
             <Grid ColumnDefinitions="*,Auto">
               <TextBlock x:Name="UnstagedHeader" Text="{Binding UnstagedHeader}" FontWeight="SemiBold" VerticalAlignment="Center" />
               <Button x:Name="StageSelectedButton" Grid.Column="1" Classes="tool" MinHeight="22" Padding="6,1"
-                      Command="{Binding StageSelectedCommand}" ToolTip.Tip="Stage the selected files (double-click a file)">
+                      Command="{Binding StageSelectedCommand}" ToolTip.Tip="Stage the selected files (S, or double-click a file)">
             <StackPanel Orientation="Horizontal" Spacing="4"><views:AppIcon IconName="Stage" /><AccessText Text="Stage ▾" VerticalAlignment="Center" /></StackPanel>
           </Button>
             </Grid>
@@ -146,7 +146,7 @@
             <Grid ColumnDefinitions="*,Auto">
               <TextBlock x:Name="StagedHeader" Text="{Binding StagedHeader}" FontWeight="SemiBold" VerticalAlignment="Center" />
               <Button x:Name="UnstageSelectedButton" Grid.Column="1" Classes="tool" MinHeight="22" Padding="6,1"
-                      Command="{Binding UnstageSelectedCommand}" ToolTip.Tip="Unstage the selected files (double-click a file)">
+                      Command="{Binding UnstageSelectedCommand}" ToolTip.Tip="Unstage the selected files (U, or double-click a file)">
             <StackPanel Orientation="Horizontal" Spacing="4"><views:AppIcon IconName="Unstage" /><AccessText Text="Unstage ▴" VerticalAlignment="Center" /></StackPanel>
           </Button>
             </Grid>
@@ -160,7 +160,7 @@
                     <Grid.ContextMenu>
                       <ContextMenu>
                         <MenuItem Header="Unstage" InputGesture="U" Command="{Binding $parent[Window].((vm:CommitWindowViewModel)DataContext).UnstageSelectedCommand}" />
-                        <MenuItem Header="Reset…" Command="{Binding $parent[Window].((vm:CommitWindowViewModel)DataContext).ResetSelectedCommand}" />
+                        <MenuItem Header="Reset…" InputGesture="R" Command="{Binding $parent[Window].((vm:CommitWindowViewModel)DataContext).ResetSelectedCommand}" />
                         <Separator />
                         <MenuItem Header="Open" Click="OnOpenFile" />
                         <MenuItem Header="File history" Command="{Binding $parent[Window].((vm:CommitWindowViewModel)DataContext).ShowFileHistoryCommand}" CommandParameter="{Binding}" />

@@ -64,6 +64,10 @@ public sealed partial class MainWindowViewModel
         SelectedCommit = Commits[Math.Clamp(index + delta, 0, Commits.Count - 1)];
     }
 
+    // The Diff tab, while it is the selected tab and shows the uncommitted changes (the keys S and R act on its selected file).
+    private RevisionDiffViewModel? WorkingTreeDiffTab
+        => IsWorkingTreeSelected && _revisionTabs is { SelectedTabIndex: RevisionTabsViewModel.DiffTab, Diff: { HasWorkingTreeFile: true } diff } ? diff : null;
+
     // The palette and the help never show at the same time.
     private void TogglePalette()
     {
@@ -132,6 +136,8 @@ public sealed partial class MainWindowViewModel
             // Changes
             FromCommand("index.stageAll", "Stage all changes", "Changes", () => Diff?.StageAllCommand, HasRepo, Keys(CommandGesture.Of(Key.S, CtrlShift))),
             FromCommand("index.unstageAll", "Unstage all changes", "Changes", () => Diff?.UnstageAllCommand, HasRepo, Keys(CommandGesture.Of(Key.U, CtrlShift))),
+            FromCommand("diff.stageFile", "Stage the selected file of the Diff tab (uncommitted changes)", "Changes", () => WorkingTreeDiffTab?.StageSelectedFileCommand, HasRepo, Keys(CommandGesture.Of(Key.S))),
+            FromCommand("diff.revertFile", "Revert the selected file of the Diff tab (uncommitted changes)…", "Changes", () => WorkingTreeDiffTab?.RevertSelectedFileCommand, HasRepo, Keys(CommandGesture.Of(Key.R))),
             FromCommand("commit.commit", "Commit", "Changes", () => Commit?.CommitCommand, HasRepo, Keys(CommandGesture.Of(Key.Return, Ctrl)), scope: "CommitPanel"),
             Make("commit.focusMessage", "Focus commit message", "Changes", () => UiRequested?.Invoke(UiTarget.CommitMessage), HasRepo, Keys(CommandGesture.Of(Key.M, Ctrl))),
             FromCommand("file.history", "File history of the selected file", "Changes", () => ShowFileHistoryCommand.CanExecute(SelectedChangedFile) ? new BoundCommand(ShowFileHistoryCommand, SelectedChangedFile) : null, gestures: Keys(CommandGesture.Of(Key.H, Ctrl))),

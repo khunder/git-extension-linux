@@ -39,15 +39,22 @@
         </WrapPanel>
         <WrapPanel x:Name="SelectionToolbar" Grid.Row="2" Grid.ColumnSpan="2" Orientation="Horizontal" IsVisible="{Binding HasSelection}">
           <TextBlock Text="{Binding SelectedLineCount, StringFormat='{}{0} selected'}" VerticalAlignment="Center" Opacity="0.7" Margin="0,0,8,0" />
-          <Button x:Name="StageSelectedButton" Content="Stage selected lines" Command="{Binding StageSelectedCommand}" IsVisible="{Binding CanStageSelected}" Margin="0,0,6,0" />
-          <Button x:Name="UnstageSelectedButton" Content="Unstage selected lines" Command="{Binding UnstageSelectedCommand}" IsVisible="{Binding CanUnstageSelected}" Margin="0,0,6,0" />
-          <Button x:Name="DiscardSelectedButton" Content="Discard selected lines" Command="{Binding DiscardSelectedCommand}" IsVisible="{Binding CanDiscardSelected}" Margin="0,0,6,0" />
+          <Button x:Name="StageSelectedButton" Content="Stage selected lines" ToolTip.Tip="Stage the selected lines (S)" Command="{Binding StageSelectedCommand}" IsVisible="{Binding CanStageSelected}" Margin="0,0,6,0" />
+          <Button x:Name="UnstageSelectedButton" Content="Unstage selected lines" ToolTip.Tip="Unstage the selected lines (U)" Command="{Binding UnstageSelectedCommand}" IsVisible="{Binding CanUnstageSelected}" Margin="0,0,6,0" />
+          <Button x:Name="DiscardSelectedButton" Content="Discard selected lines" ToolTip.Tip="Reset the selected lines (R)" Command="{Binding DiscardSelectedCommand}" IsVisible="{Binding CanDiscardSelected}" Margin="0,0,6,0" />
         </WrapPanel>
       </Grid>
     </Border>
 
     <Panel>
-      <ItemsControl x:Name="DiffLines" ItemsSource="{Binding Lines}">
+      <ItemsControl x:Name="DiffLines" ItemsSource="{Binding Lines}" Focusable="True" KeyDown="OnDiffKeyDown">
+        <ItemsControl.ContextMenu>
+          <ContextMenu>
+            <MenuItem x:Name="StageSelectedMenuItem" Header="Stage selected line(s)" InputGesture="S" Command="{Binding StageSelectedCommand}" IsEnabled="{Binding CanStageSelected}" />
+            <MenuItem x:Name="UnstageSelectedMenuItem" Header="Unstage selected line(s)" InputGesture="U" Command="{Binding UnstageSelectedCommand}" IsEnabled="{Binding CanUnstageSelected}" />
+            <MenuItem x:Name="DiscardSelectedMenuItem" Header="Reset selected line(s)" InputGesture="R" Command="{Binding DiscardSelectedCommand}" IsEnabled="{Binding CanDiscardSelected}" />
+          </ContextMenu>
+        </ItemsControl.ContextMenu>
         <ItemsControl.Template>
           <ControlTemplate>
             <ScrollViewer HorizontalScrollBarVisibility="Auto" VerticalScrollBarVisibility="Auto">

@@ -485,39 +485,7 @@ public sealed partial class CommitWindowViewModel : ObservableObject, IDisposabl
     }
 
     private string? ResetFiles(IReadOnlyList<ChangedFileViewModel> files)
-    {
-        bool hasHead = _module.GitExecutable.Execute(new GitArgumentBuilder("rev-parse") { "--verify", "--quiet", "HEAD" }, throwOnErrorExit: false).ExitedSuccessfully;
-        foreach (ChangedFileViewModel file in files.DistinctBy(f => f.Name))
-        {
-            string full = Path.Combine(_module.WorkingDir, file.Name);
-            GitItemStatus item = file.Item;
-            if (!item.IsTracked && item.Staged != StagedStatus.Index)
-            {
-                // Untracked: delete from disk.
-                if (File.Exists(full))
-                {
-                    File.Delete(full);
-                }
-                else if (Directory.Exists(full))
-                {
-                    Directory.Delete(full, recursive: true);
-                }
-
-                continue;
-            }
-
-            ExecutionResult result = hasHead && !(item.IsNew && item.Staged == StagedStatus.Index)
-                ? _module.GitExecutable.Execute(new GitArgumentBuilder("checkout") { "HEAD", "--", file.Name.QuoteNE() }, throwOnErrorExit: false)
-                : _module.GitExecutable.Execute(new GitArgumentBuilder("rm") { "-f", "-q", "--", file.Name.QuoteNE() }, throwOnErrorExit: false);
-            if (!result.ExitedSuccessfully)
-            {
-                string text = string.IsNullOrWhiteSpace(result.StandardError) ? result.StandardOutput : result.StandardError;
-                return text.Trim();
-            }
-        }
-
-        return null;
-    }
+        => WorkingTreeReset.ResetFiles(_module, files.Select(f => f.Item));
 
     private async Task ResetEverythingAsync()
     {
