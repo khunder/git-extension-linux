@@ -1,0 +1,22 @@
+<UserControl xmlns="https://github.com/avaloniaui"
+             xmlns:x="http://schemas.microsoft.com/winfx/2006/xaml"
+             xmlns:vm="using:GitExtensions.Desktop.ViewModels"
+             x:Class="GitExtensions.Desktop.Views.CommitActionPromptView"
+             x:DataType="vm:CommitActionsViewModel"
+             IsVisible="{Binding IsPromptVisible}">
+  <!-- Inline prompt shown above the history list: asks for a branch/tag name or confirms a hard reset. -->
+  <Panel>
+    <Border Background="{DynamicResource SystemAccentColor}" Opacity="0.15" />
+    <Grid ColumnDefinitions="*,Auto,Auto" RowDefinitions="Auto,Auto" ColumnSpacing="8" RowSpacing="6" Margin="8,6">
+      <TextBlock x:Name="PromptText" Text="{Binding PromptTitle}" VerticalAlignment="Center" TextWrapping="Wrap" />
+      <Button x:Name="PromptConfirm" Grid.Column="1" Content="{Binding ConfirmText}" Command="{Binding ConfirmPromptCommand}" />
+      <Button x:Name="PromptCancel" Grid.Column="2" Content="Cancel" Command="{Binding CancelPromptCommand}" />
+      <TextBox x:Name="PromptInput" Grid.Row="1" Grid.ColumnSpan="3" Text="{Binding InputText}" IsVisible="{Binding NeedsInput}" Watermark="Name">
+        <TextBox.KeyBindings>
+          <KeyBinding Gesture="Enter" Command="{Binding ConfirmPromptCommand}" />
+          <KeyBinding Gesture="Escape" Command="{Binding CancelPromptCommand}" />
+        </TextBox.KeyBindings>
+      </TextBox>
+    </Grid>
+  </Panel>
+</UserControl>

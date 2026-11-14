@@ -17,7 +17,7 @@
 
     <!-- Error state -->
     <TextBlock x:Name="ErrorText" Text="{Binding Error}" IsVisible="{Binding Error, Converter={x:Static ObjectConverters.IsNotNull}}"
-               Foreground="Firebrick" Margin="8" TextWrapping="Wrap" VerticalAlignment="Top" />
+               Foreground="{DynamicResource ErrorTextForeground}" Margin="8" TextWrapping="Wrap" VerticalAlignment="Top" />
 
     <!-- Details -->
     <Grid x:Name="DetailsPanel" IsVisible="{Binding HasCommit}" ColumnDefinitions="3*,Auto,2*">
@@ -48,6 +48,12 @@
           <ListBox.ItemTemplate>
             <DataTemplate x:DataType="vm:ChangedFileViewModel">
               <Grid ColumnDefinitions="22,*" ColumnSpacing="8">
+                <Grid.ContextMenu>
+                  <ContextMenu>
+                    <MenuItem Header="File history" Command="{Binding $parent[Window].((vm:MainWindowViewModel)DataContext).ShowFileHistoryCommand}" CommandParameter="{Binding}" />
+                    <MenuItem Header="Blame" Command="{Binding $parent[Window].((vm:MainWindowViewModel)DataContext).ShowFileBlameCommand}" CommandParameter="{Binding}" />
+                  </ContextMenu>
+                </Grid.ContextMenu>
                 <TextBlock Text="{Binding Status}" FontFamily="Cascadia Mono, Consolas, DejaVu Sans Mono, monospace" FontWeight="Bold" HorizontalAlignment="Center" />
                 <TextBlock Grid.Column="1" Text="{Binding Name}" TextTrimming="CharacterEllipsis" />
               </Grid>

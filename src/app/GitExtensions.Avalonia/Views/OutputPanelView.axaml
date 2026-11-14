@@ -1,0 +1,21 @@
+<UserControl xmlns="https://github.com/avaloniaui"
+             xmlns:x="http://schemas.microsoft.com/winfx/2006/xaml"
+             xmlns:vm="using:GitExtensions.Desktop.ViewModels"
+             x:Class="GitExtensions.Desktop.Views.OutputPanelView"
+             x:DataType="vm:RemoteOperationsViewModel"
+             IsVisible="{Binding IsOutputVisible}">
+  <Border Height="170" BorderThickness="0,1,0,0" BorderBrush="{DynamicResource SystemControlForegroundBaseLowBrush}">
+    <DockPanel>
+      <Grid DockPanel.Dock="Top" ColumnDefinitions="*,Auto,Auto,Auto" Margin="8,4" ColumnSpacing="6">
+        <TextBlock Text="Output" FontWeight="SemiBold" VerticalAlignment="Center" />
+        <Button x:Name="CancelButton" Grid.Column="1" Content="Cancel" Command="{Binding CancelCommand}" IsEnabled="{Binding IsRunning}" />
+        <Button Grid.Column="2" Content="Clear" Command="{Binding ClearOutputCommand}" />
+        <Button Grid.Column="3" Content="Hide" Command="{Binding ToggleOutputCommand}" />
+      </Grid>
+      <ScrollViewer x:Name="OutputScroll" HorizontalScrollBarVisibility="Auto">
+        <SelectableTextBlock x:Name="OutputBlock" Text="{Binding OutputText}" Margin="8,0,8,4"
+                             FontFamily="Cascadia Mono, Consolas, DejaVu Sans Mono, monospace" FontSize="12" />
+      </ScrollViewer>
+    </DockPanel>
+  </Border>
+</UserControl>

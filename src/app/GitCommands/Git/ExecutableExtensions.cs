@@ -12,7 +12,9 @@ namespace GitCommands;
 /// </summary>
 public static partial class ExecutableExtensions
 {
-    private static readonly Lazy<Encoding> _defaultOutputEncoding = new(() => GitModule.SystemEncoding, false);
+    // Must be thread-safe: a UI host may issue several git commands in parallel before the encoding is known.
+    // With LazyThreadSafetyMode.None the second caller throws "ValueFactory attempted to access the Value property".
+    private static readonly Lazy<Encoding> _defaultOutputEncoding = new(() => GitModule.SystemEncoding, LazyThreadSafetyMode.ExecutionAndPublication);
 
     [GeneratedRegex(@"\u001B[\u0040-\u005F].*?[\u0040-\u007E]", RegexOptions.ExplicitCapture)]
     private static partial Regex AnsiCodeRegex { get; }

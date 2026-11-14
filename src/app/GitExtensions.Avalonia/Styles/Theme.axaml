@@ -1,0 +1,32 @@
+<ResourceDictionary xmlns="https://github.com/avaloniaui"
+                    xmlns:x="http://schemas.microsoft.com/winfx/2006/xaml">
+  <!-- Semantic, theme-aware colors. Always reference with DynamicResource so a theme switch re-skins live. -->
+  <ResourceDictionary.ThemeDictionaries>
+    <ResourceDictionary x:Key="Light">
+      <SolidColorBrush x:Key="ErrorBannerBackground" Color="#FDE7E9" />
+      <SolidColorBrush x:Key="ErrorBannerForeground" Color="#7A1212" />
+      <SolidColorBrush x:Key="ErrorTextForeground" Color="#B3261E" />
+      <SolidColorBrush x:Key="SuccessTextForeground" Color="#1B6E2E" />
+      <SolidColorBrush x:Key="DiffAddedBackground" Color="#D5F0DA" />
+      <SolidColorBrush x:Key="DiffRemovedBackground" Color="#F9D6D6" />
+      <SolidColorBrush x:Key="DiffHunkBackground" Color="#DAE6FA" />
+      <SolidColorBrush x:Key="DiffSelectionOverlay" Color="#59308FE0" />
+      <SolidColorBrush x:Key="RefBadgeBackground" Color="#CFE3FA" />
+      <SolidColorBrush x:Key="RefBadgeForeground" Color="#0B3A75" />
+      <SolidColorBrush x:Key="SubtleBorderBrush" Color="#1F000000" />
+    </ResourceDictionary>
+    <ResourceDictionary x:Key="Dark">
+      <SolidColorBrush x:Key="ErrorBannerBackground" Color="#4A1A1F" />
+      <SolidColorBrush x:Key="ErrorBannerForeground" Color="#FFD9DC" />
+      <SolidColorBrush x:Key="ErrorTextForeground" Color="#FF8A80" />
+      <SolidColorBrush x:Key="SuccessTextForeground" Color="#7FD99A" />
+      <SolidColorBrush x:Key="DiffAddedBackground" Color="#1C4A2A" />
+      <SolidColorBrush x:Key="DiffRemovedBackground" Color="#58232A" />
+      <SolidColorBrush x:Key="DiffHunkBackground" Color="#1F3A5F" />
+      <SolidColorBrush x:Key="DiffSelectionOverlay" Color="#665AA9FF" />
+      <SolidColorBrush x:Key="RefBadgeBackground" Color="#1B4474" />
+      <SolidColorBrush x:Key="RefBadgeForeground" Color="#D6E8FF" />
+      <SolidColorBrush x:Key="SubtleBorderBrush" Color="#33FFFFFF" />
+    </ResourceDictionary>
+  </ResourceDictionary.ThemeDictionaries>
+</ResourceDictionary>

@@ -18,6 +18,12 @@ public sealed class CommitItemViewModel
 
     public GitRevision Revision { get; }
 
+    /// <summary>Graph cell data, set when the commit is added to the history.</summary>
+    public GitExtensions.Desktop.History.CommitGraphRow? Graph { get; set; }
+
+    /// <summary>The context menu operations (shared by all rows).</summary>
+    public CommitActionsViewModel? Actions { get; set; }
+
     public ObjectId ObjectId => Revision.ObjectId;
 
     public string ShortHash { get; }

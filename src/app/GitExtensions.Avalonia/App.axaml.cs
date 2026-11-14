@@ -19,6 +19,8 @@ public sealed class App : Application
             // Must run on the UI thread: the joinable task context captures it as the "main thread".
             GitEnvironment git = GitEnvironment.Initialize();
 
+            ThemeService.Current.ApplyCurrent();
+
             MainWindow window = new();
             MainWindowViewModel viewModel = new(git, new WindowFolderPicker(window));
             window.DataContext = viewModel;

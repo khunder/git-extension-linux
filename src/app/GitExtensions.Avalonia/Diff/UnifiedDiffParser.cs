@@ -22,22 +22,24 @@ public static partial class UnifiedDiffParser
         int newRemaining = 0;
         int oldLine = 0;
         int newLine = 0;
+        int hunkIndex = -1;
 
         foreach (string line in SplitLines(diff))
         {
             if (line.StartsWith("@@", StringComparison.Ordinal) && HunkHeader().Match(line) is { Success: true } match)
             {
+                hunkIndex++;
                 oldLine = int.Parse(match.Groups["os"].Value);
                 newLine = int.Parse(match.Groups["ns"].Value);
                 oldRemaining = match.Groups["oc"].Success ? int.Parse(match.Groups["oc"].Value) : 1;
                 newRemaining = match.Groups["nc"].Success ? int.Parse(match.Groups["nc"].Value) : 1;
-                result.Add(new DiffLine(DiffLineKind.Hunk, line, null, null));
+                result.Add(new DiffLine(DiffLineKind.Hunk, line, null, null) { HunkIndex = hunkIndex });
                 continue;
             }
 
             if (line.StartsWith('\\'))
             {
-                result.Add(new DiffLine(DiffLineKind.Info, line, null, null));
+                result.Add(new DiffLine(DiffLineKind.Info, line, null, null) { HunkIndex = hunkIndex });
                 continue;
             }
 
@@ -45,17 +47,17 @@ public static partial class UnifiedDiffParser
             bool inHunk = oldRemaining > 0 || newRemaining > 0;
             if (inHunk && line.Length > 0 && line[0] == '+' && newRemaining > 0)
             {
-                result.Add(new DiffLine(DiffLineKind.Added, line, null, newLine++));
+                result.Add(new DiffLine(DiffLineKind.Added, line, null, newLine++) { HunkIndex = hunkIndex });
                 newRemaining--;
             }
             else if (inHunk && line.Length > 0 && line[0] == '-' && oldRemaining > 0)
             {
-                result.Add(new DiffLine(DiffLineKind.Removed, line, oldLine++, null));
+                result.Add(new DiffLine(DiffLineKind.Removed, line, oldLine++, null) { HunkIndex = hunkIndex });
                 oldRemaining--;
             }
             else if (inHunk && oldRemaining > 0 && newRemaining > 0)
             {
-                result.Add(new DiffLine(DiffLineKind.Context, line, oldLine++, newLine++));
+                result.Add(new DiffLine(DiffLineKind.Context, line, oldLine++, newLine++) { HunkIndex = hunkIndex });
                 oldRemaining--;
                 newRemaining--;
             }
@@ -80,10 +82,10 @@ public static partial class UnifiedDiffParser
         }
 
         List<string> lines = [.. SplitLines(content)];
-        result.Add(new DiffLine(DiffLineKind.Hunk, $"@@ -0,0 +1,{lines.Count} @@", null, null));
+        result.Add(new DiffLine(DiffLineKind.Hunk, $"@@ -0,0 +1,{lines.Count} @@", null, null) { HunkIndex = 0 });
         for (int i = 0; i < lines.Count; i++)
         {
-            result.Add(new DiffLine(DiffLineKind.Added, "+" + lines[i], null, i + 1));
+            result.Add(new DiffLine(DiffLineKind.Added, "+" + lines[i], null, i + 1) { HunkIndex = 0 });
         }
 
         return result;

@@ -1,0 +1,95 @@
+<UserControl xmlns="https://github.com/avaloniaui"
+             xmlns:x="http://schemas.microsoft.com/winfx/2006/xaml"
+             xmlns:vm="using:GitExtensions.Desktop.ViewModels"
+             xmlns:diff="using:GitExtensions.Desktop.Diff"
+             xmlns:fh="using:GitExtensions.Desktop.FileHistory"
+             xmlns:views="using:GitExtensions.Desktop.Views"
+             x:Class="GitExtensions.Desktop.Views.FileHistoryView"
+             x:DataType="vm:FileHistoryViewModel"
+             Focusable="True"
+             Background="{DynamicResource SystemControlBackgroundAltHighBrush}">
+
+  <UserControl.KeyBindings>
+    <KeyBinding Gesture="Escape" Command="{Binding CloseCommand}" />
+  </UserControl.KeyBindings>
+
+  <UserControl.Styles>
+    <Style Selector="Border.added"><Setter Property="Background" Value="{DynamicResource DiffAddedBackground}" /></Style>
+    <Style Selector="Border.removed"><Setter Property="Background" Value="{DynamicResource DiffRemovedBackground}" /></Style>
+    <Style Selector="Border.hunk"><Setter Property="Background" Value="{DynamicResource DiffHunkBackground}" /></Style>
+    <Style Selector="ToggleButton.tab:checked /template/ ContentPresenter"><Setter Property="FontWeight" Value="SemiBold" /></Style>
+  </UserControl.Styles>
+
+  <DockPanel>
+    <Border DockPanel.Dock="Top" Padding="8,6" BorderThickness="0,0,0,1" BorderBrush="{DynamicResource SubtleBorderBrush}">
+      <Grid ColumnDefinitions="Auto,*,Auto,Auto,Auto" ColumnSpacing="8">
+        <TextBlock Text="File" Opacity="0.65" VerticalAlignment="Center" />
+        <TextBlock x:Name="FileNameText" Grid.Column="1" Text="{Binding FilePath}" FontWeight="SemiBold" VerticalAlignment="Center" TextTrimming="CharacterEllipsis" />
+        <ToggleButton x:Name="HistoryTab" Grid.Column="2" Classes="tab" Content="History" IsChecked="{Binding ShowHistory, Mode=OneWay}" Command="{Binding ShowHistoryTabCommand}" />
+        <ToggleButton x:Name="BlameTab" Grid.Column="3" Classes="tab" Content="Blame" IsChecked="{Binding ShowBlame, Mode=OneWay}" Command="{Binding ShowBlameTabCommand}" />
+        <Button x:Name="CloseButton" Grid.Column="4" Content="Close ✕" Command="{Binding CloseCommand}" ToolTip.Tip="Close (Esc)" />
+      </Grid>
+    </Border>
+
+    <Grid ColumnDefinitions="440,Auto,*">
+      <!-- Commits touching the file -->
+      <Panel>
+        <ListBox x:Name="EntryList" ItemsSource="{Binding Entries}" SelectedItem="{Binding SelectedEntry}">
+          <ListBox.ItemTemplate>
+            <DataTemplate x:DataType="fh:FileHistoryEntry">
+              <StackPanel Spacing="1" ToolTip.Tip="{Binding Path}">
+                <TextBlock Text="{Binding Subject}" TextTrimming="CharacterEllipsis" />
+                <Grid ColumnDefinitions="76,*,Auto" ColumnSpacing="8">
+                  <TextBlock Text="{Binding ShortHash}" FontFamily="Cascadia Mono, Consolas, DejaVu Sans Mono, monospace" FontSize="12" Opacity="0.65" />
+                  <TextBlock Grid.Column="1" Text="{Binding Author}" FontSize="12" Opacity="0.75" TextTrimming="CharacterEllipsis" />
+                  <TextBlock Grid.Column="2" Text="{Binding DateText}" FontSize="12" Opacity="0.6" />
+                </Grid>
+              </StackPanel>
+            </DataTemplate>
+          </ListBox.ItemTemplate>
+        </ListBox>
+        <TextBlock x:Name="EntriesMessage" Text="{Binding Message}" Opacity="0.6" Margin="12" HorizontalAlignment="Left" VerticalAlignment="Top"
+                   IsVisible="{Binding Message, Converter={x:Static StringConverters.IsNotNullOrEmpty}}" />
+      </Panel>
+
+      <GridSplitter Grid.Column="1" Width="4" />
+
+      <Panel Grid.Column="2">
+        <!-- The selected commit's changes to this file -->
+        <Panel IsVisible="{Binding ShowHistory}">
+          <ItemsControl x:Name="DiffLinesList" ItemsSource="{Binding DiffLines}">
+            <ItemsControl.Template>
+              <ControlTemplate>
+                <ScrollViewer HorizontalScrollBarVisibility="Auto" VerticalScrollBarVisibility="Auto">
+                  <ItemsPresenter />
+                </ScrollViewer>
+              </ControlTemplate>
+            </ItemsControl.Template>
+            <ItemsControl.ItemsPanel>
+              <ItemsPanelTemplate>
+                <VirtualizingStackPanel />
+              </ItemsPanelTemplate>
+            </ItemsControl.ItemsPanel>
+            <ItemsControl.ItemTemplate>
+              <DataTemplate x:DataType="diff:DiffLine">
+                <Border Classes.added="{Binding Kind, Converter={x:Static ObjectConverters.Equal}, ConverterParameter={x:Static diff:DiffLineKind.Added}}"
+                        Classes.removed="{Binding Kind, Converter={x:Static ObjectConverters.Equal}, ConverterParameter={x:Static diff:DiffLineKind.Removed}}"
+                        Classes.hunk="{Binding Kind, Converter={x:Static ObjectConverters.Equal}, ConverterParameter={x:Static diff:DiffLineKind.Hunk}}">
+                  <Grid ColumnDefinitions="44,44,*" Opacity="{Binding Kind, Converter={x:Static views:DiffLineBrushes.TextOpacity}}">
+                    <TextBlock Text="{Binding OldNumber}" FontFamily="Cascadia Mono, Consolas, DejaVu Sans Mono, monospace" FontSize="12" Opacity="0.5" TextAlignment="Right" Margin="0,0,6,0" />
+                    <TextBlock Grid.Column="1" Text="{Binding NewNumber}" FontFamily="Cascadia Mono, Consolas, DejaVu Sans Mono, monospace" FontSize="12" Opacity="0.5" TextAlignment="Right" Margin="0,0,6,0" />
+                    <TextBlock Grid.Column="2" Text="{Binding Text}" FontFamily="Cascadia Mono, Consolas, DejaVu Sans Mono, monospace" FontSize="12" TextWrapping="NoWrap" />
+                  </Grid>
+                </Border>
+              </DataTemplate>
+            </ItemsControl.ItemTemplate>
+          </ItemsControl>
+          <TextBlock x:Name="DiffMessageText" Text="{Binding DiffMessage}" Opacity="0.6" Margin="12" HorizontalAlignment="Left" VerticalAlignment="Top"
+                     IsVisible="{Binding DiffMessage, Converter={x:Static StringConverters.IsNotNullOrEmpty}}" />
+        </Panel>
+
+        <views:BlameView x:Name="BlamePane" DataContext="{Binding Blame}" IsVisible="{Binding $parent[UserControl].((vm:FileHistoryViewModel)DataContext).ShowBlame}" />
+      </Panel>
+    </Grid>
+  </DockPanel>
+</UserControl>

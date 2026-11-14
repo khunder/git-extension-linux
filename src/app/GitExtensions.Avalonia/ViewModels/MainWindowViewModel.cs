@@ -14,7 +14,8 @@ namespace GitExtensions.Desktop.ViewModels;
 public sealed partial class MainWindowViewModel : ObservableObject
 {
     // Enough for browsing; the list is filled incrementally while git is still producing output.
-    private const string RevisionFilter = "--max-count=2000 HEAD";
+    // --topo-order: the graph needs every commit listed before all of its parents (git's default order does not guarantee it).
+    private static string RevisionFilter => $"--topo-order --max-count={BehaviorSettings.Current.HistoryLimit} HEAD";
 
     private readonly GitEnvironment _git;
     private readonly IFolderPicker _folderPicker;
@@ -57,6 +58,7 @@ public sealed partial class MainWindowViewModel : ObservableObject
         Recent = new RecentRepositoriesViewModel(RepositoryHistoryManager.Locals, OpenAsync);
         git.Messages.MessageReported += message => ErrorMessage = message;
         Refs = new RefsTreeViewModel(message => Status = message, SelectCommit, () => OpenAsync(RepositoryPath));
+        InitializeHistoryExtras();
     }
 
     public RecentRepositoriesViewModel Recent { get; }
@@ -121,6 +123,7 @@ public sealed partial class MainWindowViewModel : ObservableObject
             RepositoryPath = module.WorkingDir;
             _module = module;
             Diff = new FileDiffViewModel(module, RefreshChangesAsync);
+            Commit = CreateCommitViewModel(module);
             HasOpenedRepository = true;
             _ = RecordRecentAsync(module.WorkingDir);
 

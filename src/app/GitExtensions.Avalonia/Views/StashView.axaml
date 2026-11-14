@@ -1,0 +1,114 @@
+<UserControl xmlns="https://github.com/avaloniaui"
+             xmlns:x="http://schemas.microsoft.com/winfx/2006/xaml"
+             xmlns:vm="using:GitExtensions.Desktop.ViewModels"
+             xmlns:diff="using:GitExtensions.Desktop.Diff"
+             xmlns:views="using:GitExtensions.Desktop.Views"
+             x:Class="GitExtensions.Desktop.Views.StashView"
+             x:DataType="vm:StashViewModel"
+             Width="760" Height="440">
+
+  <UserControl.Styles>
+    <Style Selector="Border.added"><Setter Property="Background" Value="{DynamicResource DiffAddedBackground}" /></Style>
+    <Style Selector="Border.removed"><Setter Property="Background" Value="{DynamicResource DiffRemovedBackground}" /></Style>
+    <Style Selector="Border.hunk"><Setter Property="Background" Value="{DynamicResource DiffHunkBackground}" /></Style>
+  </UserControl.Styles>
+
+  <DockPanel>
+    <!-- Commands -->
+    <StackPanel DockPanel.Dock="Top" Orientation="Horizontal" Spacing="8" Margin="8">
+      <Button x:Name="StashButton" Content="Stash changes…" Command="{Binding RequestStashCommand}" />
+      <Button x:Name="ApplyButton" Content="Apply" Command="{Binding ApplyCommand}" IsEnabled="{Binding HasSelection}" ToolTip.Tip="Apply the selected stash and keep it" />
+      <Button x:Name="PopButton" Content="Pop" Command="{Binding PopCommand}" IsEnabled="{Binding HasSelection}" ToolTip.Tip="Apply the selected stash and remove it (kept when there are conflicts)" />
+      <Button x:Name="DropButton" Content="Drop…" Command="{Binding RequestDropCommand}" IsEnabled="{Binding HasSelection}" ToolTip.Tip="Delete the selected stash" />
+    </StackPanel>
+
+    <!-- Inline "stash changes" form -->
+    <Panel x:Name="StashForm" DockPanel.Dock="Top" IsVisible="{Binding IsStashFormVisible}">
+      <Border Background="{DynamicResource SystemAccentColor}" Opacity="0.15" />
+      <Grid ColumnDefinitions="*,Auto,Auto" RowDefinitions="Auto,Auto" ColumnSpacing="8" RowSpacing="6" Margin="8,6">
+        <TextBox x:Name="StashMessageBox" Grid.ColumnSpan="3" Text="{Binding StashMessage}" Watermark="Message (optional)">
+          <TextBox.KeyBindings>
+            <KeyBinding Gesture="Enter" Command="{Binding ConfirmStashCommand}" />
+            <KeyBinding Gesture="Escape" Command="{Binding CancelStashCommand}" />
+          </TextBox.KeyBindings>
+        </TextBox>
+        <CheckBox x:Name="UntrackedCheck" Grid.Row="1" Content="Include untracked files" IsChecked="{Binding IncludeUntracked}" />
+        <Button x:Name="StashConfirm" Grid.Row="1" Grid.Column="1" Content="Stash" Command="{Binding ConfirmStashCommand}" />
+        <Button x:Name="StashCancel" Grid.Row="1" Grid.Column="2" Content="Cancel" Command="{Binding CancelStashCommand}" />
+      </Grid>
+    </Panel>
+
+    <!-- Drop confirmation -->
+    <Panel x:Name="DropPromptPanel" DockPanel.Dock="Top" IsVisible="{Binding IsDropPending}">
+      <Border Background="{DynamicResource SystemAccentColor}" Opacity="0.15" />
+      <Grid ColumnDefinitions="*,Auto,Auto" ColumnSpacing="8" Margin="8,6">
+        <TextBlock x:Name="DropText" Text="{Binding DropPrompt}" TextWrapping="Wrap" VerticalAlignment="Center" />
+        <Button x:Name="DropConfirm" Grid.Column="1" Content="Drop stash" Command="{Binding ConfirmDropCommand}" />
+        <Button x:Name="DropCancel" Grid.Column="2" Content="Cancel" Command="{Binding CancelDropCommand}" />
+      </Grid>
+    </Panel>
+
+    <Grid ColumnDefinitions="260,Auto,*">
+      <ListBox x:Name="StashList" ItemsSource="{Binding Items}" SelectedItem="{Binding SelectedStash}">
+        <ListBox.ItemTemplate>
+          <DataTemplate x:DataType="vm:StashItemViewModel">
+            <StackPanel>
+              <StackPanel Orientation="Horizontal" Spacing="6">
+                <TextBlock Text="{Binding IndexText}" FontFamily="Cascadia Mono, Consolas, DejaVu Sans Mono, monospace" Opacity="0.65" />
+                <TextBlock Text="{Binding Message}" TextTrimming="CharacterEllipsis" MaxWidth="200" />
+              </StackPanel>
+              <TextBlock FontSize="11" Opacity="0.6">
+                <Run Text="{Binding Branch}" /><Run Text=" · " /><Run Text="{Binding DateText}" />
+              </TextBlock>
+            </StackPanel>
+          </DataTemplate>
+        </ListBox.ItemTemplate>
+      </ListBox>
+      <TextBlock Text="No stashes." Opacity="0.6" Margin="12" IsVisible="{Binding !Items.Count}" HorizontalAlignment="Left" VerticalAlignment="Top" />
+
+      <GridSplitter Grid.Column="1" Width="4" />
+
+      <Grid Grid.Column="2" RowDefinitions="*,Auto,2*">
+        <ListBox x:Name="StashFiles" ItemsSource="{Binding Files}" SelectedItem="{Binding SelectedFile}">
+          <ListBox.ItemTemplate>
+            <DataTemplate x:DataType="vm:ChangedFileViewModel">
+              <Grid ColumnDefinitions="22,*" ColumnSpacing="8">
+                <TextBlock Text="{Binding Status}" FontFamily="Cascadia Mono, Consolas, DejaVu Sans Mono, monospace" FontWeight="Bold" HorizontalAlignment="Center" />
+                <TextBlock Grid.Column="1" Text="{Binding Name}" TextTrimming="CharacterEllipsis" />
+              </Grid>
+            </DataTemplate>
+          </ListBox.ItemTemplate>
+        </ListBox>
+        <GridSplitter Grid.Row="1" Height="4" HorizontalAlignment="Stretch" />
+        <Panel Grid.Row="2">
+          <ItemsControl x:Name="StashDiffLines" ItemsSource="{Binding DiffLines}">
+            <ItemsControl.Template>
+              <ControlTemplate>
+                <ScrollViewer HorizontalScrollBarVisibility="Auto" VerticalScrollBarVisibility="Auto">
+                  <ItemsPresenter />
+                </ScrollViewer>
+              </ControlTemplate>
+            </ItemsControl.Template>
+            <ItemsControl.ItemsPanel>
+              <ItemsPanelTemplate>
+                <VirtualizingStackPanel />
+              </ItemsPanelTemplate>
+            </ItemsControl.ItemsPanel>
+            <ItemsControl.ItemTemplate>
+              <DataTemplate x:DataType="diff:DiffLine">
+                <Border Classes.added="{Binding Kind, Converter={x:Static ObjectConverters.Equal}, ConverterParameter={x:Static diff:DiffLineKind.Added}}"
+                        Classes.removed="{Binding Kind, Converter={x:Static ObjectConverters.Equal}, ConverterParameter={x:Static diff:DiffLineKind.Removed}}"
+                        Classes.hunk="{Binding Kind, Converter={x:Static ObjectConverters.Equal}, ConverterParameter={x:Static diff:DiffLineKind.Hunk}}">
+                  <TextBlock Text="{Binding Text}" FontFamily="Cascadia Mono, Consolas, DejaVu Sans Mono, monospace" FontSize="12" TextWrapping="NoWrap"
+                             Opacity="{Binding Kind, Converter={x:Static views:DiffLineBrushes.TextOpacity}}" Margin="6,0" />
+                </Border>
+              </DataTemplate>
+            </ItemsControl.ItemTemplate>
+          </ItemsControl>
+          <TextBlock x:Name="StashMessageText" Text="{Binding DiffMessage}" Opacity="0.6" Margin="12" HorizontalAlignment="Left" VerticalAlignment="Top"
+                     IsVisible="{Binding DiffMessage, Converter={x:Static StringConverters.IsNotNullOrEmpty}}" />
+        </Panel>
+      </Grid>
+    </Grid>
+  </DockPanel>
+</UserControl>

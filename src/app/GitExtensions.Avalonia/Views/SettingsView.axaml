@@ -1,0 +1,67 @@
+<UserControl xmlns="https://github.com/avaloniaui"
+             xmlns:x="http://schemas.microsoft.com/winfx/2006/xaml"
+             xmlns:vm="using:GitExtensions.Desktop.ViewModels"
+             x:Class="GitExtensions.Desktop.Views.SettingsView"
+             x:DataType="vm:SettingsViewModel">
+  <!-- Scrim over the content area; the card is centered. -->
+  <Panel Background="#80000000">
+    <Border x:Name="Card" MaxWidth="600" MaxHeight="560" Margin="24" Padding="20" VerticalAlignment="Center" HorizontalAlignment="Stretch"
+            CornerRadius="8" BorderThickness="1"
+            Background="{DynamicResource SystemControlBackgroundAltHighBrush}"
+            BorderBrush="{DynamicResource SubtleBorderBrush}">
+      <DockPanel LastChildFill="True">
+        <TextBlock DockPanel.Dock="Top" Text="Settings" FontSize="18" FontWeight="SemiBold" Margin="0,0,0,12" />
+
+        <StackPanel DockPanel.Dock="Bottom" Margin="0,12,0,0" Spacing="8">
+          <TextBlock x:Name="ErrorText" Text="{Binding ErrorMessage}" IsVisible="{Binding HasError}" TextWrapping="Wrap"
+                     Foreground="{DynamicResource ErrorTextForeground}" />
+          <StackPanel Orientation="Horizontal" HorizontalAlignment="Right" Spacing="8">
+            <Button x:Name="CancelButton" Content="Cancel" Command="{Binding CancelCommand}" />
+            <Button x:Name="SaveButton" Content="Save" Classes="accent" Command="{Binding SaveCommand}" />
+          </StackPanel>
+        </StackPanel>
+
+        <ScrollViewer VerticalScrollBarVisibility="Auto">
+          <StackPanel Spacing="6" Margin="0,0,12,0">
+
+            <TextBlock Text="Git" FontWeight="SemiBold" Margin="0,4,0,0" />
+            <TextBlock Text="Path to the git executable (leave empty to use git from PATH)" Opacity="0.7" FontSize="12" />
+            <Grid ColumnDefinitions="*,Auto,Auto" ColumnSpacing="8">
+              <TextBox x:Name="GitPathBox" Text="{Binding GitPath}" Watermark="git" />
+              <Button Grid.Column="1" Content="Browse…" Command="{Binding BrowseGitCommand}" />
+              <Button Grid.Column="2" x:Name="TestGitButton" Content="Test" Command="{Binding TestGitCommand}" />
+            </Grid>
+            <TextBlock x:Name="GitTestText" Text="{Binding GitTestResult}" IsVisible="{Binding HasGitTestResult}" TextWrapping="Wrap">
+              <TextBlock.Styles>
+                <Style Selector="TextBlock#GitTestText">
+                  <Setter Property="Foreground" Value="{DynamicResource ErrorTextForeground}" />
+                </Style>
+                <Style Selector="TextBlock#GitTestText.ok">
+                  <Setter Property="Foreground" Value="{DynamicResource SuccessTextForeground}" />
+                </Style>
+              </TextBlock.Styles>
+            </TextBlock>
+
+            <TextBlock Text="Identity (global git config)" FontWeight="SemiBold" Margin="0,14,0,0" />
+            <Grid ColumnDefinitions="90,*" RowDefinitions="Auto,Auto" RowSpacing="6" ColumnSpacing="8">
+              <TextBlock Text="user.name" VerticalAlignment="Center" />
+              <TextBox x:Name="UserNameBox" Grid.Column="1" Text="{Binding UserName}" />
+              <TextBlock Grid.Row="1" Text="user.email" VerticalAlignment="Center" />
+              <TextBox x:Name="UserEmailBox" Grid.Row="1" Grid.Column="1" Text="{Binding UserEmail}" />
+            </Grid>
+            <TextBlock x:Name="LocalIdentityText" Text="{Binding LocalIdentityNote}" IsVisible="{Binding HasLocalIdentityOverride}"
+                       TextWrapping="Wrap" FontSize="12" Opacity="0.75" />
+
+            <TextBlock Text="Behavior" FontWeight="SemiBold" Margin="0,14,0,0" />
+            <Grid ColumnDefinitions="Auto,100,*" ColumnSpacing="8">
+              <TextBlock Text="History commit limit" VerticalAlignment="Center" />
+              <TextBox x:Name="HistoryLimitBox" Grid.Column="1" Text="{Binding HistoryLimitText}" />
+            </Grid>
+            <CheckBox x:Name="ShowStashesBox" Content="Show stashes in history" IsChecked="{Binding ShowStashes}" />
+            <TextBlock Text="History options apply when the repository is reloaded; saving reloads it for you." Opacity="0.7" FontSize="12" TextWrapping="Wrap" />
+          </StackPanel>
+        </ScrollViewer>
+      </DockPanel>
+    </Border>
+  </Panel>
+</UserControl>

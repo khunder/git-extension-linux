@@ -88,6 +88,7 @@ public sealed class Executable : IExecutable
         private bool _disposed;
         private bool _exitHandlerRemoved;
         private string? _errorOutput;
+        private Task? _errorCopyTask;
 
         public ProcessWrapper(string fileName,
                               string prefixArguments,
@@ -158,7 +159,9 @@ public sealed class Executable : IExecutable
 
                 if (_errorOutputStream is not null)
                 {
-                    _process.StandardError.BaseStream.CopyToAsync(_errorOutputStream, cancellationToken);
+                    // Keep the task: the Exited event can be raised before the pipe has been drained (observed on Linux
+                    // for fast-failing commands), so the exit handler must wait for the copy before reading the error text.
+                    _errorCopyTask = _process.StandardError.BaseStream.CopyToAsync(_errorOutputStream, cancellationToken);
                 }
 
                 try
@@ -224,6 +227,7 @@ public sealed class Executable : IExecutable
 
                 try
                 {
+                    WaitForErrorOutputToBeCopied();
                     _errorOutput = _errorEncoding.GetString(_errorOutputStream.GetBuffer(), 0, (int)_errorOutputStream.Length);
 
                     return _errorOutput.Trim();
@@ -232,6 +236,21 @@ public sealed class Executable : IExecutable
                 {
                     return $"Failed to read: {ex}";
                 }
+            }
+        }
+
+        private void WaitForErrorOutputToBeCopied()
+        {
+            try
+            {
+                // Runs on the thread-pool thread that raised Exited; the copy ends as soon as the pipe reaches EOF.
+#pragma warning disable VSTHRD002 // Avoid problematic synchronous waits
+                _errorCopyTask?.Wait(TimeSpan.FromSeconds(5));
+#pragma warning restore VSTHRD002
+            }
+            catch (Exception)
+            {
+                // Cancelled or the pipe failed: use whatever has been captured so far.
             }
         }
 

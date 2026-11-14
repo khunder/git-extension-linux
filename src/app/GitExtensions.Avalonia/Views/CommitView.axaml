@@ -1,0 +1,20 @@
+<UserControl xmlns="https://github.com/avaloniaui"
+             xmlns:x="http://schemas.microsoft.com/winfx/2006/xaml"
+             xmlns:vm="using:GitExtensions.Desktop.ViewModels"
+             x:Class="GitExtensions.Desktop.Views.CommitView"
+             x:DataType="vm:CommitViewModel">
+  <Border Padding="8" BorderThickness="0,1,0,0" BorderBrush="{DynamicResource SystemControlForegroundBaseLowBrush}">
+    <StackPanel Spacing="6">
+      <Grid ColumnDefinitions="*,Auto">
+        <TextBlock Classes="header" Text="Commit" FontWeight="SemiBold" />
+        <TextBlock x:Name="SummaryText" Grid.Column="1" Text="{Binding Summary}" Opacity="0.7" />
+      </Grid>
+      <TextBox x:Name="MessageBox" Text="{Binding Message}" AcceptsReturn="True" TextWrapping="Wrap"
+               Height="90" Watermark="Commit message" />
+      <Grid ColumnDefinitions="*,Auto" ColumnSpacing="8">
+        <CheckBox x:Name="AmendBox" Content="Amend" IsChecked="{Binding Amend}" IsEnabled="{Binding HasHead}" />
+        <Button x:Name="CommitButton" Grid.Column="1" Content="Commit" Command="{Binding CommitCommand}" />
+      </Grid>
+    </StackPanel>
+  </Border>
+</UserControl>
