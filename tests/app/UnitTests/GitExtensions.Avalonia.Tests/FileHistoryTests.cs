@@ -1,4 +1,4 @@
-using Avalonia;
+﻿using Avalonia;
 using Avalonia.Controls;
 using Avalonia.Headless;
 using Avalonia.Headless.NUnit;
@@ -233,17 +233,10 @@ public class FileHistoryTests
         FileHistoryView overlay = window.FindControl<FileHistoryView>("FileHistoryOverlay")!;
         overlay.IsVisible.Should().BeFalse();
 
-        // The "Changes" list menu: untracked.txt is the only working tree change.
-        ListBox changes = window.FindControl<ListBox>("ChangeList")!;
-        changes.ItemCount.Should().Be(1);
-        Grid row = changes.GetVisualDescendants().OfType<Grid>().First(g => g.ContextMenu is not null);
-        ContextMenu menu = row.ContextMenu!;
-        menu.Open(row);
-        Avalonia.Threading.Dispatcher.UIThread.RunJobs();
-        MenuItem[] items = [.. menu.Items.OfType<MenuItem>()];
-        items.Select(i => i.Header).Should().Equal("File history", "Blame");
-        items.Should().OnlyContain(i => i.Command != null && i.Command.CanExecute(i.CommandParameter));
-        menu.Close();
+        // The "Changes" list is gone from the main window (untracked.txt is the only working tree change); its menu commands remain.
+        main.ChangedFiles.Count.Should().Be(1);
+        main.ShowFileHistoryCommand.CanExecute(main.ChangedFiles[0]).Should().BeTrue();
+        main.ShowFileBlameCommand.CanExecute(main.ChangedFiles[0]).Should().BeTrue();
 
         // The same commands drive the overlay.
         ChangedFileViewModel tale = new(new GitItemStatus("tale.txt"));
@@ -274,18 +267,19 @@ public class FileHistoryTests
         window.Show();
         await main.OpenAsync(repository.Path);
         main.SelectedCommit = main.Commits.Single(c => c.Revision.Subject == "Edit first line");
-        await WaitUntilAsync(() => main.CommitDetails.Files.Count == 1);
+        main.RevisionTabs.SelectedTabIndex = 1; // the Diff tab lists the files of the selected commit
+        await WaitUntilAsync(() => main.RevisionTabs.Diff.Files.Count == 1);
         Avalonia.Threading.Dispatcher.UIThread.RunJobs();
 
         ListBox files = window.GetVisualDescendants().OfType<ListBox>().First(l => l.Name == "FileList");
         Grid row = files.GetVisualDescendants().OfType<Grid>().First(g => g.ContextMenu is not null);
         row.ContextMenu!.Open(row);
         Avalonia.Threading.Dispatcher.UIThread.RunJobs();
-        row.ContextMenu.Items.OfType<MenuItem>().Should().OnlyContain(i => i.Command != null);
+        row.ContextMenu.Items.OfType<MenuItem>().Select(i => i.Header?.ToString()).Should().Contain(["File history", "Blame", "Copy path"]);
         row.ContextMenu.Close();
 
         // Blame from a commit's file list starts at that commit.
-        main.ShowFileBlameCommand.Execute(main.CommitDetails.Files[0]);
+        main.ShowFileBlameCommand.Execute(main.RevisionTabs.Diff.Files[0]);
         await WaitUntilAsync(() => main.FileHistory.Blame.Lines.Count == 7);
         main.FileHistory.SelectedEntry!.Subject.Should().Be("Edit first line");
 

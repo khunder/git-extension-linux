@@ -1,0 +1,31 @@
+<UserControl xmlns="https://github.com/avaloniaui"
+             xmlns:x="http://schemas.microsoft.com/winfx/2006/xaml"
+             xmlns:svc="using:GitExtensions.Desktop.Services"
+             x:Class="GitExtensions.Desktop.Views.CommandLogView"
+             x:DataType="svc:CommandLogService">
+
+  <UserControl.Styles>
+    <Style Selector="TextBlock.error"><Setter Property="Foreground" Value="{DynamicResource ErrorTextForeground}" /></Style>
+  </UserControl.Styles>
+
+  <DockPanel>
+    <StackPanel DockPanel.Dock="Top" Orientation="Horizontal" Spacing="6" Margin="4">
+      <Button x:Name="ClearButton" Content="Clear" Padding="10,2" MinHeight="24" FontSize="12" Click="OnClearClick" />
+      <Button x:Name="CopyButton" Content="Copy" Padding="10,2" MinHeight="24" FontSize="12" Click="OnCopyClick" />
+    </StackPanel>
+    <ScrollViewer x:Name="LogScroll" HorizontalScrollBarVisibility="Auto" VerticalScrollBarVisibility="Auto">
+      <ItemsControl x:Name="LogLines" ItemsSource="{Binding Items}" Margin="6,0">
+        <ItemsControl.ItemsPanel>
+          <ItemsPanelTemplate>
+            <VirtualizingStackPanel />
+          </ItemsPanelTemplate>
+        </ItemsControl.ItemsPanel>
+        <ItemsControl.ItemTemplate>
+          <DataTemplate x:DataType="svc:CommandLogItem">
+            <TextBlock Text="{Binding Text}" Classes.error="{Binding IsError}" FontFamily="Cascadia Mono, Consolas, DejaVu Sans Mono, monospace" FontSize="12" TextWrapping="NoWrap" />
+          </DataTemplate>
+        </ItemsControl.ItemTemplate>
+      </ItemsControl>
+    </ScrollViewer>
+  </DockPanel>
+</UserControl>

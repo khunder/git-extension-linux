@@ -1,0 +1,36 @@
+<UserControl xmlns="https://github.com/avaloniaui"
+             xmlns:x="http://schemas.microsoft.com/winfx/2006/xaml"
+             xmlns:vm="using:GitExtensions.Desktop.ViewModels"
+             x:Class="GitExtensions.Desktop.Views.FileHistoryCommitInfo"
+             x:DataType="vm:CommitDetailsViewModel">
+
+  <!-- The Commit info of the File History window: header fields like the original, then the message. -->
+  <Grid>
+    <TextBlock x:Name="EmptyText" Text="Select a commit to see its details." IsVisible="{Binding IsEmpty}"
+               HorizontalAlignment="Center" VerticalAlignment="Center" Opacity="0.6" />
+    <TextBlock x:Name="LoadingText" Text="Loading commit…" IsVisible="{Binding IsLoading}"
+               HorizontalAlignment="Center" VerticalAlignment="Center" Opacity="0.7" />
+    <TextBlock x:Name="ErrorText" Text="{Binding Error}" IsVisible="{Binding Error, Converter={x:Static ObjectConverters.IsNotNull}}"
+               Foreground="{DynamicResource ErrorTextForeground}" Margin="8" TextWrapping="Wrap" VerticalAlignment="Top" />
+
+    <ScrollViewer x:Name="DetailsPanel" IsVisible="{Binding HasCommit}" HorizontalScrollBarVisibility="Disabled">
+      <StackPanel Margin="12,8" Spacing="10">
+        <Grid ColumnDefinitions="Auto,*" RowDefinitions="Auto,Auto,Auto,Auto,Auto" ColumnSpacing="14" RowSpacing="3">
+          <TextBlock Grid.Row="0" Text="Author:" Opacity="0.7" />
+          <SelectableTextBlock x:Name="AuthorText" Grid.Row="0" Grid.Column="1" Text="{Binding Author}" FontWeight="SemiBold" />
+          <TextBlock Grid.Row="1" Text="Author date:" Opacity="0.7" />
+          <SelectableTextBlock Grid.Row="1" Grid.Column="1" Text="{Binding Date}" />
+          <TextBlock Grid.Row="2" Text="Commit hash:" Opacity="0.7" />
+          <SelectableTextBlock x:Name="HashText" Grid.Row="2" Grid.Column="1" Text="{Binding Hash}" FontFamily="Cascadia Mono, Consolas, DejaVu Sans Mono, monospace" />
+          <TextBlock Grid.Row="3" Text="Parent:" Opacity="0.7" />
+          <SelectableTextBlock Grid.Row="3" Grid.Column="1" Text="{Binding Parents}" FontFamily="Cascadia Mono, Consolas, DejaVu Sans Mono, monospace" Foreground="{DynamicResource SystemControlHyperlinkTextBrush}" />
+          <TextBlock Grid.Row="4" Text="Refs:" Opacity="0.7" IsVisible="{Binding Refs.Length}" />
+          <SelectableTextBlock Grid.Row="4" Grid.Column="1" Text="{Binding Refs}" IsVisible="{Binding Refs.Length}" />
+        </Grid>
+        <Border Padding="12,10" BorderThickness="1" BorderBrush="{DynamicResource SubtleBorderBrush}" CornerRadius="2">
+          <SelectableTextBlock x:Name="MessageText" Text="{Binding Message}" TextWrapping="Wrap" />
+        </Border>
+      </StackPanel>
+    </ScrollViewer>
+  </Grid>
+</UserControl>

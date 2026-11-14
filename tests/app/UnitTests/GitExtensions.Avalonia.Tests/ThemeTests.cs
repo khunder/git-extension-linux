@@ -112,18 +112,28 @@ public class ThemeTests
     }
 
     [AvaloniaTest]
-    public void The_view_menu_checks_the_current_choice_and_applies_clicks()
+    public void The_theme_menu_checks_the_current_choice_and_applies_clicks()
     {
         ThemeService previous = ThemeService.Current;
         try
         {
             ThemeService.Current = new ThemeService(new ThemeStore(TempFile("menu.json")));
-            ThemeMenuButton button = new();
-            button.MenuItems[ThemeChoice.System].IsChecked.Should().BeTrue();
+            MainMenuView menu = new();
+            Window host = new() { Content = menu };
+            host.Show();
+            MenuItem system = menu.FindControl<MenuItem>("ThemeSystemMenuItem")!;
+            MenuItem dark = menu.FindControl<MenuItem>("ThemeDarkMenuItem")!;
+            system.IsChecked.Should().BeTrue();
 
+            // A choice made elsewhere (the command palette, a shortcut) is reflected in the Tools > Theme entries.
             ThemeService.Current.Set(ThemeChoice.Dark);
-            button.MenuItems[ThemeChoice.Dark].IsChecked.Should().BeTrue();
-            button.MenuItems[ThemeChoice.System].IsChecked.Should().BeFalse();
+            dark.IsChecked.Should().BeTrue();
+            system.IsChecked.Should().BeFalse();
+
+            // Clicking an entry applies it.
+            menu.FindControl<MenuItem>("ThemeLightMenuItem")!.RaiseEvent(new Avalonia.Interactivity.RoutedEventArgs(MenuItem.ClickEvent));
+            ThemeService.Current.Choice.Should().Be(ThemeChoice.Light);
+            host.Close();
         }
         finally
         {
@@ -200,9 +210,8 @@ public class ThemeTests
         using TestRepository repository = new();
         File.WriteAllText(Path.Combine(repository.Path, "a.txt"), "changed\nsecond line\n");
         MainWindowViewModel viewModel = new(GitEnvironment.Initialize(), new NoFolderPicker());
-        MainWindow window = new() { DataContext = viewModel };
-        window.Show();
         await viewModel.OpenAsync(repository.Path);
+        Window window = ShellTestSupport.CreateChangesHost(viewModel);
         ChangedFileViewModel file = viewModel.ChangedFiles.Single(f => f.Name == "a.txt");
         viewModel.SelectedChangedFile = file;
         await viewModel.Diff!.ShowAsync(file);

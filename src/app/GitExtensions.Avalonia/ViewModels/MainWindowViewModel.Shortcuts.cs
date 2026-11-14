@@ -12,6 +12,9 @@ public enum UiTarget
     ToggleSidebar,
     ShowRecent,
     ShowStash,
+    ShowTools,
+    ShowSidebar,
+    ShowBranches,
 }
 
 // The command registry, the command palette and the shortcuts help (kept out of the main file).
@@ -118,10 +121,12 @@ public sealed partial class MainWindowViewModel
         [
             FromCommand("repo.open", "Open repository…", "Repository", () => BrowseCommand, gestures: Keys(CommandGesture.Of(Key.O, Ctrl))),
             Make("repo.recent", "Show recent repositories", "Repository", () => UiRequested?.Invoke(UiTarget.ShowRecent), gestures: Keys(CommandGesture.Of(Key.R, Ctrl))),
+            FromCommand("repo.close", "Close repository (go to the dashboard)", "Repository", () => CloseRepositoryCommand, HasRepo, Keys(CommandGesture.Of(Key.W, Ctrl))),
             Make("repo.refresh", "Refresh", "Repository", () => _ = OpenAsync(RepositoryPath), Idle, Keys(CommandGesture.Of(Key.F5))),
             FromCommand("remote.fetch", "Fetch", "Repository", () => Remote.FetchCommand, HasRepo, Keys(CommandGesture.Of(Key.F, CtrlShift))),
             FromCommand("remote.pull", "Pull", "Repository", () => Remote.PullCommand, HasRepo, Keys(CommandGesture.Of(Key.L, CtrlShift))),
             FromCommand("remote.push", "Push", "Repository", () => Remote.PushCommand, HasRepo, Keys(CommandGesture.Of(Key.K, CtrlShift))),
+            Make("window.commit", "Commit…", "Repository", () => ShowCommitWindowCommand.Execute(null), HasRepo, Keys(CommandGesture.Of(Key.K, Ctrl))),
             Make("stash.show", "Stash changes…", "Repository", () => UiRequested?.Invoke(UiTarget.ShowStash), HasRepo, Keys(CommandGesture.Of(Key.T, CtrlShift))),
 
             // Changes

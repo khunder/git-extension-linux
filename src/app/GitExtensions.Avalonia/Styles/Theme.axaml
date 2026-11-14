@@ -14,6 +14,8 @@
       <SolidColorBrush x:Key="RefBadgeBackground" Color="#CFE3FA" />
       <SolidColorBrush x:Key="RefBadgeForeground" Color="#0B3A75" />
       <SolidColorBrush x:Key="SubtleBorderBrush" Color="#1F000000" />
+      <SolidColorBrush x:Key="CommitMessageBackground" Color="#F2F2F2" />
+      <SolidColorBrush x:Key="LinkForeground" Color="#0066CC" />
     </ResourceDictionary>
     <ResourceDictionary x:Key="Dark">
       <SolidColorBrush x:Key="ErrorBannerBackground" Color="#4A1A1F" />
@@ -27,6 +29,8 @@
       <SolidColorBrush x:Key="RefBadgeBackground" Color="#1B4474" />
       <SolidColorBrush x:Key="RefBadgeForeground" Color="#D6E8FF" />
       <SolidColorBrush x:Key="SubtleBorderBrush" Color="#33FFFFFF" />
+      <SolidColorBrush x:Key="CommitMessageBackground" Color="#2D2D30" />
+      <SolidColorBrush x:Key="LinkForeground" Color="#6CB6FF" />
     </ResourceDictionary>
   </ResourceDictionary.ThemeDictionaries>
 </ResourceDictionary>

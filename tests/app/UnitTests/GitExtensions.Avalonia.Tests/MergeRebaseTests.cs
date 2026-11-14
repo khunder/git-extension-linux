@@ -494,23 +494,30 @@ public class MergeRebaseTests
         MainWindow window = new() { DataContext = viewModel, Width = 1200, Height = 720 };
         window.Show();
         Avalonia.Threading.Dispatcher.UIThread.RunJobs();
-        ListBox changes = window.FindControl<ListBox>("ChangeList")!;
-        changes.SelectedItem = viewModel.ChangedFiles.First(c => c.IsConflicted);
+
+        // The resolver (like the changes list) is shown by the Commit window; a minimal host stands in for it here.
+        Window host = ShellTestSupport.CreateChangesHost(viewModel, 1200, 720);
+        host.Find<ListBox>("ChangeList").SelectedItem = viewModel.ChangedFiles.First(c => c.IsConflicted);
         await viewModel.Resolver.ShowAsync(viewModel.SelectedChangedFile);
+        ShellTestSupport.Settle();
 
         window.FindControl<OperationBarView>("OperationBar")!.IsVisible.Should().BeTrue();
-        window.FindControl<ConflictResolverView>("ResolverView")!.IsVisible.Should().BeTrue();
+        host.Find<ConflictResolverView>("ResolverView").IsVisible.Should().BeTrue();
 
         string directory = Path.Combine(AppContext.BaseDirectory, "screenshots");
         Directory.CreateDirectory(directory);
         foreach ((ThemeVariant variant, string name) in new[] { (ThemeVariant.Light, "light"), (ThemeVariant.Dark, "dark") })
         {
             window.RequestedThemeVariant = variant;
+            host.RequestedThemeVariant = variant;
             Avalonia.Threading.Dispatcher.UIThread.RunJobs();
             AvaloniaHeadlessPlatform.ForceRenderTimerTick();
             string file = Path.Combine(directory, $"merge-conflict-{name}.png");
             window.CaptureRenderedFrame()!.Save(file);
             TestContext.AddTestAttachment(file);
+            string resolverFile = Path.Combine(directory, $"merge-conflict-resolver-{name}.png");
+            host.CaptureRenderedFrame()!.Save(resolverFile);
+            TestContext.AddTestAttachment(resolverFile);
         }
 
         // With the abort confirmation open.
@@ -519,6 +526,7 @@ public class MergeRebaseTests
         Avalonia.Threading.Dispatcher.UIThread.RunJobs();
         AvaloniaHeadlessPlatform.ForceRenderTimerTick();
         window.CaptureRenderedFrame()!.Save(Path.Combine(directory, "merge-conflict-abort-dark.png"));
+        host.Close();
         window.Close();
     }
 }

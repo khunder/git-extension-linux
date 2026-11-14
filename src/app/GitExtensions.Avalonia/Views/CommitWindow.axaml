@@ -1,0 +1,212 @@
+<Window xmlns="https://github.com/avaloniaui"
+        xmlns:x="http://schemas.microsoft.com/winfx/2006/xaml"
+        xmlns:vm="using:GitExtensions.Desktop.ViewModels"
+        xmlns:views="using:GitExtensions.Desktop.Views"
+        x:Class="GitExtensions.Desktop.Views.CommitWindow"
+        x:DataType="vm:CommitWindowViewModel"
+        Title="{Binding Title}"
+        Width="1000" Height="700" MinWidth="720" MinHeight="480"
+        WindowStartupLocation="CenterOwner">
+
+  <Window.Styles>
+    <Style Selector="TextBlock.glyph">
+      <Setter Property="FontFamily" Value="Cascadia Mono, Consolas, DejaVu Sans Mono, monospace" />
+      <Setter Property="FontWeight" Value="Bold" />
+      <Setter Property="HorizontalAlignment" Value="Center" />
+      <Setter Property="VerticalAlignment" Value="Center" />
+      <Setter Property="Foreground" Value="{DynamicResource SystemAccentColor}" />
+    </Style>
+    <Style Selector="TextBlock.glyph.added"><Setter Property="Foreground" Value="{DynamicResource SuccessTextForeground}" /></Style>
+    <Style Selector="TextBlock.glyph.deleted"><Setter Property="Foreground" Value="{DynamicResource ErrorTextForeground}" /></Style>
+    <Style Selector="TextBlock.glyph.conflict"><Setter Property="Foreground" Value="{DynamicResource ErrorTextForeground}" /></Style>
+    <Style Selector="Button.tool">
+      <Setter Property="Padding" Value="8,3" />
+      <Setter Property="MinHeight" Value="26" />
+      <Setter Property="VerticalAlignment" Value="Center" />
+    </Style>
+    <Style Selector="ToggleButton.tool">
+      <Setter Property="Padding" Value="8,3" />
+      <Setter Property="MinHeight" Value="26" />
+      <Setter Property="VerticalAlignment" Value="Center" />
+    </Style>
+    <Style Selector="Border.sectionHeader">
+      <Setter Property="Padding" Value="6,3" />
+      <Setter Property="BorderThickness" Value="0,0,0,1" />
+      <Setter Property="BorderBrush" Value="{DynamicResource SubtleBorderBrush}" />
+    </Style>
+    <Style Selector="ListBoxItem">
+      <Setter Property="MinHeight" Value="24" />
+      <Setter Property="Padding" Value="6,1" />
+    </Style>
+  </Window.Styles>
+
+  <Grid RowDefinitions="Auto,Auto,Auto,*,Auto,Auto,Auto">
+
+    <!-- Toolbar -->
+    <Border Grid.Row="0" Padding="6,4" BorderThickness="0,0,0,1" BorderBrush="{DynamicResource SubtleBorderBrush}">
+      <DockPanel LastChildFill="True">
+        <StackPanel Orientation="Horizontal" Spacing="4" DockPanel.Dock="Left">
+          <Button x:Name="RefreshButton" Classes="tool" Content="↻ Refresh" Command="{Binding RefreshCommand}" ToolTip.Tip="Refresh the list of changes (F5)" />
+          <ToggleButton x:Name="UntrackedToggle" Classes="tool" Content="Untracked files" IsChecked="{Binding ShowUntracked}" />
+          <Border Width="1" Margin="4,2" Background="{DynamicResource SubtleBorderBrush}" />
+          <Button x:Name="StageAllButton" Classes="tool" Content="Stage all" Command="{Binding StageAllCommand}" />
+          <Button x:Name="UnstageAllButton" Classes="tool" Content="Unstage all" Command="{Binding UnstageAllCommand}" />
+          <Border Width="1" Margin="4,2" Background="{DynamicResource SubtleBorderBrush}" />
+          <Button x:Name="ResetAllToolbarButton" Classes="tool" Content="Reset all changes…" Command="{Binding ResetAllCommand}" />
+        </StackPanel>
+        <SplitButton x:Name="ToolbarCommitButton" DockPanel.Dock="Right" Content="Commit" Command="{Binding CommitNowCommand}" MinHeight="26" Padding="10,3">
+          <SplitButton.Flyout>
+            <MenuFlyout Placement="BottomEdgeAlignedRight">
+              <MenuItem x:Name="ToolbarCommitItem" Header="Commit" Command="{Binding CommitNowCommand}" InputGesture="Ctrl+Enter" />
+              <MenuItem x:Name="ToolbarCommitPushItem" Header="Commit &amp; push" Command="{Binding CommitAndPushCommand}" />
+            </MenuFlyout>
+          </SplitButton.Flyout>
+        </SplitButton>
+        <StackPanel DockPanel.Dock="Right" Orientation="Horizontal" Margin="8,0" Spacing="4">
+          <TextBlock Text="Filter:" VerticalAlignment="Center" Opacity="0.7" />
+          <TextBox x:Name="FilterBox" Width="130" MinHeight="26" Padding="6,3" Text="{Binding Filter}" Watermark="Filter files" />
+        </StackPanel>
+        <Panel />
+      </DockPanel>
+    </Border>
+
+    <!-- Confirmation bars -->
+    <Border x:Name="ResetConfirmation" Grid.Row="1" Padding="8,6" IsVisible="{Binding IsConfirmingReset}" Background="{DynamicResource ErrorBannerBackground}">
+      <Grid ColumnDefinitions="*,Auto,Auto">
+        <TextBlock x:Name="ResetConfirmationMessage" Text="{Binding ResetConfirmationText}" Foreground="{DynamicResource ErrorBannerForeground}" VerticalAlignment="Center" TextWrapping="Wrap" />
+        <Button x:Name="ConfirmResetButton" Grid.Column="1" Content="Reset" Command="{Binding ConfirmResetCommand}" Margin="8,0,6,0" />
+        <Button x:Name="CancelResetButton" Grid.Column="2" Content="Cancel" Command="{Binding CancelResetCommand}" />
+      </Grid>
+    </Border>
+    <Border x:Name="CloseConfirmation" Grid.Row="2" Padding="8,6" IsVisible="{Binding IsConfirmingClose}" Background="{DynamicResource ErrorBannerBackground}">
+      <Grid ColumnDefinitions="*,Auto,Auto">
+        <TextBlock Text="The commit message has not been committed. Discard it and close the window?" Foreground="{DynamicResource ErrorBannerForeground}" VerticalAlignment="Center" TextWrapping="Wrap" />
+        <Button x:Name="DiscardCloseButton" Grid.Column="1" Content="Discard and close" Command="{Binding DiscardAndCloseCommand}" Margin="8,0,6,0" />
+        <Button x:Name="KeepEditingButton" Grid.Column="2" Content="Keep editing" Command="{Binding KeepEditingCommand}" />
+      </Grid>
+    </Border>
+
+    <!-- Lists and diff -->
+    <Grid x:Name="MainArea" Grid.Row="3" ColumnDefinitions="300,Auto,*" MinHeight="150">
+      <Grid RowDefinitions="*,Auto,*">
+        <DockPanel>
+          <Border DockPanel.Dock="Top" Classes="sectionHeader">
+            <Grid ColumnDefinitions="*,Auto">
+              <TextBlock x:Name="UnstagedHeader" Text="{Binding UnstagedHeader}" FontWeight="SemiBold" VerticalAlignment="Center" />
+              <Button x:Name="StageSelectedButton" Grid.Column="1" Classes="tool" Content="Stage ▾" MinHeight="22" Padding="6,1"
+                      Command="{Binding StageSelectedCommand}" ToolTip.Tip="Stage the selected files (double-click a file)" />
+            </Grid>
+          </Border>
+          <Panel>
+            <ListBox x:Name="UnstagedList" ItemsSource="{Binding Unstaged}" SelectedItem="{Binding SelectedUnstaged}" SelectionMode="Multiple"
+                     SelectionChanged="OnUnstagedSelectionChanged" DoubleTapped="OnUnstagedDoubleTapped" BorderThickness="0">
+              <ListBox.ItemTemplate>
+                <DataTemplate x:DataType="vm:ChangedFileViewModel">
+                  <Grid ColumnDefinitions="20,Auto,*" ColumnSpacing="6" ToolTip.Tip="{Binding Description}">
+                    <Grid.ContextMenu>
+                      <ContextMenu>
+                        <MenuItem Header="Stage" Command="{Binding $parent[Window].((vm:CommitWindowViewModel)DataContext).StageSelectedCommand}" />
+                        <MenuItem Header="Reset…" Command="{Binding $parent[Window].((vm:CommitWindowViewModel)DataContext).ResetSelectedCommand}" />
+                        <Separator />
+                        <MenuItem Header="Open" Click="OnOpenFile" />
+                        <MenuItem Header="File history" Command="{Binding $parent[Window].((vm:CommitWindowViewModel)DataContext).ShowFileHistoryCommand}" CommandParameter="{Binding}" />
+                        <MenuItem Header="Copy path" Click="OnCopyPath" />
+                      </ContextMenu>
+                    </Grid.ContextMenu>
+                    <TextBlock Classes="glyph" Text="{Binding Status}"
+                               Classes.added="{Binding Status, Converter={x:Static ObjectConverters.Equal}, ConverterParameter=A}"
+                               Classes.deleted="{Binding Status, Converter={x:Static ObjectConverters.Equal}, ConverterParameter=D}"
+                               Classes.conflict="{Binding IsConflicted}" />
+                    <TextBlock Grid.Column="1" Text="{Binding FileName}" />
+                    <TextBlock Grid.Column="2" Text="{Binding Directory}" Opacity="0.6" FontSize="11" TextTrimming="CharacterEllipsis" VerticalAlignment="Center" />
+                  </Grid>
+                </DataTemplate>
+              </ListBox.ItemTemplate>
+            </ListBox>
+            <TextBlock x:Name="NoUnstagedText" Text="There are no unstaged changes" Opacity="0.55" Margin="10" IsHitTestVisible="False" IsVisible="{Binding HasNoUnstaged}" />
+          </Panel>
+        </DockPanel>
+        <GridSplitter Grid.Row="1" Height="5" Background="Transparent" HorizontalAlignment="Stretch" ResizeDirection="Rows" />
+        <DockPanel Grid.Row="2">
+          <Border DockPanel.Dock="Top" Classes="sectionHeader" BorderThickness="0,1,0,1">
+            <Grid ColumnDefinitions="*,Auto">
+              <TextBlock x:Name="StagedHeader" Text="{Binding StagedHeader}" FontWeight="SemiBold" VerticalAlignment="Center" />
+              <Button x:Name="UnstageSelectedButton" Grid.Column="1" Classes="tool" Content="Unstage ▴" MinHeight="22" Padding="6,1"
+                      Command="{Binding UnstageSelectedCommand}" ToolTip.Tip="Unstage the selected files (double-click a file)" />
+            </Grid>
+          </Border>
+          <Panel>
+            <ListBox x:Name="StagedList" ItemsSource="{Binding Staged}" SelectedItem="{Binding SelectedStaged}" SelectionMode="Multiple"
+                     SelectionChanged="OnStagedSelectionChanged" DoubleTapped="OnStagedDoubleTapped" BorderThickness="0">
+              <ListBox.ItemTemplate>
+                <DataTemplate x:DataType="vm:ChangedFileViewModel">
+                  <Grid ColumnDefinitions="20,Auto,*" ColumnSpacing="6" ToolTip.Tip="{Binding Description}">
+                    <Grid.ContextMenu>
+                      <ContextMenu>
+                        <MenuItem Header="Unstage" Command="{Binding $parent[Window].((vm:CommitWindowViewModel)DataContext).UnstageSelectedCommand}" />
+                        <MenuItem Header="Reset…" Command="{Binding $parent[Window].((vm:CommitWindowViewModel)DataContext).ResetSelectedCommand}" />
+                        <Separator />
+                        <MenuItem Header="Open" Click="OnOpenFile" />
+                        <MenuItem Header="File history" Command="{Binding $parent[Window].((vm:CommitWindowViewModel)DataContext).ShowFileHistoryCommand}" CommandParameter="{Binding}" />
+                        <MenuItem Header="Copy path" Click="OnCopyPath" />
+                      </ContextMenu>
+                    </Grid.ContextMenu>
+                    <TextBlock Classes="glyph" Text="{Binding Status}"
+                               Classes.added="{Binding Status, Converter={x:Static ObjectConverters.Equal}, ConverterParameter=A}"
+                               Classes.deleted="{Binding Status, Converter={x:Static ObjectConverters.Equal}, ConverterParameter=D}"
+                               Classes.conflict="{Binding IsConflicted}" />
+                    <TextBlock Grid.Column="1" Text="{Binding FileName}" />
+                    <TextBlock Grid.Column="2" Text="{Binding Directory}" Opacity="0.6" FontSize="11" TextTrimming="CharacterEllipsis" VerticalAlignment="Center" />
+                  </Grid>
+                </DataTemplate>
+              </ListBox.ItemTemplate>
+            </ListBox>
+            <TextBlock x:Name="NoStagedText" Text="There are no staged changes" Opacity="0.55" Margin="10" IsHitTestVisible="False" IsVisible="{Binding HasNoStaged}" />
+          </Panel>
+        </DockPanel>
+      </Grid>
+      <GridSplitter Grid.Column="1" Width="5" Background="Transparent" VerticalAlignment="Stretch" ResizeDirection="Columns" />
+      <Border Grid.Column="2" BorderThickness="1,0,0,0" BorderBrush="{DynamicResource SubtleBorderBrush}">
+        <views:DiffView x:Name="DiffPanel" DataContext="{Binding Diff}" />
+      </Border>
+    </Grid>
+
+    <GridSplitter Grid.Row="4" Height="5" Background="Transparent" HorizontalAlignment="Stretch" ResizeDirection="Rows" />
+
+    <!-- Message and actions -->
+    <Border Grid.Row="5" Padding="8,2,8,6" BorderThickness="0,1,0,0" BorderBrush="{DynamicResource SubtleBorderBrush}">
+      <DockPanel>
+        <Grid DockPanel.Dock="Top" ColumnDefinitions="Auto,*,Auto,Auto" Margin="0,0,0,4">
+          <TextBlock Text="Commit message" FontWeight="SemiBold" VerticalAlignment="Center" />
+          <Button x:Name="TemplatesButton" Grid.Column="2" Classes="tool" Content="Templates ▾" Click="OnTemplatesClick" Margin="0,0,4,0" />
+          <Button x:Name="RecentButton" Grid.Column="3" Classes="tool" Content="Recent messages ▾" Click="OnRecentClick" IsEnabled="{Binding HasRecentMessages}" />
+        </Grid>
+        <Grid DockPanel.Dock="Bottom" ColumnDefinitions="Auto,*" RowDefinitions="Auto,Auto" Margin="0,6,0,0">
+          <WrapPanel Grid.ColumnSpan="2" Orientation="Horizontal" VerticalAlignment="Center">
+            <CheckBox x:Name="AmendBox" Content="_Amend commit" IsChecked="{Binding Commit.Amend}" IsEnabled="{Binding Commit.HasHead}" Margin="0,0,12,0" />
+            <CheckBox x:Name="SignOffBox" Content="Sign off" IsChecked="{Binding Commit.SignOff}" Margin="0,0,12,0" />
+            <CheckBox x:Name="PushBox" Content="Push after commit" IsChecked="{Binding PushAfterCommit}" Margin="0,0,12,0" />
+            <CheckBox x:Name="CloseBox" Content="Close after commit" IsChecked="{Binding CloseAfterCommit}" />
+          </WrapPanel>
+          <Button x:Name="ResetAllButton" Grid.Row="1" Content="_Reset all changes…" Command="{Binding ResetAllCommand}" VerticalAlignment="Center" />
+          <StackPanel Grid.Row="1" Grid.Column="1" Orientation="Horizontal" Spacing="6" HorizontalAlignment="Right">
+            <Button x:Name="CommitAndPushButton" Content="Commit &amp; _push" Command="{Binding CommitAndPushCommand}" />
+            <Button x:Name="CommitButton" Classes="accent" Content="_Commit" Command="{Binding CommitNowCommand}" ToolTip.Tip="Commit (Ctrl+Enter)" />
+          </StackPanel>
+        </Grid>
+        <TextBlock x:Name="ErrorLabel" DockPanel.Dock="Bottom" Text="{Binding ErrorText}" IsVisible="{Binding HasError}"
+                   Foreground="{DynamicResource ErrorTextForeground}" TextWrapping="Wrap" Margin="0,4,0,0" />
+        <TextBox x:Name="MessageBox" Text="{Binding Commit.Message}" AcceptsReturn="True" TextWrapping="Wrap" MinHeight="90" Height="120"
+                 Watermark="Enter commit message" />
+      </DockPanel>
+    </Border>
+
+    <!-- Status line -->
+    <Border Grid.Row="6" Padding="8,3" BorderThickness="0,1,0,0" BorderBrush="{DynamicResource SubtleBorderBrush}">
+      <Grid ColumnDefinitions="*,Auto">
+        <TextBlock x:Name="StatusLine" Text="{Binding StatusText}" Opacity="0.8" />
+        <TextBlock Grid.Column="1" Text="Pushing…" IsVisible="{Binding IsPushing}" Opacity="0.8" />
+      </Grid>
+    </Border>
+  </Grid>
+</Window>

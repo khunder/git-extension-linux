@@ -74,7 +74,7 @@ public sealed partial class CommandLogEntry
     public string FileName { get; }
     public string Arguments { get; }
     public string WorkingDir { get; }
-    private DateTime StartedAt { get; }
+    public DateTime StartedAt { get; }
     public bool IsOnMainThread { get; }
     public TimeSpan? Duration { get; internal set; }
     public int? ProcessId { get; set; }

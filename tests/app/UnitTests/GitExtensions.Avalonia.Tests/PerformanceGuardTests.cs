@@ -212,9 +212,8 @@ public class PerformanceGuardTests
         using TestRepository repository = new();
         File.WriteAllText(Path.Combine(repository.Path, "a.txt"), string.Join('\n', Enumerable.Range(0, 5000).Select(i => "line " + i)) + "\n");
         MainWindowViewModel viewModel = CreateViewModel();
-        MainWindow window = new() { DataContext = viewModel };
-        window.Show();
         await viewModel.OpenAsync(repository.Path);
+        Window window = ShellTestSupport.CreateChangesHost(viewModel);
 
         ChangedFileViewModel file = viewModel.ChangedFiles.Single(f => f.Name == "a.txt");
         viewModel.SelectedChangedFile = file;

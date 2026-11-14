@@ -18,9 +18,33 @@ public sealed class ChangedFileViewModel
             _ => "M"
         };
         IsStaged = item.Staged == StagedStatus.Index;
+        int slash = item.Name.LastIndexOf('/');
+        FileName = slash < 0 ? item.Name : item.Name[(slash + 1)..];
+        Directory = slash < 0 ? string.Empty : item.Name[..slash];
+        Description = Status switch
+        {
+            "U" => "Unmerged (conflict)",
+            "A" => item.IsTracked ? "Added" : "New (untracked)",
+            "D" => "Deleted",
+            "R" => "Renamed",
+            "C" => "Copied",
+            _ => "Modified"
+        };
     }
 
+    /// <summary>The file name without its folder.</summary>
+    public string FileName { get; }
+
+    /// <summary>The folder of the file relative to the working directory (empty at the top level).</summary>
+    public string Directory { get; }
+
+    /// <summary>The change kind in words, e.g. for a tooltip.</summary>
+    public string Description { get; }
+
     public GitItemStatus Item { get; }
+
+    /// <summary>The name for lists: renames show as "old → new".</summary>
+    public string DisplayName => Item.IsRenamed && !string.IsNullOrEmpty(Item.OldName) ? $"{Item.OldName} → {Name}" : Name;
 
     public string Name { get; }
 

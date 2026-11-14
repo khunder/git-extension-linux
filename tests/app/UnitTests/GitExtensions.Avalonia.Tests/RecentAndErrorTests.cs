@@ -1,4 +1,4 @@
-using Avalonia.Controls;
+﻿using Avalonia.Controls;
 using Avalonia.Headless;
 using Avalonia.Headless.NUnit;
 using Avalonia.Media.Imaging;
@@ -147,7 +147,7 @@ public class RecentAndErrorTests
         => new WindowStateStore().FilePath.Should().StartWith(Environment.GetFolderPath(Environment.SpecialFolder.ApplicationData));
 
     [AvaloniaTest]
-    public async Task Start_view_renders_recent_repositories()
+    public async Task Dashboard_renders_the_recent_repositories()
     {
         string root = Directory.CreateTempSubdirectory("ge-avalonia-shots-").FullName;
         try
@@ -163,16 +163,19 @@ public class RecentAndErrorTests
 
             // Replace whatever earlier tests recorded so the screenshot is deterministic.
             await RepositoryHistoryManager.Locals.SaveRecentHistoryAsync(history);
+            await RepositoryHistoryManager.Locals.SaveFavouriteHistoryAsync([]);
 
             MainWindowViewModel viewModel = CreateViewModel();
             MainWindow window = new() { DataContext = viewModel };
             window.Show();
             await viewModel.Recent.LoadAsync();
+            await viewModel.Dashboard.LoadAsync();
             Render(window);
 
-            window.FindControl<RecentRepositoriesView>("StartView")!.IsVisible.Should().BeTrue();
-            window.FindControl<ListBox>("CommitList")!.IsEffectivelyVisible.Should().BeFalse();
-            window.FindControl<RecentRepositoriesView>("StartView")!.FindControl<ListBox>("RecentList")!.ItemCount.Should().Be(4);
+            window.FindControl<DashboardView>("DashboardPage")!.IsVisible.Should().BeTrue();
+            window.Find<RevisionGridView>("RevisionGrid").IsEffectivelyVisible.Should().BeFalse();
+            viewModel.Recent.Items.Count.Should().Be(4);
+            viewModel.Dashboard.Categories.Single().Entries.Count.Should().Be(4);
             Screenshot(window, "start-view.png");
             window.Close();
         }
@@ -183,12 +186,15 @@ public class RecentAndErrorTests
     }
 
     [AvaloniaTest]
-    public async Task Start_view_renders_the_empty_state_and_error_banner()
+    public async Task Dashboard_renders_the_empty_state_and_error_banner()
     {
         await RepositoryHistoryManager.Locals.SaveRecentHistoryAsync([]);
+        await RepositoryHistoryManager.Locals.SaveFavouriteHistoryAsync([]);
         MainWindowViewModel viewModel = CreateViewModel();
         await viewModel.Recent.LoadAsync();
+        await viewModel.Dashboard.LoadAsync();
         viewModel.Recent.IsEmpty.Should().BeTrue();
+        viewModel.Dashboard.IsEmpty.Should().BeTrue();
         MainWindow window = new() { DataContext = viewModel };
         window.Show();
 

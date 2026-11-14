@@ -1,0 +1,88 @@
+<UserControl xmlns="https://github.com/avaloniaui"
+             xmlns:x="http://schemas.microsoft.com/winfx/2006/xaml"
+             xmlns:vm="using:GitExtensions.Desktop.ViewModels"
+             xmlns:diff="using:GitExtensions.Desktop.Diff"
+             xmlns:views="using:GitExtensions.Desktop.Views"
+             x:Class="GitExtensions.Desktop.Views.RevisionDiffView"
+             x:DataType="vm:RevisionDiffViewModel">
+
+  <UserControl.Styles>
+    <Style Selector="Border.added"><Setter Property="Background" Value="{DynamicResource DiffAddedBackground}" /></Style>
+    <Style Selector="Border.removed"><Setter Property="Background" Value="{DynamicResource DiffRemovedBackground}" /></Style>
+    <Style Selector="Border.hunk"><Setter Property="Background" Value="{DynamicResource DiffHunkBackground}" /></Style>
+    <Style Selector="TextBlock.added"><Setter Property="Foreground" Value="{DynamicResource SuccessTextForeground}" /></Style>
+    <Style Selector="TextBlock.deleted"><Setter Property="Foreground" Value="{DynamicResource ErrorTextForeground}" /></Style>
+    <Style Selector="ListBoxItem">
+      <Setter Property="MinHeight" Value="22" />
+      <Setter Property="Padding" Value="6,1" />
+    </Style>
+  </UserControl.Styles>
+
+  <Grid ColumnDefinitions="260,4,*">
+    <DockPanel Grid.Column="0">
+      <TextBox x:Name="FilterBox" DockPanel.Dock="Top" Margin="4" MinHeight="24" Padding="6,2" FontSize="12" Watermark="Filter files…" Text="{Binding FilterText}" />
+      <ListBox x:Name="FileList" ItemsSource="{Binding Files}" SelectedItem="{Binding SelectedFile}" Padding="0">
+        <ListBox.ItemTemplate>
+          <DataTemplate x:DataType="vm:ChangedFileViewModel">
+            <Grid ColumnDefinitions="16,*,Auto" ColumnSpacing="6" Background="Transparent">
+              <Grid.ContextMenu>
+                <ContextMenu>
+                  <MenuItem Header="File history" Click="OnFileHistoryClick" />
+                  <MenuItem Header="Blame" Click="OnBlameClick" />
+                  <Separator />
+                  <MenuItem Header="Copy path" Click="OnCopyPathClick" />
+                  <MenuItem Header="Copy file name" Click="OnCopyNameClick" />
+                </ContextMenu>
+              </Grid.ContextMenu>
+              <TextBlock Text="{Binding Status}" FontFamily="Cascadia Mono, Consolas, DejaVu Sans Mono, monospace" FontWeight="Bold" HorizontalAlignment="Center"
+                         Classes.added="{Binding Status, Converter={x:Static ObjectConverters.Equal}, ConverterParameter=A}"
+                         Classes.deleted="{Binding Status, Converter={x:Static ObjectConverters.Equal}, ConverterParameter=D}" />
+              <TextBlock Grid.Column="1" Text="{Binding DisplayName}" TextTrimming="CharacterEllipsis" ToolTip.Tip="{Binding DisplayName}" />
+              <TextBlock Grid.Column="2" Text="staged" FontSize="11" Opacity="0.6" IsVisible="{Binding IsStaged}" />
+            </Grid>
+          </DataTemplate>
+        </ListBox.ItemTemplate>
+      </ListBox>
+    </DockPanel>
+
+    <GridSplitter Grid.Column="1" Width="4" Background="Transparent" />
+
+    <DockPanel Grid.Column="2">
+      <Border x:Name="NoticeBanner" DockPanel.Dock="Top" Padding="8,3" Background="{DynamicResource DiffHunkBackground}"
+              IsVisible="{Binding Notice, Converter={x:Static StringConverters.IsNotNullOrEmpty}}">
+        <TextBlock Text="{Binding Notice}" FontSize="12" TextWrapping="Wrap" />
+      </Border>
+      <Panel>
+        <ItemsControl x:Name="DiffLines" ItemsSource="{Binding Lines}">
+          <ItemsControl.Template>
+            <ControlTemplate>
+              <ScrollViewer HorizontalScrollBarVisibility="Auto" VerticalScrollBarVisibility="Auto">
+                <ItemsPresenter Name="PART_ItemsPresenter" ItemsPanel="{TemplateBinding ItemsPanel}" />
+              </ScrollViewer>
+            </ControlTemplate>
+          </ItemsControl.Template>
+          <ItemsControl.ItemsPanel>
+            <ItemsPanelTemplate>
+              <VirtualizingStackPanel />
+            </ItemsPanelTemplate>
+          </ItemsControl.ItemsPanel>
+          <ItemsControl.ItemTemplate>
+            <DataTemplate x:DataType="diff:DiffLine">
+              <Border Classes.added="{Binding Kind, Converter={x:Static ObjectConverters.Equal}, ConverterParameter={x:Static diff:DiffLineKind.Added}}"
+                      Classes.removed="{Binding Kind, Converter={x:Static ObjectConverters.Equal}, ConverterParameter={x:Static diff:DiffLineKind.Removed}}"
+                      Classes.hunk="{Binding Kind, Converter={x:Static ObjectConverters.Equal}, ConverterParameter={x:Static diff:DiffLineKind.Hunk}}">
+                <Grid ColumnDefinitions="44,44,*" Opacity="{Binding Kind, Converter={x:Static views:DiffLineBrushes.TextOpacity}}">
+                  <TextBlock Text="{Binding OldNumber}" FontFamily="Cascadia Mono, Consolas, DejaVu Sans Mono, monospace" FontSize="12" Opacity="0.5" TextAlignment="Right" Margin="0,0,6,0" />
+                  <TextBlock Grid.Column="1" Text="{Binding NewNumber}" FontFamily="Cascadia Mono, Consolas, DejaVu Sans Mono, monospace" FontSize="12" Opacity="0.5" TextAlignment="Right" Margin="0,0,6,0" />
+                  <TextBlock Grid.Column="2" Text="{Binding DisplayText}" FontFamily="Cascadia Mono, Consolas, DejaVu Sans Mono, monospace" FontSize="12" TextWrapping="NoWrap" VerticalAlignment="Center" />
+                </Grid>
+              </Border>
+            </DataTemplate>
+          </ItemsControl.ItemTemplate>
+        </ItemsControl>
+        <TextBlock x:Name="MessageText" Text="{Binding Message}" Opacity="0.6" Margin="12" HorizontalAlignment="Left" VerticalAlignment="Top"
+                   IsVisible="{Binding Message, Converter={x:Static StringConverters.IsNotNullOrEmpty}}" />
+      </Panel>
+    </DockPanel>
+  </Grid>
+</UserControl>

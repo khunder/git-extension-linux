@@ -1,0 +1,151 @@
+<UserControl xmlns="https://github.com/avaloniaui"
+             xmlns:x="http://schemas.microsoft.com/winfx/2006/xaml"
+             xmlns:vm="using:GitExtensions.Desktop.ViewModels"
+             xmlns:views="using:GitExtensions.Desktop.Views"
+             x:Class="GitExtensions.Desktop.Views.MainToolbarView"
+             x:DataType="vm:MainWindowViewModel"
+             IsVisible="{Binding HasOpenedRepository}">
+
+  <UserControl.Styles>
+    <!-- Flat, compact toolbar buttons. -->
+    <Style Selector="Button.tb, SplitButton.tb">
+      <Setter Property="Background" Value="Transparent" />
+      <Setter Property="BorderThickness" Value="1" />
+      <Setter Property="BorderBrush" Value="Transparent" />
+      <Setter Property="Padding" Value="5,2" />
+      <Setter Property="MinHeight" Value="26" />
+      <Setter Property="MinWidth" Value="26" />
+      <Setter Property="VerticalAlignment" Value="Center" />
+      <Setter Property="VerticalContentAlignment" Value="Center" />
+      <Setter Property="FontSize" Value="13" />
+    </Style>
+    <Style Selector="Button.tb:pointerover /template/ ContentPresenter#PART_ContentPresenter">
+      <Setter Property="Background" Value="{DynamicResource SystemControlBackgroundListLowBrush}" />
+      <Setter Property="BorderBrush" Value="{DynamicResource SubtleBorderBrush}" />
+    </Style>
+    <Style Selector="Button.tb:disabled /template/ ContentPresenter#PART_ContentPresenter">
+      <Setter Property="Background" Value="Transparent" />
+    </Style>
+    <Style Selector="Path.icon">
+      <Setter Property="Width" Value="16" />
+      <Setter Property="Height" Value="16" />
+      <Setter Property="Stroke" Value="{DynamicResource SystemControlForegroundBaseHighBrush}" />
+      <Setter Property="StrokeThickness" Value="1.4" />
+      <Setter Property="StrokeLineCap" Value="Round" />
+      <Setter Property="StrokeJoin" Value="Round" />
+      <Setter Property="VerticalAlignment" Value="Center" />
+    </Style>
+    <Style Selector="Path.icon:disabled">
+      <Setter Property="Opacity" Value="0.4" />
+    </Style>
+    <Style Selector="Border.sep">
+      <Setter Property="Width" Value="1" />
+      <Setter Property="Margin" Value="4,4" />
+      <Setter Property="Background" Value="{DynamicResource SubtleBorderBrush}" />
+    </Style>
+    <Style Selector="MenuItem.stub">
+      <Setter Property="IsEnabled" Value="False" />
+      <Setter Property="ToolTip.Tip" Value="Not available yet" />
+      <Setter Property="ToolTip.ShowOnDisabled" Value="True" />
+    </Style>
+  </UserControl.Styles>
+
+  <Border Padding="4,2" BorderThickness="0,0,0,1" BorderBrush="{DynamicResource SubtleBorderBrush}">
+    <Grid ColumnDefinitions="Auto,*,Auto">
+
+      <!-- Left: refresh, panel and layout toggles. -->
+      <StackPanel Orientation="Horizontal" Spacing="1">
+        <Button x:Name="RefreshButton" Classes="tb" Command="{Binding RefreshCommand}" ToolTip.Tip="Refresh (F5)" ToolTip.ShowOnDisabled="True">
+          <Path Classes="icon" Data="M13,8 A5,5 0 1 1 11.5,4.5 M13,2 L13,5.5 L9.5,5.5" />
+        </Button>
+        <Border Classes="sep" />
+        <Button x:Name="LeftPanelButton" Classes="tb" Command="{Binding ToggleLeftPanelCommand}" ToolTip.Tip="Show or hide the left panel (Ctrl+B)">
+          <Path Classes="icon" Data="M2,3 H14 V13 H2 Z M6.5,3 V13" />
+        </Button>
+        <Button x:Name="LayoutButton" Classes="tb" IsEnabled="False" ToolTip.Tip="Toggle the split layout: not available yet" ToolTip.ShowOnDisabled="True">
+          <Path Classes="icon" Data="M2,3 H14 V13 H2 Z M2,8 H14" />
+        </Button>
+        <Button x:Name="CommitInfoPositionButton" Classes="tb" IsEnabled="False" ToolTip.Tip="Position of the commit info: not available yet" ToolTip.ShowOnDisabled="True">
+          <StackPanel Orientation="Horizontal" Spacing="3">
+            <Path Classes="icon" Data="M2,3 H14 V13 H2 Z M9.5,3 V13" />
+            <TextBlock Text="▾" FontSize="10" VerticalAlignment="Center" />
+          </StackPanel>
+        </Button>
+        <Border Classes="sep" />
+      </StackPanel>
+
+      <!-- Middle: repository and branch (the path shrinks first). -->
+      <Grid Grid.Column="1" ColumnDefinitions="*,Auto">
+        <Button x:Name="RepoPathButton" Classes="tb" HorizontalAlignment="Left" ToolTip.Tip="{Binding RepositoryPath}">
+          <StackPanel Orientation="Horizontal" Spacing="5">
+            <Path Classes="icon" Data="M2,4 H6.5 L8,5.5 H14 V12.5 H2 Z" />
+            <TextBlock x:Name="RepoPathText" Text="{Binding RepositoryPath}" TextTrimming="CharacterEllipsis" VerticalAlignment="Center" />
+            <TextBlock Text="▾" FontSize="10" VerticalAlignment="Center" />
+          </StackPanel>
+        </Button>
+        <Button x:Name="BranchButton" Grid.Column="1" Classes="tb" ToolTip.Tip="Current branch: click to check out another one">
+          <StackPanel Orientation="Horizontal" Spacing="5">
+            <TextBlock x:Name="BranchText" Text="{Binding Branch}" FontWeight="SemiBold" VerticalAlignment="Center" />
+            <TextBlock Text="▾" FontSize="10" VerticalAlignment="Center" />
+          </StackPanel>
+        </Button>
+      </Grid>
+
+      <!-- Right: pull, push, commit, stash, shell and settings. -->
+      <StackPanel Grid.Column="2" Orientation="Horizontal" Spacing="1">
+        <Border Classes="sep" />
+        <SplitButton x:Name="PullButton" Classes="tb" Command="{Binding RunDefaultPullCommand}" IsEnabled="{Binding Remote.HasRepository}" ToolTip.Tip="{Binding PullToolTip}">
+          <StackPanel Orientation="Horizontal" Spacing="4">
+            <Path Classes="icon" Data="M8,2 V12 M4,8.5 L8,12.5 L12,8.5" />
+            <TextBlock Text="Pull" VerticalAlignment="Center" />
+          </StackPanel>
+          <SplitButton.Flyout>
+            <MenuFlyout Placement="BottomEdgeAlignedLeft">
+              <MenuItem x:Name="PullDialogMenuItem" Header="Open pull _dialog…" Command="{Binding PullMergeCommand}" />
+              <MenuItem x:Name="PullMergeMenuItem" Header="Pull - _merge" Command="{Binding PullMergeCommand}" />
+              <MenuItem x:Name="PullRebaseMenuItem" Header="Pull - _rebase" Command="{Binding PullRebaseCommand}" />
+              <MenuItem x:Name="FetchMenuItem" Header="_Fetch" Command="{Binding FetchOnlyCommand}" />
+              <MenuItem x:Name="FetchAllMenuItem" Header="Fetch _all" Command="{Binding FetchAllCommand}" />
+              <MenuItem x:Name="FetchPruneMenuItem" Header="Fetch and _prune all" Command="{Binding FetchAndPruneAllCommand}" />
+              <Separator />
+              <MenuItem Header="Set _default pull action">
+                <MenuItem x:Name="DefaultMergeMenuItem" Header="Pull - _merge" ToggleType="Radio" GroupName="PullAction" IsChecked="{Binding IsDefaultPullMerge, Mode=OneWay}" Command="{Binding SetDefaultPullActionCommand}" CommandParameter="{x:Static vm:PullAction.Merge}" />
+                <MenuItem x:Name="DefaultRebaseMenuItem" Header="Pull - _rebase" ToggleType="Radio" GroupName="PullAction" IsChecked="{Binding IsDefaultPullRebase, Mode=OneWay}" Command="{Binding SetDefaultPullActionCommand}" CommandParameter="{x:Static vm:PullAction.Rebase}" />
+                <MenuItem x:Name="DefaultFetchMenuItem" Header="_Fetch" ToggleType="Radio" GroupName="PullAction" IsChecked="{Binding IsDefaultPullFetch, Mode=OneWay}" Command="{Binding SetDefaultPullActionCommand}" CommandParameter="{x:Static vm:PullAction.Fetch}" />
+                <MenuItem x:Name="DefaultFetchAllMenuItem" Header="Fetch _all" ToggleType="Radio" GroupName="PullAction" IsChecked="{Binding IsDefaultPullFetchAll, Mode=OneWay}" Command="{Binding SetDefaultPullActionCommand}" CommandParameter="{x:Static vm:PullAction.FetchAll}" />
+                <MenuItem x:Name="DefaultFetchPruneMenuItem" Header="Fetch and _prune all" ToggleType="Radio" GroupName="PullAction" IsChecked="{Binding IsDefaultPullFetchAndPrune, Mode=OneWay}" Command="{Binding SetDefaultPullActionCommand}" CommandParameter="{x:Static vm:PullAction.FetchAndPruneAll}" />
+              </MenuItem>
+              <Separator />
+              <MenuItem x:Name="PruneMenuItem" Header="Prune when fetching" ToggleType="CheckBox" IsChecked="{Binding Remote.Prune, Mode=TwoWay}" />
+              <MenuItem x:Name="RemoteChoiceMenuItem" Header="_Remote" IsVisible="{Binding Remote.HasMultipleRemotes}" />
+            </MenuFlyout>
+          </SplitButton.Flyout>
+        </SplitButton>
+        <Button x:Name="PushButton" Classes="tb" Command="{Binding Remote.PushCommand}" ToolTip.Tip="Push the current branch (Ctrl+Shift+K)" ToolTip.ShowOnDisabled="True">
+          <StackPanel Orientation="Horizontal" Spacing="4">
+            <Path Classes="icon" Data="M8,13 V3 M4,6.5 L8,2.5 L12,6.5" />
+            <TextBlock Text="Push" VerticalAlignment="Center" />
+          </StackPanel>
+        </Button>
+        <ProgressBar Width="48" Height="4" IsIndeterminate="True" IsVisible="{Binding Remote.IsRunning}" VerticalAlignment="Center" Margin="2,0" />
+        <Border Classes="sep" />
+        <Button x:Name="CommitButton" Classes="tb" Command="{Binding ShowCommitWindowCommand}" ToolTip.Tip="Commit… (Ctrl+K)">
+          <StackPanel Orientation="Horizontal" Spacing="4">
+            <Path Classes="icon" Data="M8,2.5 A5.5,5.5 0 1 0 8.01,2.5 Z M5.2,8.2 L7.2,10.2 L10.9,6.2" />
+            <TextBlock x:Name="CommitText" Text="{Binding CommitButtonText}" VerticalAlignment="Center" />
+          </StackPanel>
+        </Button>
+        <views:StashMenuButton Classes="tb" />
+        <Border Classes="sep" />
+        <Button x:Name="FileExplorerButton" Classes="tb" Command="{Binding OpenFileExplorerCommand}" ToolTip.Tip="Open the repository folder in the file explorer">
+          <Path Classes="icon" Data="M2,4 H6.5 L8,5.5 H14 V12.5 H2 Z" />
+        </Button>
+        <Button x:Name="ShellButton" Classes="tb" Command="{Binding OpenShellCommand}" ToolTip.Tip="Open a terminal in the repository folder">
+          <Path Classes="icon" Data="M2,3 H14 V13 H2 Z M4.5,6 L7,8 L4.5,10 M8.5,10.5 H11.5" />
+        </Button>
+        <Button x:Name="SettingsButton" Classes="tb" Content="⚙" FontSize="16" Command="{Binding OpenSettingsCommand}" ToolTip.Tip="Settings (Ctrl+,)" />
+        <views:ToolsMenuButton x:Name="ToolsButton" IsVisible="False" />
+      </StackPanel>
+    </Grid>
+  </Border>
+</UserControl>

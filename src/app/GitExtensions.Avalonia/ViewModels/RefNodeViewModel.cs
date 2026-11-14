@@ -15,6 +15,8 @@ public enum RefNodeKind
     LocalBranch,
     RemoteBranch,
     Tag,
+    Submodule,
+    Stash,
 }
 
 /// <summary>
@@ -45,6 +47,12 @@ public sealed partial class RefNodeViewModel : ObservableObject
     public ObjectId? ObjectId { get; }
 
     public bool IsCurrent { get; }
+
+    /// <summary>For a group: the number of entries it holds (shown in the header, e.g. "Branches (72)").</summary>
+    public int? Count { get; init; }
+
+    /// <summary>The text shown in the tree: the name, with the count for groups that have one.</summary>
+    public string Header => Count is int count ? $"{Name} ({count})" : Name;
 
     public ObservableCollection<RefNodeViewModel> Children { get; } = [];
 

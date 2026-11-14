@@ -1,4 +1,4 @@
-using Avalonia.Controls;
+﻿using Avalonia.Controls;
 using Avalonia.Headless;
 using Avalonia.Headless.NUnit;
 using Avalonia.Media.Imaging;
@@ -29,8 +29,7 @@ public class LayoutTests
     public void Store_round_trips()
     {
         LayoutStore store = new(Path.Combine(_directory, "sub", "layout.json"));
-        LayoutSettings settings = new(SidebarWidth: 260, MiddleWidth: 600, RightWidth: 400, HistoryHeight: 300,
-            DetailsHeight: 200, ChangesHeight: 100, DiffHeight: 350, CommitHeight: 140, SidebarCollapsed: true);
+        LayoutSettings settings = new(SidebarWidth: 260, GridHeight: 300, TabsHeight: 200, SidebarCollapsed: true);
         store.Save(settings);
         store.Load().Should().Be(settings);
     }
@@ -52,17 +51,27 @@ public class LayoutTests
     }
 
     [Test]
+    public void Store_ignores_the_fields_of_the_old_layout_file()
+    {
+        LayoutStore store = new(Path.Combine(_directory, "layout.json"));
+        File.WriteAllText(store.FilePath, "{\"SidebarWidth\": 260, \"MiddleWidth\": 600, \"RightWidth\": 400, \"ChangesHeight\": 90, \"SidebarCollapsed\": true}");
+        LayoutSettings loaded = store.Load();
+        loaded.SidebarWidth.Should().Be(260);
+        loaded.SidebarCollapsed.Should().BeTrue();
+        loaded.GridHeight.Should().Be(new LayoutSettings().GridHeight);
+    }
+
+    [Test]
     public void Store_clamps_absurd_values_and_fills_missing_ones()
     {
         LayoutStore store = new(Path.Combine(_directory, "layout.json"));
-        File.WriteAllText(store.FilePath, "{\"SidebarWidth\": 99999, \"MiddleWidth\": -5, \"DiffHeight\": 1e300}");
+        File.WriteAllText(store.FilePath, "{\"SidebarWidth\": 99999, \"GridHeight\": -5, \"TabsHeight\": 1e300}");
         LayoutSettings loaded = store.Load();
         loaded.SidebarWidth.Should().Be(LayoutSettings.MaxSidebarWidth);
-        loaded.MiddleWidth.Should().Be(LayoutSettings.MinWeight);
-        loaded.DiffHeight.Should().Be(LayoutSettings.MaxWeight);
-        loaded.CommitHeight.Should().Be(new LayoutSettings().CommitHeight);
+        loaded.GridHeight.Should().Be(LayoutSettings.MinWeight);
+        loaded.TabsHeight.Should().Be(LayoutSettings.MaxWeight);
 
-        new LayoutSettings(SidebarWidth: double.NaN, RightWidth: double.PositiveInfinity).Clamp()
+        new LayoutSettings(SidebarWidth: double.NaN, GridHeight: double.PositiveInfinity, TabsHeight: double.NaN).Clamp()
             .Should().Be(new LayoutSettings());
     }
 
@@ -70,13 +79,13 @@ public class LayoutTests
     public void Layout_is_restored_from_the_store_and_saved_back()
     {
         LayoutStore store = new(Path.Combine(_directory, "layout.json"));
-        store.Save(new LayoutSettings(SidebarWidth: 300, MiddleWidth: 400, RightWidth: 600, SidebarCollapsed: false));
+        store.Save(new LayoutSettings(SidebarWidth: 300, GridHeight: 400, TabsHeight: 600, SidebarCollapsed: false));
 
         MainWindow window = new() { DataContext = new MainWindowViewModel(GitEnvironment.Initialize(), new NoFolderPicker()) };
         window.UseLayoutStore(store);
         Columns(window).ColumnDefinitions[0].Width.Value.Should().Be(300);
-        Columns(window).ColumnDefinitions[2].Width.Value.Should().Be(400);
-        Columns(window).ColumnDefinitions[4].Width.Value.Should().Be(600);
+        window.Find<Grid>("BrowseRows").RowDefinitions[0].Height.Value.Should().Be(400);
+        window.Find<Grid>("BrowseRows").RowDefinitions[2].Height.Value.Should().Be(600);
 
         window.SidebarCollapsed = true;
         store.Load().SidebarCollapsed.Should().BeTrue();
@@ -87,11 +96,10 @@ public class LayoutTests
     public void Corrupt_layout_cannot_make_the_window_unusable()
     {
         MainWindow window = new() { DataContext = new MainWindowViewModel(GitEnvironment.Initialize(), new NoFolderPicker()) };
-        window.ApplyLayout(new LayoutSettings(SidebarWidth: 1e9, MiddleWidth: double.NaN, RightWidth: -1, DiffHeight: 0));
+        window.ApplyLayout(new LayoutSettings(SidebarWidth: 1e9, GridHeight: double.NaN, TabsHeight: -1));
         Columns(window).ColumnDefinitions[0].Width.Value.Should().BeLessThanOrEqualTo(LayoutSettings.MaxSidebarWidth);
-        Columns(window).ColumnDefinitions[2].Width.Value.Should().BeGreaterThan(0);
-        Columns(window).ColumnDefinitions[4].Width.Value.Should().BeGreaterThan(0);
-        window.FindControl<Grid>("RightRows")!.RowDefinitions[2].Height.Value.Should().BeGreaterThan(0);
+        window.Find<Grid>("BrowseRows").RowDefinitions[0].Height.Value.Should().BeGreaterThan(0);
+        window.Find<Grid>("BrowseRows").RowDefinitions[2].Height.Value.Should().BeGreaterThan(0);
         window.Close();
     }
 
@@ -105,17 +113,18 @@ public class LayoutTests
         await viewModel.OpenAsync(repository.Path);
         Settle();
 
-        Control sidebar = window.FindControl<Control>("SidebarPanel")!;
-        Button toggle = window.FindControl<Button>("SidebarToggle")!;
+        Control sidebar = window.Find<RefsTreeView>("SidebarPanel");
+        // The toolbar button and Ctrl+B use this command; it asks the window to toggle the sidebar.
+        System.Windows.Input.ICommand toggle = viewModel.ToggleLeftPanelCommand;
         sidebar.Bounds.Width.Should().BeGreaterThan(100);
 
-        toggle.RaiseEvent(new Avalonia.Interactivity.RoutedEventArgs(Button.ClickEvent));
+        toggle.Execute(null);
         Settle();
         window.SidebarCollapsed.Should().BeTrue();
         sidebar.IsVisible.Should().BeFalse();
         Columns(window).ColumnDefinitions[0].ActualWidth.Should().Be(0);
 
-        toggle.RaiseEvent(new Avalonia.Interactivity.RoutedEventArgs(Button.ClickEvent));
+        toggle.Execute(null);
         Settle();
         window.SidebarCollapsed.Should().BeFalse();
         sidebar.Bounds.Width.Should().BeGreaterThan(100);
@@ -123,15 +132,37 @@ public class LayoutTests
     }
 
     [AvaloniaTest]
-    public async Task Default_layout_gives_the_diff_and_history_enough_room_at_1200x720()
+    public async Task Default_layout_gives_the_grid_tabs_and_left_panel_enough_room()
     {
-        (MainWindow window, _) = await OpenAsync(1200, 720, ThemeVariant.Light);
-        Control diff = window.FindControl<DiffView>("DiffPanel")!;
-        ListBox history = window.FindControl<ListBox>("CommitList")!;
-        diff.Bounds.Height.Should().BeGreaterThanOrEqualTo(250);
-        history.Bounds.Height.Should().BeGreaterThanOrEqualTo(150);
-        diff.Bounds.Width.Should().BeGreaterThanOrEqualTo(300);
+        foreach ((int width, int height) in new[] { (1200, 720), (900, 600) })
+        {
+            (MainWindow window, TestRepository repository) = await OpenAsync(width, height, ThemeVariant.Light);
+            string size = $"{width}x{height}";
+            window.Find<RevisionGridView>("RevisionGrid").Bounds.Height.Should().BeGreaterThanOrEqualTo(150, size);
+            window.Find<RevisionTabsView>("RevisionTabs").Bounds.Height.Should().BeGreaterThanOrEqualTo(150, size);
+            window.Find<RefsTreeView>("SidebarPanel").Bounds.Width.Should().BeGreaterThanOrEqualTo(150, size);
+            window.Find<RevisionGridView>("RevisionGrid").Bounds.Width.Should().BeGreaterThanOrEqualTo(400, size);
+            window.Find<RevisionTabsView>("RevisionTabs").Bounds.Width.Should().Be(window.Find<RevisionGridView>("RevisionGrid").Bounds.Width, size);
+            window.Close();
+            repository.Dispose();
+        }
+    }
+
+    [AvaloniaTest]
+    public async Task Dragging_the_splitters_is_saved_as_the_layout()
+    {
+        LayoutStore store = new(Path.Combine(_directory, "layout.json"));
+        (MainWindow window, TestRepository repository) = await OpenAsync(1200, 720, ThemeVariant.Light);
+        window.UseLayoutStore(store);
+        Settle();
+
+        window.CaptureLayout().SidebarWidth.Should().BeApproximately(window.Find<RefsTreeView>("SidebarPanel").Bounds.Width, 1);
+        LayoutSettings captured = window.CaptureLayout();
+        captured.GridHeight.Should().BeApproximately(window.Find<RevisionGridView>("RevisionGrid").Bounds.Height, 1);
+        captured.TabsHeight.Should().BeApproximately(window.Find<RevisionTabsView>("RevisionTabs").Bounds.Height, 1);
         window.Close();
+        store.Load().SidebarWidth.Should().BeApproximately(captured.SidebarWidth, 1);
+        repository.Dispose();
     }
 
     [AvaloniaTest]
@@ -174,9 +205,6 @@ public class LayoutTests
         window.Show();
         await viewModel.OpenAsync(repository.Path);
 
-        ChangedFileViewModel file = viewModel.ChangedFiles.First();
-        viewModel.SelectedChangedFile = file;
-        await viewModel.Diff!.ShowAsync(file);
         viewModel.SelectedCommit = viewModel.Commits[0];
         DateTime deadline = DateTime.UtcNow.AddSeconds(20);
         while (!viewModel.CommitDetails.HasCommit && DateTime.UtcNow < deadline)

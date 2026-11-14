@@ -1,7 +1,8 @@
-using Avalonia.Controls;
+﻿using Avalonia.Controls;
 using Avalonia.Headless;
 using Avalonia.Headless.NUnit;
 using Avalonia.Media.Imaging;
+using Avalonia.VisualTree;
 using GitCommands;
 using GitExtensions.Desktop.Services;
 using GitExtensions.Desktop.ViewModels;
@@ -131,15 +132,16 @@ public class CommitDetailsTests
         window.Show();
         await viewModel.OpenAsync(repository.Path);
 
-        window.FindControl<ListBox>("CommitList")!.SelectedIndex = 0;
+        window.Find<ListBox>("CommitList").SelectedIndex = 0;
         await WaitUntilAsync(() => viewModel.CommitDetails.HasCommit);
         AvaloniaHeadlessPlatform.ForceRenderTimerTick();
 
-        CommitDetailsView view = window.FindControl<CommitDetailsView>("DetailsView")!;
-        view.FindControl<Panel>("DetailsPanel")!.IsVisible.Should().BeTrue();
-        view.FindControl<TextBlock>("EmptyText")!.IsVisible.Should().BeFalse();
-        view.FindControl<ListBox>("FileList")!.ItemCount.Should().Be(3);
-        view.FindControl<SelectableTextBlock>("MessageText")!.Text.Should().Contain("Final paragraph.");
+        // The commit's details are shown by the bottom tabs: the Commit tab has the metadata and message, the Diff tab the files.
+        await WaitUntilAsync(() => viewModel.RevisionTabs.Diff.Files.Count == 3);
+        CommitInfoView info = window.GetVisualDescendants().OfType<CommitInfoView>().Single();
+        info.FindControl<ScrollViewer>("DetailsPanel")!.IsVisible.Should().BeTrue();
+        info.FindControl<TextBlock>("EmptyText")!.IsVisible.Should().BeFalse();
+        viewModel.CommitDetails.Message.Should().Contain("Final paragraph.");
 
         WriteableBitmap? frame = window.CaptureRenderedFrame();
         frame.Should().NotBeNull();

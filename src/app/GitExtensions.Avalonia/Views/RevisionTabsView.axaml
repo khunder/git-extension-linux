@@ -1,0 +1,68 @@
+<UserControl xmlns="https://github.com/avaloniaui"
+             xmlns:x="http://schemas.microsoft.com/winfx/2006/xaml"
+             xmlns:vm="using:GitExtensions.Desktop.ViewModels"
+             xmlns:views="using:GitExtensions.Desktop.Views"
+             x:Class="GitExtensions.Desktop.Views.RevisionTabsView"
+             x:DataType="vm:MainWindowViewModel">
+
+  <UserControl.Styles>
+    <Style Selector="TabItem.revisionTab">
+      <Setter Property="MinHeight" Value="26" />
+      <Setter Property="Padding" Value="10,2" />
+      <Setter Property="FontSize" Value="12" />
+    </Style>
+    <Style Selector="TabItem.revisionTab TextBlock.glyph">
+      <Setter Property="Opacity" Value="0.75" />
+      <Setter Property="VerticalAlignment" Value="Center" />
+    </Style>
+  </UserControl.Styles>
+
+  <TabControl x:Name="Tabs" Padding="0" SelectedIndex="{Binding RevisionTabs.SelectedTabIndex, Mode=TwoWay}">
+    <TabItem x:Name="CommitTabItem" Classes="revisionTab" IsVisible="{Binding RevisionTabs.ShowCommitTab}">
+      <TabItem.Header>
+        <StackPanel Orientation="Horizontal" Spacing="6">
+          <TextBlock Classes="glyph" Text="●" />
+          <TextBlock Text="Commit" />
+        </StackPanel>
+      </TabItem.Header>
+      <views:CommitInfoView DataContext="{Binding CommitDetails}" />
+    </TabItem>
+    <TabItem x:Name="DiffTabItem" Classes="revisionTab">
+      <TabItem.Header>
+        <StackPanel Orientation="Horizontal" Spacing="6">
+          <TextBlock Classes="glyph" Text="±" />
+          <TextBlock x:Name="DiffHeaderText" Text="{Binding RevisionTabs.Diff.TabHeader}" />
+        </StackPanel>
+      </TabItem.Header>
+      <views:RevisionDiffView DataContext="{Binding RevisionTabs.Diff}" />
+    </TabItem>
+    <TabItem x:Name="FileTreeTabItem" Classes="revisionTab" IsVisible="{Binding RevisionTabs.ShowFileTreeTab}">
+      <TabItem.Header>
+        <StackPanel Orientation="Horizontal" Spacing="6">
+          <TextBlock Classes="glyph" Text="▤" />
+          <TextBlock Text="File tree" />
+        </StackPanel>
+      </TabItem.Header>
+      <views:RevisionFileTreeView DataContext="{Binding RevisionTabs.FileTree}" />
+    </TabItem>
+    <TabItem x:Name="ConsoleTabItem" Classes="revisionTab">
+      <TabItem.Header>
+        <StackPanel Orientation="Horizontal" Spacing="6">
+          <TextBlock Classes="glyph" Text="❯" />
+          <TextBlock Text="Console" />
+        </StackPanel>
+      </TabItem.Header>
+      <views:CommandLogView DataContext="{Binding RevisionTabs.Console}" />
+    </TabItem>
+    <!-- Only shown with a configured build server; none is supported yet. -->
+    <TabItem x:Name="BuildReportTabItem" Classes="revisionTab" IsVisible="{Binding RevisionTabs.ShowBuildReport}">
+      <TabItem.Header>
+        <StackPanel Orientation="Horizontal" Spacing="6">
+          <TextBlock Classes="glyph" Text="⚙" />
+          <TextBlock Text="Build Report" />
+        </StackPanel>
+      </TabItem.Header>
+      <TextBlock Text="No build server is configured." Margin="12" Opacity="0.6" />
+    </TabItem>
+  </TabControl>
+</UserControl>

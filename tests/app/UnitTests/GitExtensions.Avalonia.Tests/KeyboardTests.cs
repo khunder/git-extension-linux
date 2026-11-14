@@ -1,4 +1,4 @@
-using Avalonia;
+﻿using Avalonia;
 using Avalonia.Controls;
 using Avalonia.Controls.Primitives;
 using Avalonia.Headless;
@@ -86,7 +86,7 @@ public class KeyboardTests
     // A ListBox itself is not focusable; its rows are.
     private static Control FocusFirstCommit(MainWindow window)
     {
-        ListBox list = window.FindControl<ListBox>("CommitList")!;
+        ListBox list = window.Find<ListBox>("CommitList");
         Control row = list.ContainerFromIndex(0)!;
         row.Focus().Should().BeTrue();
         Pump();
@@ -95,7 +95,8 @@ public class KeyboardTests
 
     private static void HideFlyouts(MainWindow window)
     {
-        window.FindControl<Button>("RecentButton")!.Flyout?.Hide();
+        window.FindControl<MainToolbarView>("MainToolbar")!.RepoPath.Flyout?.Hide();
+        window.FindControl<MainToolbarView>("MainToolbar")!.BranchList.Flyout?.Hide();
         foreach (StashMenuButton stash in window.GetVisualDescendants().OfType<StashMenuButton>())
         {
             stash.Flyout?.Hide();
@@ -136,7 +137,7 @@ public class KeyboardTests
         // The documented shortcuts.
         string[] expected = ["repo.open", "repo.refresh", "remote.fetch", "remote.pull", "remote.push", "index.stageAll", "index.unstageAll", "commit.commit",
             "view.sidebar", "view.output", "focus.filter", "focus.path", "view.settings", "stash.show", "view.theme", "history.next", "history.previous",
-            "file.history", "file.blame", "operation.continue", "operation.abort", "palette.show", "help.shortcuts"];
+            "file.history", "file.blame", "operation.continue", "operation.abort", "palette.show", "help.shortcuts", "repo.close"];
         commands.Select(c => c.Id).Should().Contain(expected);
     }
 
@@ -170,6 +171,15 @@ public class KeyboardTests
                 CloseOverlays(window, viewModel);
                 viewModel.Palette.Close();
                 HideFlyouts(window);
+
+                // Closing the repository returns to the dashboard: open it again for the gestures that follow.
+                if (command.Id == "repo.close")
+                {
+                    viewModel.HasOpenedRepository.Should().BeFalse();
+                    await viewModel.OpenAsync(repository.Path);
+                    viewModel.SelectedChangedFile = viewModel.ChangedFiles.First();
+                    Pump();
+                }
             }
         }
 
@@ -182,7 +192,7 @@ public class KeyboardTests
         using TestRepository repository = new();
         (MainWindow window, MainWindowViewModel viewModel, List<string> invoked) = await OpenAsync(repository);
 
-        window.FindControl<TextBox>("PathBox")!.Focus();
+        window.FindControl<RefsTreeView>("SidebarPanel")!.FindControl<TextBox>("FilterBox")!.Focus();
         Pump();
         Press(window, Key.J);
         Press(window, Key.K);
@@ -207,7 +217,7 @@ public class KeyboardTests
         viewModel.Commands.SelectMany(c => c.Gestures).Should().NotContain(g =>
             g.Modifiers == KeyModifiers.Control && (g.Key == Key.A || g.Key == Key.C || g.Key == Key.V || g.Key == Key.X || g.Key == Key.Z || g.Key == Key.Y));
 
-        window.FindControl<TextBox>("PathBox")!.Focus();
+        window.FindControl<RefsTreeView>("SidebarPanel")!.FindControl<TextBox>("FilterBox")!.Focus();
         Pump();
         Press(window, Key.F5);
         invoked.Should().Equal("repo.refresh");
@@ -234,12 +244,19 @@ public class KeyboardTests
         Press(window, Key.Return, KeyModifiers.Control);
         invoked.Should().BeEmpty();
 
+        // The commit box moved to the Commit window: the shortcut is scoped to that panel, so the main window ignores it...
         repository.RunGit("add", "a.txt");
         await viewModel.RefreshChangesAsync();
         viewModel.Commit!.Message = "From the keyboard";
-        window.FindControl<CommitView>("CommitPanel")!.FindControl<TextBox>("MessageBox")!.Focus();
-        Pump();
         Press(window, Key.Return, KeyModifiers.Control);
+        invoked.Should().BeEmpty();
+
+        // ...and the registry command that the Commit window's box triggers still commits.
+        AppCommand commit = viewModel.Commands.Single(c => c.Id == "commit.commit");
+        commit.Gestures.Should().Contain(g => g.Key == Key.Return && g.Modifiers == KeyModifiers.Control);
+        commit.FocusScope.Should().Be("CommitPanel");
+        commit.CanExecute().Should().BeTrue();
+        viewModel.Run(commit);
         invoked.Should().Equal("commit.commit");
         for (int i = 0; i < 100 && !repository.GitOutput("log", "--format=%s", "-1").Contains("From the keyboard"); i++)
         {
@@ -257,14 +274,20 @@ public class KeyboardTests
         using TestRepository repository = new();
         (MainWindow window, MainWindowViewModel viewModel, _) = await OpenAsync(repository);
 
+        // Ctrl+L goes to the repository path of the toolbar: its drop-down of recent repositories opens.
         Press(window, Key.L, KeyModifiers.Control);
-        window.FocusManager!.GetFocusedElement().Should().BeSameAs(window.FindControl<TextBox>("PathBox")!);
+        Pump();
+        window.FindControl<MainToolbarView>("MainToolbar")!.RepoPath.Flyout!.IsOpen.Should().BeTrue();
+        HideFlyouts(window);
 
         Press(window, Key.F, KeyModifiers.Control);
-        window.FocusManager.GetFocusedElement().Should().BeSameAs(window.FindControl<RefsTreeView>("SidebarPanel")!.FindControl<TextBox>("FilterBox"));
+        window.FocusManager!.GetFocusedElement().Should().BeSameAs(window.FindControl<RefsTreeView>("SidebarPanel")!.FindControl<TextBox>("FilterBox"));
 
+        // The commit message lives in the Commit window now: Ctrl+M asks for it.
+        RecordingWindowService windows = new();
+        viewModel.WindowService = windows;
         Press(window, Key.M, KeyModifiers.Control);
-        window.FocusManager.GetFocusedElement().Should().BeSameAs(window.FindControl<CommitView>("CommitPanel")!.FindControl<TextBox>("MessageBox"));
+        windows.CommitWindows.Should().Be(1);
 
         Press(window, Key.B, KeyModifiers.Control);
         window.SidebarCollapsed.Should().BeTrue();
@@ -298,7 +321,7 @@ public class KeyboardTests
         viewModel.FileHistory.IsOpen.Should().BeFalse();
 
         viewModel.SelectedChangedFile = viewModel.ChangedFiles.First(f => f.Name == "a.txt");
-        window.FindControl<ListBox>("CommitList")!.Focus();
+        window.Find<ListBox>("CommitList").Focus();
         Press(window, Key.H, KeyModifiers.Control);
         viewModel.FileHistory.IsOpen.Should().BeTrue();
         viewModel.FileHistory.FilePath.Should().Be("a.txt");
@@ -382,7 +405,9 @@ public class KeyboardTests
         viewModel.Palette.Filter = "repository path";
         Pump();
         Press(window, Key.Enter);
-        window.FocusManager!.GetFocusedElement().Should().BeSameAs(window.FindControl<TextBox>("PathBox")!);
+        Pump();
+        window.FindControl<MainToolbarView>("MainToolbar")!.RepoPath.Flyout!.IsOpen.Should().BeTrue();
+        HideFlyouts(window);
         window.Close();
     }
 
@@ -510,7 +535,7 @@ public class KeyboardTests
 
         offenders.Should().BeEmpty();
 
-        foreach (string name in new[] { "PathBox", "RecentButton", "SettingsButton", "ViewButton", "SidebarToggle", "CommitList", "ChangeList", "FilterBox", "RefsTree", "MessageBox", "SettingsOverlay", "FileHistoryOverlay", "CredentialOverlay", "PaletteOverlay", "ShortcutsOverlay" })
+        foreach (string name in new[] { "RepoPathButton", "BranchButton", "PullButton", "PushButton", "CommitButton", "RefreshButton", "SettingsButton", "CommitList", "FilterBox", "RefsTree", "SettingsOverlay", "FileHistoryOverlay", "CredentialOverlay", "PaletteOverlay", "ShortcutsOverlay" })
         {
             Control? control = window.GetVisualDescendants().OfType<Control>().FirstOrDefault(c => c.Name == name);
             control.Should().NotBeNull(name);
@@ -518,7 +543,7 @@ public class KeyboardTests
         }
 
         // History rows announce subject, author, date and hash.
-        ListBoxItem row = window.FindControl<ListBox>("CommitList")!.GetVisualDescendants().OfType<ListBoxItem>().First();
+        ListBoxItem row = window.Find<ListBox>("CommitList").GetVisualDescendants().OfType<ListBoxItem>().First();
         Avalonia.Automation.AutomationProperties.GetName(row).Should().Contain("Add b.txt").And.Contain("by ");
         window.Close();
     }
@@ -527,10 +552,17 @@ public class KeyboardTests
     public async Task The_history_row_compacts_as_the_window_narrows()
     {
         using TestRepository repository = new();
-        foreach ((double width, double height, string state) in new[] { (800.0, 560.0, "narrow"), (900.0, 600.0, "narrow"), (1200.0, 720.0, "medium"), (1800.0, 900.0, "wide") })
+        // The grid takes the whole width right of the left panel; a forced width stands in for a very narrow window.
+        foreach ((double width, double height, double forced, string state) in new[] { (800.0, 560.0, 0.0, "medium"), (900.0, 600.0, 0.0, "wide"), (900.0, 600.0, 420.0, "narrow"), (900.0, 600.0, 340.0, "narrow"), (1800.0, 900.0, 0.0, "wide") })
         {
             (MainWindow window, _, _) = await OpenAsync(repository, width, height);
-            ListBox list = window.FindControl<ListBox>("CommitList")!;
+            if (forced > 0)
+            {
+                window.Find<RevisionGridView>("RevisionGrid").Width = forced;
+                Pump();
+            }
+
+            ListBox list = window.Find<ListBox>("CommitList");
             TextBlock subject = list.GetVisualDescendants().OfType<TextBlock>().First(t => t.Text == "Add b.txt");
             TextBlock author = list.GetVisualDescendants().OfType<TextBlock>().First(t => t.Classes.Contains("author"));
             TextBlock date = list.GetVisualDescendants().OfType<TextBlock>().First(t => t.Classes.Contains("date"));
@@ -545,7 +577,7 @@ public class KeyboardTests
     }
 
     [AvaloniaTest]
-    public async Task Small_windows_keep_the_diff_commit_panel_and_bars_usable()
+    public async Task Small_windows_keep_the_panes_and_bars_usable()
     {
         using TestRepository repository = new();
         foreach ((double width, double height) in new[] { (900.0, 600.0), (800.0, 560.0) })
@@ -553,31 +585,26 @@ public class KeyboardTests
             (MainWindow window, MainWindowViewModel viewModel, _) = await OpenAsync(repository, width, height);
             string size = $"{width}x{height}";
 
-            Control diff = window.FindControl<Control>("DiffPanel")!;
-            diff.Bounds.Width.Should().BeGreaterThanOrEqualTo(200, size);
-            diff.Bounds.Height.Should().BeGreaterThanOrEqualTo(200, size);
-
-            // The commit panel shows all of its content (nothing is clipped away).
-            Control commit = window.FindControl<Control>("CommitPanel")!;
-            commit.Measure(new Size(commit.Bounds.Width, double.PositiveInfinity));
-            commit.DesiredSize.Height.Should().BeLessThanOrEqualTo(commit.Bounds.Height + 0.5, size);
+            window.Find<RevisionGridView>("RevisionGrid").Bounds.Width.Should().BeGreaterThanOrEqualTo(280, size);
+            window.Find<RevisionGridView>("RevisionGrid").Bounds.Height.Should().BeGreaterThanOrEqualTo(120, size);
+            window.Find<RevisionTabsView>("RevisionTabs").Bounds.Height.Should().BeGreaterThanOrEqualTo(120, size);
 
             // The bars fit the window: every visible control of the repository and remote bars ends inside it.
-            foreach (string bar in new[] { "PathBox", "RecentButton", "SettingsButton", "ViewButton", "FetchButton", "PullButton", "PushButton", "OutputToggle" })
+            foreach (string bar in new[] { "RefreshButton", "RepoPathButton", "BranchButton", "PullButton", "PushButton", "CommitButton", "FileExplorerButton", "ShellButton", "SettingsButton" })
             {
                 Control control = window.GetVisualDescendants().OfType<Control>().First(c => c.Name == bar);
                 Point right = control.TranslatePoint(new Point(control.Bounds.Width, 0), window)!.Value;
                 right.X.Should().BeLessThanOrEqualTo(window.ClientSize.Width, $"{bar} at {size}");
             }
 
-            // Every column ends inside the window (the right-hand changes column is not pushed out of it).
-            foreach (string pane in new[] { "SidebarPanel", "DiffPanel", "CommitPanel", "ChangeList", "CommitList" })
+            // Every pane ends inside the window.
+            foreach (string pane in new[] { "SidebarPanel", "RevisionGrid", "RevisionTabs", "CommitList" })
             {
                 Control control = window.GetVisualDescendants().OfType<Control>().First(c => c.Name == pane);
                 control.TranslatePoint(new Point(control.Bounds.Width, 0), window)!.Value.X.Should().BeLessThanOrEqualTo(window.ClientSize.Width + 0.5, $"{pane} at {size}");
             }
 
-            window.FindControl<Control>("RemoteBar")!.Bounds.Right.Should().BeLessThanOrEqualTo(window.ClientSize.Width, size);
+            window.FindControl<Control>("MainToolbar")!.Bounds.Right.Should().BeLessThanOrEqualTo(window.ClientSize.Width, size);
             viewModel.Remote.HasRepository.Should().BeTrue();
             window.Close();
         }
@@ -610,7 +637,7 @@ public class KeyboardTests
             SaveScreenshot(small, "window-800x560-" + suffix);
 
             // The visible focus ring on a keyboard-focused button.
-            small.GetVisualDescendants().OfType<Button>().First(b => b.Name == "FetchButton").Focus(NavigationMethod.Tab);
+            small.GetVisualDescendants().OfType<Button>().First(b => b.Name == "PushButton").Focus(NavigationMethod.Tab);
             SaveScreenshot(small, "focus-ring-" + suffix);
             small.Close();
         }

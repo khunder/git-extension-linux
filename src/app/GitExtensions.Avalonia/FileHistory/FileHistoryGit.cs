@@ -15,15 +15,38 @@ public static class FileHistoryGit
     /// <summary>The most lines a blame shows.</summary>
     public const int MaxBlameLines = 250_000;
 
-    public static string LogFormat { get; } = $"--format={FileLogParser.RecordMarker}%H{FileLogParser.FieldSeparator}%an{FileLogParser.FieldSeparator}%aI{FileLogParser.FieldSeparator}%s";
+    /// <summary>The "branch" value that makes the history span every ref.</summary>
+    public const string AllBranches = "--all";
+
+    /// <summary>The largest file the View tab shows.</summary>
+    public const int MaxViewBytes = 4 * 1024 * 1024;
+
+    public static string LogFormat { get; } = $"--format={FileLogParser.RecordMarker}%H{FileLogParser.FieldSeparator}%an{FileLogParser.FieldSeparator}%aI{FileLogParser.FieldSeparator}%s{FileLogParser.FieldSeparator}%D";
 
     /// <summary>
     ///  The commits that touched <paramref name="path"/>, newest first, following renames.
     /// </summary>
     public static IReadOnlyList<FileHistoryEntry> GetHistory(GitModule module, string path, CancellationToken cancellationToken)
+        => GetHistory(module, path, branch: null, follow: true, cancellationToken);
+
+    /// <summary>
+    ///  The commits that touched <paramref name="path"/>. <paramref name="branch"/> is a branch/revision to start from,
+    ///  <see cref="AllBranches"/> for every ref, or <see langword="null"/> for HEAD.
+    /// </summary>
+    public static IReadOnlyList<FileHistoryEntry> GetHistory(GitModule module, string path, string? branch, bool follow, CancellationToken cancellationToken)
     {
         ExecutionResult result = module.GitExecutable.Execute(
-            new GitArgumentBuilder("log", gitOptions: "-c core.quotepath=false") { "--follow", "--name-only", $"--max-count={MaxEntries}", LogFormat, "--", path.Quote() },
+            new GitArgumentBuilder("log", gitOptions: "-c core.quotepath=false")
+            {
+                { follow, "--follow" },
+                "--name-only",
+                "--decorate=full",
+                $"--max-count={MaxEntries}",
+                LogFormat,
+                { !string.IsNullOrEmpty(branch), branch is null ? string.Empty : branch.Quote() },
+                "--",
+                path.Quote()
+            },
             throwOnErrorExit: false,
             cancellationToken: cancellationToken);
 
@@ -52,6 +75,71 @@ public static class FileHistoryGit
         }
 
         return lines;
+    }
+
+    /// <summary>
+    ///  The local branches (current one first) and the name of the current branch (null when detached).
+    /// </summary>
+    public static (string? Current, IReadOnlyList<string> Branches) GetBranches(GitModule module, CancellationToken cancellationToken)
+    {
+        ExecutionResult current = module.GitExecutable.Execute(
+            new GitArgumentBuilder("symbolic-ref") { "--short", "-q", "HEAD" },
+            throwOnErrorExit: false,
+            cancellationToken: cancellationToken);
+        string? currentName = current.ExitedSuccessfully ? current.StandardOutput.Trim() : null;
+        if (string.IsNullOrEmpty(currentName))
+        {
+            currentName = null;
+        }
+
+        ExecutionResult all = module.GitExecutable.Execute(
+            new GitArgumentBuilder("for-each-ref") { "--format=%(refname:short)", "--sort=refname", "refs/heads" },
+            throwOnErrorExit: false,
+            cancellationToken: cancellationToken);
+        List<string> branches = all.ExitedSuccessfully
+            ? [.. all.StandardOutput.Split('\n', StringSplitOptions.RemoveEmptyEntries | StringSplitOptions.TrimEntries)]
+            : [];
+        return (currentName, branches);
+    }
+
+    /// <summary>
+    ///  The lines of <paramref name="path"/> as stored in <paramref name="revision"/>, or a message when it cannot be shown.
+    /// </summary>
+    public static (IReadOnlyList<string> Lines, string Message) GetFileContent(GitModule module, string revision, string path, CancellationToken cancellationToken)
+    {
+        ExecutionResult result = module.GitExecutable.Execute(
+            new GitArgumentBuilder("show") { $"{revision}:{path}".Quote() },
+            stripAnsiEscapeCodes: false,
+            throwOnErrorExit: false,
+            cancellationToken: cancellationToken);
+        if (!result.ExitedSuccessfully)
+        {
+            return ([], $"The file cannot be shown at this revision: {result.StandardError.Trim()}");
+        }
+
+        string text = result.StandardOutput;
+        if (text.Contains('\0'))
+        {
+            return ([], "Binary file: no preview.");
+        }
+
+        if (text.Length > MaxViewBytes)
+        {
+            return ([], $"The file is too large to show ({text.Length / 1024:N0} KB).");
+        }
+
+        if (text.Length == 0)
+        {
+            return ([], "The file is empty.");
+        }
+
+        List<string> lines = [.. text.Split('\n').Select(line => line.TrimEnd('\r'))];
+        if (lines.Count > 1 && lines[^1].Length == 0)
+        {
+            lines.RemoveAt(lines.Count - 1);
+        }
+
+        return (lines, string.Empty);
     }
 
     /// <summary>

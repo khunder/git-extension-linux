@@ -1,4 +1,4 @@
-using Avalonia.Controls;
+﻿using Avalonia.Controls;
 using Avalonia.Headless;
 using Avalonia.Headless.NUnit;
 using Avalonia.Media.Imaging;
@@ -252,8 +252,8 @@ public class CommitActionsTests
             Avalonia.Threading.Dispatcher.UIThread.RunJobs();
             AvaloniaHeadlessPlatform.ForceRenderTimerTick();
 
-            ListBox list = window.FindControl<ListBox>("CommitList")!;
-            Grid row = list.GetVisualDescendants().OfType<Grid>().First(g => g.ContextMenu is not null);
+            ListBox list = window.Find<ListBox>("CommitList");
+            Border row = list.GetVisualDescendants().OfType<Border>().First(g => g.ContextMenu is not null);
             ContextMenu menu = row.ContextMenu!;
             menu.Open(row);
             Avalonia.Threading.Dispatcher.UIThread.RunJobs();

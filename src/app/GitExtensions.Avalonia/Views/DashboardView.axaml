@@ -1,0 +1,98 @@
+<UserControl xmlns="https://github.com/avaloniaui"
+             xmlns:x="http://schemas.microsoft.com/winfx/2006/xaml"
+             xmlns:vm="using:GitExtensions.Desktop.ViewModels"
+             x:Class="GitExtensions.Desktop.Views.DashboardView"
+             x:DataType="vm:DashboardViewModel">
+  <UserControl.Styles>
+    <Style Selector="Button.link">
+      <Setter Property="Background" Value="Transparent" />
+      <Setter Property="BorderThickness" Value="0" />
+      <Setter Property="HorizontalAlignment" Value="Stretch" />
+      <Setter Property="HorizontalContentAlignment" Value="Left" />
+      <Setter Property="Padding" Value="12,8" />
+      <Setter Property="FontSize" Value="14" />
+    </Style>
+    <Style Selector="Button.link:pointerover /template/ ContentPresenter">
+      <Setter Property="Background" Value="{DynamicResource SystemControlBackgroundListLowBrush}" />
+    </Style>
+    <Style Selector="ListBox.repos ListBoxItem">
+      <Setter Property="Padding" Value="12,4" />
+    </Style>
+  </UserControl.Styles>
+
+  <Grid ColumnDefinitions="230,Auto,*">
+    <!-- Left column: the ways to get a repository -->
+    <Border Background="{DynamicResource SystemControlBackgroundChromeMediumLowBrush}">
+      <DockPanel>
+        <StackPanel DockPanel.Dock="Top" Margin="16,20,16,12" Spacing="2">
+          <TextBlock Text="Git Extensions" FontSize="20" FontWeight="SemiBold" />
+          <TextBlock Text="Dashboard" Opacity="0.65" />
+        </StackPanel>
+        <StackPanel DockPanel.Dock="Top" Margin="4,0">
+          <Button x:Name="CreateButton" Classes="link" Content="Create new repository…" Command="{Binding CreateNewCommand}" />
+          <Button x:Name="OpenButton" Classes="link" Content="Open repository…" Command="{Binding BrowseCommand}" />
+          <Button x:Name="CloneButton" Classes="link" Content="Clone repository…" Command="{Binding CloneRepositoryCommand}" />
+        </StackPanel>
+        <Panel />
+      </DockPanel>
+    </Border>
+
+    <Border Grid.Column="1" Width="1" Background="{DynamicResource SystemControlForegroundBaseLowBrush}" />
+
+    <!-- Main area: the repository lists -->
+    <DockPanel Grid.Column="2">
+      <Grid DockPanel.Dock="Top" ColumnDefinitions="*,Auto" Margin="16,16,16,8">
+        <TextBlock Text="Recent and favorite repositories" FontSize="16" FontWeight="SemiBold" VerticalAlignment="Center" />
+        <TextBox x:Name="DashboardFilterBox" Grid.Column="1" Width="240" AutomationProperties.Name="Filter repositories" Text="{Binding Filter}" Watermark="Filter repositories…" />
+      </Grid>
+      <Panel>
+        <ScrollViewer HorizontalScrollBarVisibility="Disabled" IsVisible="{Binding !IsEmpty}">
+          <ItemsControl x:Name="CategoryList" ItemsSource="{Binding Categories}" Margin="8,0,8,16">
+            <ItemsControl.ItemTemplate>
+              <DataTemplate x:DataType="vm:DashboardCategory">
+                <StackPanel Margin="0,0,0,12">
+                  <TextBlock Classes="categoryTitle" Text="{Binding Header}" FontWeight="SemiBold" FontSize="14" Margin="12,6,12,4" />
+                  <ListBox Classes="repos" ItemsSource="{Binding Entries}" Background="Transparent" ScrollViewer.VerticalScrollBarVisibility="Disabled">
+                    <ListBox.KeyBindings>
+                      <KeyBinding Gesture="Enter" Command="{Binding $parent[UserControl].((vm:DashboardViewModel)DataContext).OpenCommand}" CommandParameter="{Binding $parent[ListBox].SelectedItem}" />
+                    </ListBox.KeyBindings>
+                    <ListBox.ItemTemplate>
+                      <DataTemplate x:DataType="vm:DashboardEntry">
+                        <Grid ColumnDefinitions="*,Auto" Background="Transparent">
+                          <Grid.ContextMenu>
+                            <ContextMenu>
+                              <MenuItem Header="Open" Command="{Binding $parent[UserControl].((vm:DashboardViewModel)DataContext).OpenCommand}" CommandParameter="{Binding}" />
+                              <MenuItem Header="Open in file explorer" Command="{Binding $parent[UserControl].((vm:DashboardViewModel)DataContext).OpenInExplorerCommand}" CommandParameter="{Binding}" />
+                              <Separator />
+                              <MenuItem Header="{Binding FavoriteMenuText}" Command="{Binding $parent[UserControl].((vm:DashboardViewModel)DataContext).ToggleFavoriteCommand}" CommandParameter="{Binding}" />
+                              <MenuItem Header="Remove from list" Command="{Binding $parent[UserControl].((vm:DashboardViewModel)DataContext).RemoveFromListCommand}" CommandParameter="{Binding}" />
+                              <Separator />
+                              <MenuItem Header="Copy path" Command="{Binding $parent[UserControl].((vm:DashboardViewModel)DataContext).CopyPathCommand}" CommandParameter="{Binding}" />
+                            </ContextMenu>
+                          </Grid.ContextMenu>
+                          <StackPanel Spacing="1">
+                            <StackPanel Orientation="Horizontal" Spacing="6">
+                              <TextBlock Text="★" IsVisible="{Binding IsFavorite}" Foreground="{DynamicResource SystemAccentColor}" VerticalAlignment="Center" />
+                              <TextBlock Text="{Binding Name}" FontWeight="Bold" FontSize="14" />
+                            </StackPanel>
+                            <TextBlock Text="{Binding Path}" Opacity="0.65" FontSize="12" TextTrimming="CharacterEllipsis" />
+                          </StackPanel>
+                          <TextBlock Grid.Column="1" Text="{Binding Branch}" IsVisible="{Binding HasBranch}" VerticalAlignment="Center" Margin="12,0,4,0" Foreground="{DynamicResource SystemAccentColor}" />
+                        </Grid>
+                      </DataTemplate>
+                    </ListBox.ItemTemplate>
+                  </ListBox>
+                </StackPanel>
+              </DataTemplate>
+            </ItemsControl.ItemTemplate>
+          </ItemsControl>
+        </ScrollViewer>
+        <StackPanel IsVisible="{Binding IsEmpty}" Spacing="6" Margin="0,40" HorizontalAlignment="Center" VerticalAlignment="Top">
+          <TextBlock Text="No repositories to show" FontSize="16" HorizontalAlignment="Center" />
+          <TextBlock Text="Open or clone a repository; it will be listed here next time."
+                     Opacity="0.65" TextWrapping="Wrap" MaxWidth="420" TextAlignment="Center" />
+        </StackPanel>
+      </Panel>
+    </DockPanel>
+  </Grid>
+</UserControl>

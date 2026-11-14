@@ -1,0 +1,289 @@
+<Window xmlns="https://github.com/avaloniaui"
+        xmlns:x="http://schemas.microsoft.com/winfx/2006/xaml"
+        xmlns:vm="using:GitExtensions.Desktop.ViewModels"
+        xmlns:diff="using:GitExtensions.Desktop.Diff"
+        xmlns:views="using:GitExtensions.Desktop.Views"
+        x:Class="GitExtensions.Desktop.Views.FileHistoryWindow"
+        x:DataType="vm:FileHistoryWindowViewModel"
+        Title="{Binding Title}"
+        Width="1100" Height="750" MinWidth="640" MinHeight="420"
+        WindowStartupLocation="CenterOwner"
+        Background="{DynamicResource SystemControlBackgroundAltHighBrush}">
+
+  <Window.Resources>
+    <ResourceDictionary>
+      <ResourceDictionary.ThemeDictionaries>
+        <ResourceDictionary x:Key="Light">
+          <SolidColorBrush x:Key="FileHistoryBlameBand" Color="#14000000" />
+          <SolidColorBrush x:Key="FileHistoryBranchBadge" Color="#D5F0DA" />
+          <SolidColorBrush x:Key="FileHistoryBranchBadgeText" Color="#1B6E2E" />
+          <SolidColorBrush x:Key="FileHistoryRemoteBadge" Color="#F9D6D6" />
+          <SolidColorBrush x:Key="FileHistoryRemoteBadgeText" Color="#7A1212" />
+          <SolidColorBrush x:Key="FileHistoryTagBadge" Color="#FFF1B8" />
+          <SolidColorBrush x:Key="FileHistoryTagBadgeText" Color="#5C4600" />
+          <SolidColorBrush x:Key="FileHistoryHeaderBackground" Color="#0A000000" />
+        </ResourceDictionary>
+        <ResourceDictionary x:Key="Dark">
+          <SolidColorBrush x:Key="FileHistoryBlameBand" Color="#1AFFFFFF" />
+          <SolidColorBrush x:Key="FileHistoryBranchBadge" Color="#1C4A2A" />
+          <SolidColorBrush x:Key="FileHistoryBranchBadgeText" Color="#7FD99A" />
+          <SolidColorBrush x:Key="FileHistoryRemoteBadge" Color="#58232A" />
+          <SolidColorBrush x:Key="FileHistoryRemoteBadgeText" Color="#FFB4B8" />
+          <SolidColorBrush x:Key="FileHistoryTagBadge" Color="#5A4A12" />
+          <SolidColorBrush x:Key="FileHistoryTagBadgeText" Color="#FFE58A" />
+          <SolidColorBrush x:Key="FileHistoryHeaderBackground" Color="#12FFFFFF" />
+        </ResourceDictionary>
+      </ResourceDictionary.ThemeDictionaries>
+      <FontFamily x:Key="FileHistoryMono">Cascadia Mono, Consolas, DejaVu Sans Mono, monospace</FontFamily>
+      <StreamGeometry x:Key="FunnelIcon">M2,2 L14,2 L9,8 L9,14 L7,13 L7,8 Z</StreamGeometry>
+      <StreamGeometry x:Key="RefreshIcon">M13,8 A5,5 0 1 1 11.2,4.2 M13.5,1.5 L13.5,5.5 L9.5,5.5</StreamGeometry>
+      <StreamGeometry x:Key="CopyIcon">M5,5 L13,5 L13,14 L5,14 Z M3,11 L3,2 L10,2</StreamGeometry>
+    </ResourceDictionary>
+  </Window.Resources>
+
+  <Window.Styles>
+    <Style Selector="Border.added"><Setter Property="Background" Value="{DynamicResource DiffAddedBackground}" /></Style>
+    <Style Selector="Border.removed"><Setter Property="Background" Value="{DynamicResource DiffRemovedBackground}" /></Style>
+    <Style Selector="Border.hunk"><Setter Property="Background" Value="{DynamicResource DiffHunkBackground}" /></Style>
+    <Style Selector="Border.band"><Setter Property="Background" Value="{DynamicResource FileHistoryBlameBand}" /></Style>
+    <Style Selector="Border.badge"><Setter Property="Padding" Value="5,0" /><Setter Property="CornerRadius" Value="2" /><Setter Property="Margin" Value="0,0,6,0" /></Style>
+    <Style Selector="Border.badge.branch"><Setter Property="Background" Value="{DynamicResource FileHistoryBranchBadge}" /></Style>
+    <Style Selector="Border.badge.remote"><Setter Property="Background" Value="{DynamicResource FileHistoryRemoteBadge}" /></Style>
+    <Style Selector="Border.badge.tag"><Setter Property="Background" Value="{DynamicResource FileHistoryTagBadge}" /></Style>
+    <Style Selector="Border.badge.branch TextBlock"><Setter Property="Foreground" Value="{DynamicResource FileHistoryBranchBadgeText}" /></Style>
+    <Style Selector="Border.badge.remote TextBlock"><Setter Property="Foreground" Value="{DynamicResource FileHistoryRemoteBadgeText}" /></Style>
+    <Style Selector="Border.badge.tag TextBlock"><Setter Property="Foreground" Value="{DynamicResource FileHistoryTagBadgeText}" /></Style>
+    <Style Selector="Border.badge.current TextBlock"><Setter Property="FontWeight" Value="Bold" /></Style>
+    <Style Selector="TabItem"><Setter Property="FontSize" Value="13" /><Setter Property="MinHeight" Value="28" /><Setter Property="Padding" Value="12,2" /></Style>
+    <Style Selector="Button.tool"><Setter Property="Padding" Value="6,4" /><Setter Property="Background" Value="Transparent" /><Setter Property="BorderThickness" Value="0" /></Style>
+    <Style Selector="Path.icon"><Setter Property="Stroke" Value="{DynamicResource SystemControlForegroundBaseHighBrush}" /><Setter Property="StrokeThickness" Value="1.4" /><Setter Property="Width" Value="16" /><Setter Property="Height" Value="16" /><Setter Property="Stretch" Value="None" /></Style>
+    <Style Selector="ListBox.revisions ListBoxItem"><Setter Property="Padding" Value="0" /><Setter Property="MinHeight" Value="28" /></Style>
+    <Style Selector="ItemsControl.lines">
+      <Setter Property="Template">
+        <ControlTemplate>
+          <ScrollViewer HorizontalScrollBarVisibility="{TemplateBinding ScrollViewer.HorizontalScrollBarVisibility}"
+                        VerticalScrollBarVisibility="{TemplateBinding ScrollViewer.VerticalScrollBarVisibility}">
+            <ItemsPresenter Name="PART_ItemsPresenter" ItemsPanel="{TemplateBinding ItemsPanel}" />
+          </ScrollViewer>
+        </ControlTemplate>
+      </Setter>
+      <Setter Property="ItemsPanel">
+        <ItemsPanelTemplate>
+          <VirtualizingStackPanel />
+        </ItemsPanelTemplate>
+      </Setter>
+    </Style>
+  </Window.Styles>
+
+  <DockPanel>
+    <!-- Branches / filter toolbar -->
+    <Border DockPanel.Dock="Top" Padding="6,4" BorderThickness="0,0,0,1" BorderBrush="{DynamicResource SubtleBorderBrush}">
+      <StackPanel Orientation="Horizontal" Spacing="6">
+        <TextBlock Text="Branches:" VerticalAlignment="Center" />
+        <ComboBox x:Name="BranchCombo" Width="200" MinHeight="26" Padding="6,2" ItemsSource="{Binding BranchOptions}" SelectedItem="{Binding SelectedBranch}" />
+        <Button x:Name="BranchFilterButton" Classes="tool" ToolTip.Tip="Branch filter options">
+          <StackPanel Orientation="Horizontal" Spacing="3">
+            <Path Classes="icon" Data="{StaticResource FunnelIcon}" />
+            <TextBlock Text="▾" FontSize="10" VerticalAlignment="Center" />
+          </StackPanel>
+          <Button.Flyout>
+            <MenuFlyout>
+              <MenuItem Header="Follow renames" ToggleType="CheckBox" IsChecked="{Binding FollowRenames, Mode=TwoWay}" />
+            </MenuFlyout>
+          </Button.Flyout>
+        </Button>
+        <Border Width="1" Background="{DynamicResource SubtleBorderBrush}" Margin="4,2" />
+        <TextBlock Text="Filter:" VerticalAlignment="Center" />
+        <TextBox x:Name="FilterBox" Width="200" MinHeight="26" Watermark="Message, author or hash" Text="{Binding FilterText}" />
+        <Button x:Name="FilterOptionsButton" Classes="tool" ToolTip.Tip="Filter options">
+          <StackPanel Orientation="Horizontal" Spacing="3">
+            <Path Classes="icon" Data="{StaticResource FunnelIcon}" />
+            <TextBlock Text="▾" FontSize="10" VerticalAlignment="Center" />
+          </StackPanel>
+          <Button.Flyout>
+            <MenuFlyout>
+              <MenuItem Header="Message" ToggleType="CheckBox" IsChecked="{Binding FilterByMessage, Mode=TwoWay}" />
+              <MenuItem Header="Author" ToggleType="CheckBox" IsChecked="{Binding FilterByAuthor, Mode=TwoWay}" />
+              <MenuItem Header="Commit hash" ToggleType="CheckBox" IsChecked="{Binding FilterByHash, Mode=TwoWay}" />
+            </MenuFlyout>
+          </Button.Flyout>
+        </Button>
+        <Border Width="1" Background="{DynamicResource SubtleBorderBrush}" Margin="4,2" />
+        <Button x:Name="RefreshButton" Classes="tool" Command="{Binding RefreshCommand}" ToolTip.Tip="Refresh (F5)">
+          <Path Classes="icon" Data="{StaticResource RefreshIcon}" />
+        </Button>
+        <Button x:Name="CopyButton" Classes="tool" ToolTip.Tip="Copy">
+          <StackPanel Orientation="Horizontal" Spacing="3">
+            <Path Classes="icon" Data="{StaticResource CopyIcon}" />
+            <TextBlock Text="▾" FontSize="10" VerticalAlignment="Center" />
+          </StackPanel>
+          <Button.Flyout>
+            <MenuFlyout>
+              <MenuItem Header="Copy commit hash" InputGesture="Ctrl+C" Command="{Binding CopyHashCommand}" />
+              <MenuItem Header="Copy file path" Command="{Binding CopyPathCommand}" />
+            </MenuFlyout>
+          </Button.Flyout>
+        </Button>
+      </StackPanel>
+    </Border>
+
+    <Grid RowDefinitions="2*,5,3*">
+      <!-- Commits of the file -->
+      <DockPanel>
+        <Grid DockPanel.Dock="Top" ColumnDefinitions="*,Auto,Auto,Auto" Background="{DynamicResource FileHistoryHeaderBackground}" Height="24">
+          <TextBlock Text="Message" Margin="12,0" VerticalAlignment="Center" FontWeight="SemiBold" Opacity="0.8" />
+          <Border Grid.Column="1" Width="{Binding Columns.AuthorWidth}">
+            <Panel>
+              <TextBlock Text="Author" Margin="8,0" VerticalAlignment="Center" FontWeight="SemiBold" Opacity="0.8" />
+              <Thumb x:Name="AuthorGrip" HorizontalAlignment="Left" Width="6" Cursor="SizeWestEast" Background="Transparent" />
+            </Panel>
+          </Border>
+          <Border Grid.Column="2" Width="{Binding Columns.DateWidth}">
+            <Panel>
+              <TextBlock Text="Date" Margin="8,0" VerticalAlignment="Center" FontWeight="SemiBold" Opacity="0.8" />
+              <Thumb x:Name="DateGrip" HorizontalAlignment="Left" Width="6" Cursor="SizeWestEast" Background="Transparent" />
+            </Panel>
+          </Border>
+          <Border Grid.Column="3" Width="{Binding Columns.HashWidth}">
+            <Panel>
+              <TextBlock Text="Hash" Margin="8,0" VerticalAlignment="Center" FontWeight="SemiBold" Opacity="0.8" />
+              <Thumb x:Name="HashGrip" HorizontalAlignment="Left" Width="6" Cursor="SizeWestEast" Background="Transparent" />
+            </Panel>
+          </Border>
+        </Grid>
+        <Panel>
+          <ListBox x:Name="RevisionList" Classes="revisions" ItemsSource="{Binding Rows}" SelectedItem="{Binding SelectedRow}">
+            <ListBox.ItemTemplate>
+              <DataTemplate x:DataType="vm:FileHistoryRowViewModel">
+                <Grid ColumnDefinitions="*,Auto,Auto,Auto" ToolTip.Tip="{Binding ToolTip}">
+                  <Grid ColumnDefinitions="Auto,*,Auto" Margin="12,0,0,0" VerticalAlignment="Center">
+                    <ItemsControl ItemsSource="{Binding Refs}">
+                      <ItemsControl.ItemsPanel>
+                        <ItemsPanelTemplate><StackPanel Orientation="Horizontal" /></ItemsPanelTemplate>
+                      </ItemsControl.ItemsPanel>
+                      <ItemsControl.ItemTemplate>
+                        <DataTemplate x:DataType="vm:FileHistoryRef">
+                          <Border Classes="badge" Classes.current="{Binding IsCurrent}" Classes.branch="{Binding IsBranch}" Classes.remote="{Binding IsRemote}" Classes.tag="{Binding IsTag}">
+                            <TextBlock Text="{Binding Name}" />
+                          </Border>
+                        </DataTemplate>
+                      </ItemsControl.ItemTemplate>
+                    </ItemsControl>
+                    <TextBlock Grid.Column="1" Text="{Binding Subject}" TextTrimming="CharacterEllipsis" VerticalAlignment="Center" />
+                    <TextBlock Grid.Column="2" Text="{Binding RenamedText}" Margin="8,0,8,0" Opacity="0.55" FontStyle="Italic" VerticalAlignment="Center" IsVisible="{Binding HasRenamedFrom}" />
+                  </Grid>
+                  <Border Grid.Column="1" Width="{Binding Columns.AuthorWidth}">
+                    <StackPanel Orientation="Horizontal" Spacing="8" Margin="8,0" VerticalAlignment="Center">
+                      <Border Width="22" Height="22" CornerRadius="11" Background="{Binding AvatarBrush}">
+                        <TextBlock Text="{Binding Initials}" FontSize="10" FontWeight="SemiBold" Foreground="White" HorizontalAlignment="Center" VerticalAlignment="Center" />
+                      </Border>
+                      <TextBlock Text="{Binding Author}" TextTrimming="CharacterEllipsis" VerticalAlignment="Center" />
+                    </StackPanel>
+                  </Border>
+                  <Border Grid.Column="2" Width="{Binding Columns.DateWidth}">
+                    <TextBlock Text="{Binding RelativeDate}" Margin="8,0" TextTrimming="CharacterEllipsis" VerticalAlignment="Center" />
+                  </Border>
+                  <Border Grid.Column="3" Width="{Binding Columns.HashWidth}">
+                    <TextBlock Text="{Binding ShortHash}" Margin="8,0" FontFamily="{StaticResource FileHistoryMono}" FontSize="12" VerticalAlignment="Center" />
+                  </Border>
+                </Grid>
+              </DataTemplate>
+            </ListBox.ItemTemplate>
+          </ListBox>
+          <TextBlock x:Name="RowsMessage" Text="{Binding Message}" Opacity="0.6" Margin="12" HorizontalAlignment="Left" VerticalAlignment="Top"
+                     IsVisible="{Binding Message, Converter={x:Static StringConverters.IsNotNullOrEmpty}}" />
+        </Panel>
+      </DockPanel>
+
+      <GridSplitter Grid.Row="1" ResizeDirection="Rows" Background="{DynamicResource FileHistoryHeaderBackground}" />
+
+      <TabControl x:Name="Tabs" Grid.Row="2" SelectedIndex="{Binding SelectedTabIndex, Mode=TwoWay}" Padding="0">
+        <TabItem x:Name="CommitTab" Header="Commit">
+          <views:FileHistoryCommitInfo x:Name="CommitInfoOnly" DataContext="{Binding CommitDetails}" />
+        </TabItem>
+
+        <TabItem x:Name="DiffTab" Header="Diff">
+          <Panel>
+            <ItemsControl x:Name="DiffLinesList" Classes="lines" ItemsSource="{Binding DiffLines}"
+                          ScrollViewer.HorizontalScrollBarVisibility="Auto" ScrollViewer.VerticalScrollBarVisibility="Auto">
+              <ItemsControl.ItemTemplate>
+                <DataTemplate x:DataType="diff:DiffLine">
+                  <Border Classes.added="{Binding Kind, Converter={x:Static ObjectConverters.Equal}, ConverterParameter={x:Static diff:DiffLineKind.Added}}"
+                          Classes.removed="{Binding Kind, Converter={x:Static ObjectConverters.Equal}, ConverterParameter={x:Static diff:DiffLineKind.Removed}}"
+                          Classes.hunk="{Binding Kind, Converter={x:Static ObjectConverters.Equal}, ConverterParameter={x:Static diff:DiffLineKind.Hunk}}">
+                    <Grid ColumnDefinitions="44,44,*" Opacity="{Binding Kind, Converter={x:Static views:DiffLineBrushes.TextOpacity}}">
+                      <TextBlock Text="{Binding OldNumber}" FontFamily="{StaticResource FileHistoryMono}" FontSize="13" Opacity="0.5" TextAlignment="Right" Margin="0,0,6,0" />
+                      <TextBlock Grid.Column="1" Text="{Binding NewNumber}" FontFamily="{StaticResource FileHistoryMono}" FontSize="13" Opacity="0.5" TextAlignment="Right" Margin="0,0,6,0" />
+                      <TextBlock Grid.Column="2" Text="{Binding DisplayText}" FontFamily="{StaticResource FileHistoryMono}" FontSize="13" TextWrapping="NoWrap" />
+                    </Grid>
+                  </Border>
+                </DataTemplate>
+              </ItemsControl.ItemTemplate>
+            </ItemsControl>
+            <TextBlock x:Name="DiffMessageText" Text="{Binding DiffMessage}" Opacity="0.6" Margin="12" HorizontalAlignment="Left" VerticalAlignment="Top"
+                       IsVisible="{Binding DiffMessage, Converter={x:Static StringConverters.IsNotNullOrEmpty}}" />
+          </Panel>
+        </TabItem>
+
+        <TabItem x:Name="ViewTab" Header="View">
+          <Panel>
+            <ItemsControl x:Name="ViewLinesList" Classes="lines" ItemsSource="{Binding ViewLines}"
+                          ScrollViewer.HorizontalScrollBarVisibility="Auto" ScrollViewer.VerticalScrollBarVisibility="Auto">
+              <ItemsControl.ItemTemplate>
+                <DataTemplate x:DataType="vm:FileViewLine">
+                  <Grid ColumnDefinitions="52,*">
+                    <TextBlock Text="{Binding Number}" FontFamily="{StaticResource FileHistoryMono}" FontSize="13" Opacity="0.5" TextAlignment="Right" Margin="0,0,10,0" />
+                    <TextBlock Grid.Column="1" Text="{Binding DisplayText}" FontFamily="{StaticResource FileHistoryMono}" FontSize="13" TextWrapping="NoWrap" />
+                  </Grid>
+                </DataTemplate>
+              </ItemsControl.ItemTemplate>
+            </ItemsControl>
+            <TextBlock x:Name="ViewMessageText" Text="{Binding ViewMessage}" Opacity="0.6" Margin="12" HorizontalAlignment="Left" VerticalAlignment="Top"
+                       IsVisible="{Binding ViewMessage, Converter={x:Static StringConverters.IsNotNullOrEmpty}}" />
+          </Panel>
+        </TabItem>
+
+        <TabItem x:Name="BlameTab" Header="Blame">
+          <Grid RowDefinitions="2*,5,3*">
+            <views:FileHistoryCommitInfo x:Name="BlameCommitInfo" DataContext="{Binding CommitDetails}" />
+            <GridSplitter Grid.Row="1" ResizeDirection="Rows" Background="{DynamicResource FileHistoryHeaderBackground}" />
+            <Panel Grid.Row="2" DataContext="{Binding Blame}" x:DataType="vm:BlameViewModel">
+              <Grid ColumnDefinitions="300,5,*">
+                <!-- Annotations: scrolls with the text on the right -->
+                <ItemsControl x:Name="BlameAnnotations" Classes="lines" ItemsSource="{Binding Lines}"
+                              ScrollViewer.HorizontalScrollBarVisibility="Disabled" ScrollViewer.VerticalScrollBarVisibility="Hidden">
+                  <ItemsControl.ItemTemplate>
+                    <DataTemplate x:DataType="vm:BlameLineViewModel">
+                      <Border Height="18" Classes.band="{Binding IsAlternate}" ToolTip.Tip="{Binding ToolTip}">
+                        <Grid ColumnDefinitions="40,*">
+                          <TextBlock Text="{Binding LineNumber}" FontFamily="{StaticResource FileHistoryMono}" FontSize="13" Opacity="0.5" TextAlignment="Right" Margin="0,0,8,0" VerticalAlignment="Center" />
+                          <TextBlock Grid.Column="1" Text="{Binding Annotation}" FontFamily="{StaticResource FileHistoryMono}" FontSize="13" TextTrimming="CharacterEllipsis" VerticalAlignment="Center" />
+                        </Grid>
+                      </Border>
+                    </DataTemplate>
+                  </ItemsControl.ItemTemplate>
+                </ItemsControl>
+                <GridSplitter Grid.Column="1" ResizeDirection="Columns" Background="{DynamicResource FileHistoryHeaderBackground}" />
+                <ItemsControl x:Name="BlameText" Grid.Column="2" Classes="lines" ItemsSource="{Binding Lines}"
+                              ScrollViewer.HorizontalScrollBarVisibility="Auto" ScrollViewer.VerticalScrollBarVisibility="Auto">
+                  <ItemsControl.ItemTemplate>
+                    <DataTemplate x:DataType="vm:BlameLineViewModel">
+                      <Grid ColumnDefinitions="40,Auto" ToolTip.Tip="{Binding ToolTip}">
+                        <TextBlock Text="{Binding LineNumber}" Height="18" FontFamily="{StaticResource FileHistoryMono}" FontSize="13" Opacity="0.5" TextAlignment="Right" Margin="0,0,8,0" VerticalAlignment="Center" />
+                        <Border Grid.Column="1" Height="18" Classes.band="{Binding IsAlternate}">
+                          <TextBlock Text="{Binding DisplayText}" FontFamily="{StaticResource FileHistoryMono}" FontSize="13" TextWrapping="NoWrap" VerticalAlignment="Center" Padding="0,0,12,0" />
+                        </Border>
+                      </Grid>
+                    </DataTemplate>
+                  </ItemsControl.ItemTemplate>
+                </ItemsControl>
+              </Grid>
+              <TextBlock x:Name="BlameMessage" Text="{Binding Message}" Opacity="0.6" Margin="12" HorizontalAlignment="Left" VerticalAlignment="Top"
+                         IsVisible="{Binding Message, Converter={x:Static StringConverters.IsNotNullOrEmpty}}" />
+            </Panel>
+          </Grid>
+        </TabItem>
+      </TabControl>
+    </Grid>
+  </DockPanel>
+</Window>

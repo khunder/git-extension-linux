@@ -195,7 +195,7 @@ public class PerfBenchmarks
         await vm.OpenAsync(Path.Combine(DataDir, repo));
         Avalonia.Threading.Dispatcher.UIThread.RunJobs();
         AvaloniaHeadlessPlatform.ForceRenderTimerTick();
-        Report($"rendered open {repo} limit={limit}", $"{sw.Elapsed.TotalMilliseconds:0} ms to loaded + laid out + rendered, list items {window.FindControl<ListBox>("CommitList")!.ItemCount}");
+        Report($"rendered open {repo} limit={limit}", $"{sw.Elapsed.TotalMilliseconds:0} ms to loaded + laid out + rendered, list items {window.FindControl<RevisionGridView>("RevisionGrid")!.List.ItemCount}");
 
         string big = Path.Combine(DataDir, "big");
         await vm.OpenAsync(big);

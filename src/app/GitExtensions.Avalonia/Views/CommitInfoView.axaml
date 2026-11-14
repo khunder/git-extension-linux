@@ -1,0 +1,116 @@
+<UserControl xmlns="https://github.com/avaloniaui"
+             xmlns:x="http://schemas.microsoft.com/winfx/2006/xaml"
+             xmlns:vm="using:GitExtensions.Desktop.ViewModels"
+             xmlns:rev="using:GitExtensions.Desktop.Revision"
+             x:Class="GitExtensions.Desktop.Views.CommitInfoView"
+             x:DataType="vm:CommitDetailsViewModel">
+
+  <UserControl.Styles>
+    <Style Selector="Button.link">
+      <Setter Property="Background" Value="Transparent" />
+      <Setter Property="BorderThickness" Value="0" />
+      <Setter Property="Padding" Value="0" />
+      <Setter Property="MinHeight" Value="0" />
+      <Setter Property="Cursor" Value="Hand" />
+      <Setter Property="Foreground" Value="{DynamicResource LinkForeground}" />
+    </Style>
+    <Style Selector="Button.link:pointerover /template/ ContentPresenter#PART_ContentPresenter">
+      <Setter Property="Background" Value="Transparent" />
+      <Setter Property="Foreground" Value="{DynamicResource LinkForeground}" />
+    </Style>
+    <Style Selector="Button.link TextBlock">
+      <Setter Property="TextDecorations" Value="Underline" />
+    </Style>
+    <Style Selector="TextBlock.label">
+      <Setter Property="Opacity" Value="0.85" />
+    </Style>
+  </UserControl.Styles>
+
+  <Grid>
+    <TextBlock x:Name="EmptyText" Text="Select a commit to see its details." IsVisible="{Binding IsEmpty}"
+               HorizontalAlignment="Center" VerticalAlignment="Center" Opacity="0.6" />
+
+    <StackPanel x:Name="LoadingPanel" IsVisible="{Binding IsLoading}" HorizontalAlignment="Center" VerticalAlignment="Center" Spacing="8">
+      <TextBlock Text="Loading commit…" Opacity="0.7" HorizontalAlignment="Center" />
+      <ProgressBar Width="160" IsIndeterminate="True" />
+    </StackPanel>
+
+    <TextBlock x:Name="ErrorText" Text="{Binding Error}" IsVisible="{Binding Error, Converter={x:Static ObjectConverters.IsNotNull}}"
+               Foreground="{DynamicResource ErrorTextForeground}" Margin="8" TextWrapping="Wrap" VerticalAlignment="Top" />
+
+    <ScrollViewer x:Name="DetailsPanel" IsVisible="{Binding HasCommit}" HorizontalScrollBarVisibility="Disabled">
+      <StackPanel Margin="10,8" Spacing="10">
+        <Grid ColumnDefinitions="Auto,*">
+          <Border x:Name="Avatar" Width="56" Height="56" CornerRadius="28" Margin="0,0,14,0" VerticalAlignment="Top" Background="{Binding AvatarBrush}">
+            <TextBlock x:Name="AvatarText" Text="{Binding Initials}" Foreground="White" FontSize="20" FontWeight="SemiBold" HorizontalAlignment="Center" VerticalAlignment="Center" />
+          </Border>
+          <Grid Grid.Column="1" ColumnDefinitions="Auto,*" RowDefinitions="Auto,Auto,Auto,Auto,Auto,Auto" ColumnSpacing="12" RowSpacing="2">
+            <TextBlock Grid.Row="0" Classes="label" Text="Author:" />
+            <Button x:Name="AuthorLink" Grid.Row="0" Grid.Column="1" Classes="link" HorizontalAlignment="Left" Click="OnAuthorClick"
+                    IsVisible="{Binding HasAuthorEmail}" Tag="{Binding AuthorMailto}">
+              <TextBlock Text="{Binding Author}" />
+            </Button>
+            <SelectableTextBlock x:Name="AuthorPlain" Grid.Row="0" Grid.Column="1" Text="{Binding Author}" IsVisible="{Binding !HasAuthorEmail}" />
+            <TextBlock Grid.Row="1" Classes="label" Text="Author date:" />
+            <SelectableTextBlock x:Name="AuthorDateText" Grid.Row="1" Grid.Column="1" Text="{Binding AuthorDateText}" />
+            <TextBlock Grid.Row="2" Classes="label" Text="Commit date:" />
+            <SelectableTextBlock x:Name="CommitDateText" Grid.Row="2" Grid.Column="1" Text="{Binding CommitDateText}" />
+            <TextBlock Grid.Row="3" Classes="label" Text="Commit hash:" />
+            <SelectableTextBlock x:Name="HashText" Grid.Row="3" Grid.Column="1" Text="{Binding Hash}" FontFamily="Cascadia Mono, Consolas, DejaVu Sans Mono, monospace" />
+            <TextBlock Grid.Row="4" Classes="label" Text="{Binding ParentsLabel}" IsVisible="{Binding HasParentLinks}" />
+            <ItemsControl x:Name="ParentLinks" Grid.Row="4" Grid.Column="1" ItemsSource="{Binding ParentLinks}" IsVisible="{Binding HasParentLinks}">
+              <ItemsControl.ItemsPanel><ItemsPanelTemplate><WrapPanel Orientation="Horizontal" /></ItemsPanelTemplate></ItemsControl.ItemsPanel>
+              <ItemsControl.ItemTemplate>
+                <DataTemplate x:DataType="vm:CommitLink">
+                  <Button Classes="link" Margin="0,0,10,0" Tag="{Binding Id}" Click="OnCommitLinkClick">
+                    <TextBlock Text="{Binding ShortHash}" FontFamily="Cascadia Mono, Consolas, DejaVu Sans Mono, monospace" />
+                  </Button>
+                </DataTemplate>
+              </ItemsControl.ItemTemplate>
+            </ItemsControl>
+            <TextBlock Grid.Row="5" Classes="label" Text="{Binding ChildrenLabel}" IsVisible="{Binding HasChildLinks}" />
+            <ItemsControl x:Name="ChildLinks" Grid.Row="5" Grid.Column="1" ItemsSource="{Binding ChildLinks}" IsVisible="{Binding HasChildLinks}">
+              <ItemsControl.ItemsPanel><ItemsPanelTemplate><WrapPanel Orientation="Horizontal" /></ItemsPanelTemplate></ItemsControl.ItemsPanel>
+              <ItemsControl.ItemTemplate>
+                <DataTemplate x:DataType="vm:CommitLink">
+                  <Button Classes="link" Margin="0,0,10,0" Tag="{Binding Id}" Click="OnCommitLinkClick">
+                    <TextBlock Text="{Binding ShortHash}" FontFamily="Cascadia Mono, Consolas, DejaVu Sans Mono, monospace" />
+                  </Button>
+                </DataTemplate>
+              </ItemsControl.ItemTemplate>
+            </ItemsControl>
+          </Grid>
+        </Grid>
+
+        <Border Background="{DynamicResource CommitMessageBackground}" Padding="10,8" CornerRadius="2">
+          <SelectableTextBlock x:Name="MessageText" Text="{Binding Message}" TextWrapping="Wrap" />
+        </Border>
+
+        <StackPanel Spacing="3">
+          <StackPanel x:Name="RelatedLinksPanel" Orientation="Horizontal" Spacing="6" IsVisible="{Binding HasRelatedLinks}">
+            <TextBlock Text="Related links:" />
+            <ItemsControl ItemsSource="{Binding RelatedLinks}">
+              <ItemsControl.ItemsPanel><ItemsPanelTemplate><WrapPanel Orientation="Horizontal" /></ItemsPanelTemplate></ItemsControl.ItemsPanel>
+              <ItemsControl.ItemTemplate>
+                <DataTemplate x:DataType="rev:MessageLink">
+                  <Button Classes="link" Margin="0,0,10,0" Tag="{Binding Url}" Click="OnLinkClick" ToolTip.Tip="{Binding Url}">
+                    <TextBlock Text="{Binding Text}" />
+                  </Button>
+                </DataTemplate>
+              </ItemsControl.ItemTemplate>
+            </ItemsControl>
+          </StackPanel>
+          <SelectableTextBlock x:Name="BranchesText" Text="{Binding BranchesText}" TextWrapping="Wrap" />
+          <SelectableTextBlock x:Name="TagsText" Text="{Binding TagsText}" TextWrapping="Wrap" />
+          <StackPanel x:Name="DescribePanel" Orientation="Horizontal" Margin="0,8,0,0" IsVisible="{Binding HasDescribe}">
+            <TextBlock Text="Derives from tag " />
+            <Button x:Name="DescribeLink" Classes="link" Click="OnDescribeClick">
+              <TextBlock Text="{Binding DescribeTag}" />
+            </Button>
+            <TextBlock Text="{Binding DescribeSuffix}" />
+          </StackPanel>
+        </StackPanel>
+      </StackPanel>
+    </ScrollViewer>
+  </Grid>
+</UserControl>

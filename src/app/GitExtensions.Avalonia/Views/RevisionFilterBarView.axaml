@@ -1,0 +1,32 @@
+<UserControl xmlns="https://github.com/avaloniaui"
+             xmlns:x="http://schemas.microsoft.com/winfx/2006/xaml"
+             xmlns:vm="using:GitExtensions.Desktop.ViewModels"
+             x:Class="GitExtensions.Desktop.Views.RevisionFilterBarView"
+             x:DataType="vm:MainWindowViewModel">
+  <Border Padding="6,3" BorderThickness="0,0,0,1" BorderBrush="{DynamicResource SubtleBorderBrush}" Background="{DynamicResource GridHeaderBackground}">
+    <Grid ColumnDefinitions="Auto,170,Auto,Auto,Auto,*,Auto" ColumnSpacing="6">
+      <TextBlock Text="Branches:" VerticalAlignment="Center" />
+      <ComboBox x:Name="BranchCombo" Grid.Column="1" HorizontalAlignment="Stretch" MinHeight="26" Padding="6,2"
+                ItemsSource="{Binding BranchChoices}" SelectedItem="{Binding SelectedBranchChoice}" />
+      <Button x:Name="FilterMenuButton" Grid.Column="2" Padding="6,2" MinHeight="26" ToolTip.Tip="Branch filter options" Background="Transparent">
+        <StackPanel Orientation="Horizontal" Spacing="3">
+          <Path Data="M1,2 L13,2 L8,8 L8,13 L6,12 L6,8 Z" Fill="{DynamicResource SystemControlForegroundBaseMediumBrush}" Stretch="None" />
+          <TextBlock Text="▾" FontSize="10" VerticalAlignment="Center" />
+        </StackPanel>
+      </Button>
+      <TextBlock Grid.Column="3" Text="Filter:" VerticalAlignment="Center" Margin="10,0,0,0" />
+      <Panel Grid.Column="4" Width="220">
+        <TextBox x:Name="FilterBox" MinHeight="26" Padding="6,2,24,2" Text="{Binding FilterText}" Watermark="Filter revisions" />
+        <Button x:Name="ClearFilterButton" HorizontalAlignment="Right" VerticalAlignment="Center" Padding="4,0" MinHeight="20" MinWidth="20" Margin="0,0,3,0"
+                Content="✕" FontSize="10" Background="Transparent" BorderThickness="0" ToolTip.Tip="Clear the filter"
+                Command="{Binding ClearFilterCommand}" IsVisible="{Binding HasFilterText}" />
+      </Panel>
+      <Button x:Name="FilterOptionsButton" Grid.Column="5" HorizontalAlignment="Left" Padding="6,2" MinHeight="26" ToolTip.Tip="What the filter text matches" Background="Transparent">
+        <StackPanel Orientation="Horizontal" Spacing="3">
+          <Path Data="M1,2 L13,2 L8,8 L8,13 L6,12 L6,8 Z" Fill="{DynamicResource SystemControlForegroundBaseMediumBrush}" Stretch="None" />
+          <TextBlock Text="▾" FontSize="10" VerticalAlignment="Center" />
+        </StackPanel>
+      </Button>
+    </Grid>
+  </Border>
+</UserControl>

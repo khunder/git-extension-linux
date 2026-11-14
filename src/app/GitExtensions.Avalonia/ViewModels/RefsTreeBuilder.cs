@@ -23,7 +23,27 @@ public static class RefsTreeBuilder
         AddGroup(roots, "Branches", matching.Where(e => e.Kind == RefNodeKind.LocalBranch), currentBranch, filtering, splitRemote: false);
         AddGroup(roots, "Remotes", matching.Where(e => e.Kind == RefNodeKind.RemoteBranch), currentBranch, filtering, splitRemote: true);
         AddGroup(roots, "Tags", matching.Where(e => e.Kind == RefNodeKind.Tag), currentBranch, filtering, splitRemote: false);
+        AddFlatGroup(roots, "Submodules", matching.Where(e => e.Kind == RefNodeKind.Submodule), RefNodeKind.Submodule);
+        AddFlatGroup(roots, "Stashes", matching.Where(e => e.Kind == RefNodeKind.Stash), RefNodeKind.Stash);
         return roots;
+    }
+
+    // Submodules and stashes: shown only when there are some, as a flat list in the given order.
+    private static void AddFlatGroup(List<RefNodeViewModel> roots, string title, IEnumerable<RefEntry> entries, RefNodeKind kind)
+    {
+        List<RefEntry> list = entries.ToList();
+        if (list.Count == 0)
+        {
+            return;
+        }
+
+        RefNodeViewModel group = new(title, RefNodeKind.Group) { Count = list.Count };
+        foreach (RefEntry entry in list)
+        {
+            group.Children.Add(new RefNodeViewModel(entry.Name, kind, entry.Name));
+        }
+
+        roots.Add(group);
     }
 
     private static void AddGroup(List<RefNodeViewModel> roots, string title, IEnumerable<RefEntry> entries, string? currentBranch, bool filtering, bool splitRemote)
@@ -36,7 +56,7 @@ public static class RefsTreeBuilder
             return;
         }
 
-        RefNodeViewModel group = new(title, RefNodeKind.Group);
+        RefNodeViewModel group = new(title, RefNodeKind.Group) { Count = splitRemote ? null : list.Count };
         if (splitRemote)
         {
             foreach (IGrouping<string, RefEntry> remote in list

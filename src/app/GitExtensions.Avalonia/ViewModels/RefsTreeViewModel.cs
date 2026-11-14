@@ -46,6 +46,7 @@ public sealed partial class RefsTreeViewModel : ObservableObject
         _entries = [];
         _currentBranch = null;
         CurrentTrack = null;
+        LocalBranchNames.Clear();
         CancelPrompt();
         Roots.Clear();
     }
@@ -57,7 +58,12 @@ public sealed partial class RefsTreeViewModel : ObservableObject
     {
         _module = module;
         Task<Dictionary<string, UpstreamTrack>> tracking = Task.Run(() => ReadTracking(module));
-        (IReadOnlyList<RefEntry> entries, string current) = await Task.Run(() => (ReadEntries(module), module.GetSelectedBranch(emptyIfDetached: true)));
+        (IReadOnlyList<RefEntry> entries, string current) = await Task.Run(() =>
+        {
+            List<RefEntry> read = ReadEntries(module);
+            read.AddRange(ReadSubmodulesAndStashes(module));
+            return ((IReadOnlyList<RefEntry>)read, module.GetSelectedBranch(emptyIfDetached: true));
+        });
         Dictionary<string, UpstreamTrack> tracks = await tracking;
         if (!ReferenceEquals(_module, module))
         {
@@ -67,6 +73,7 @@ public sealed partial class RefsTreeViewModel : ObservableObject
         _entries = ApplyTracking(entries, tracks);
         _currentBranch = current;
         CurrentTrack = tracks.GetValueOrDefault(current);
+        UpdateLocalBranchNames();
         Rebuild();
     }
 
@@ -112,32 +119,38 @@ public sealed partial class RefsTreeViewModel : ObservableObject
     }
 
     [RelayCommand]
-    private async Task CheckoutAsync(RefNodeViewModel? node)
+    private Task CheckoutAsync(RefNodeViewModel? node)
+        => node is { Kind: RefNodeKind.LocalBranch or RefNodeKind.Tag } ? CheckoutRefAsync(node.FullName) : Task.CompletedTask;
+
+    /// <summary>
+    ///  Checks out a local branch or tag by name (the toolbar's branch list uses this) and reloads everything.
+    /// </summary>
+    public async Task CheckoutRefAsync(string name)
     {
         GitModule? module = _module;
-        if (module is null || node is null || node.Kind is not (RefNodeKind.LocalBranch or RefNodeKind.Tag))
+        if (module is null)
         {
             return;
         }
 
-        _reportStatus($"Checking out {node.FullName}…");
+        _reportStatus($"Checking out {name}…");
         try
         {
             // A tag (or any non-branch name) makes git detach HEAD on its own.
             ExecutionResult result = await Task.Run(() => module.GitExecutable.Execute(
-                Commands.CheckoutBranch(node.FullName, remote: false).Arguments,
+                Commands.CheckoutBranch(name, remote: false).Arguments,
                 throwOnErrorExit: false));
 
             if (!result.ExitedSuccessfully)
             {
                 string error = string.IsNullOrWhiteSpace(result.StandardError) ? result.StandardOutput : result.StandardError;
-                _reportStatus($"Checkout of {node.FullName} failed: {error.Trim()}");
+                _reportStatus($"Checkout of {name} failed: {error.Trim()}");
                 return;
             }
         }
         catch (Exception ex)
         {
-            _reportStatus($"Checkout of {node.FullName} failed: {ex.Message}");
+            _reportStatus($"Checkout of {name} failed: {ex.Message}");
             return;
         }
 
@@ -151,6 +164,42 @@ public sealed partial class RefsTreeViewModel : ObservableObject
         {
             Roots.Add(root);
         }
+    }
+
+    // Cheap lookups for the "Submodules" and "Stashes" groups: .gitmodules (top level only) and the stash list.
+    private static List<RefEntry> ReadSubmodulesAndStashes(GitModule module)
+    {
+        List<RefEntry> entries = [];
+        try
+        {
+            ExecutionResult modules = module.GitExecutable.Execute("config -f .gitmodules --get-regexp \"^submodule\\..*\\.path$\"", throwOnErrorExit: false);
+            if (modules.ExitedSuccessfully)
+            {
+                foreach (string line in modules.StandardOutput.Split('\n', StringSplitOptions.RemoveEmptyEntries | StringSplitOptions.TrimEntries))
+                {
+                    int space = line.IndexOf(' ');
+                    if (space > 0)
+                    {
+                        entries.Add(new RefEntry(RefNodeKind.Submodule, line[(space + 1)..].Trim()));
+                    }
+                }
+            }
+
+            ExecutionResult stashes = module.GitExecutable.Execute("stash list", throwOnErrorExit: false);
+            if (stashes.ExitedSuccessfully)
+            {
+                foreach (string line in stashes.StandardOutput.Split('\n', StringSplitOptions.RemoveEmptyEntries | StringSplitOptions.TrimEntries))
+                {
+                    entries.Add(new RefEntry(RefNodeKind.Stash, line));
+                }
+            }
+        }
+        catch (Exception)
+        {
+            // The groups are a convenience: never fail the sidebar for them.
+        }
+
+        return entries;
     }
 
     private static List<RefEntry> ReadEntries(GitModule module)

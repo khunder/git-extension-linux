@@ -29,6 +29,12 @@ public sealed partial class CommitViewModel : ObservableObject, IDisposable
     private bool _amend;
 
     [ObservableProperty]
+    private bool _signOff;
+
+    [ObservableProperty]
+    private string? _errorText;
+
+    [ObservableProperty]
     [NotifyCanExecuteChangedFor(nameof(CommitCommand))]
     private bool _hasHead;
 
@@ -95,16 +101,35 @@ public sealed partial class CommitViewModel : ObservableObject, IDisposable
     private bool CanCommit()
         => !IsCommitting && !string.IsNullOrWhiteSpace(Message) && (StagedCount > 0 || (Amend && HasHead));
 
+    /// <summary>
+    ///  Raised after a commit was created, with the message that was used.
+    /// </summary>
+    public event Action<string>? Committed;
+
     [RelayCommand(CanExecute = nameof(CanCommit))]
     private async Task CommitAsync()
     {
+        if (await TryCommitAsync())
+        {
+            await _afterCommitAsync();
+        }
+    }
+
+    /// <summary>
+    ///  Commits the staged changes (or amends) with the current message. Returns <see langword="false"/> and sets
+    ///  <see cref="ErrorText"/> (and reports through the message dialogs) when git refuses; the message is kept then.
+    /// </summary>
+    public async Task<bool> TryCommitAsync()
+    {
         string message = Message;
         bool amend = Amend;
+        bool signOff = SignOff;
+        ErrorText = null;
         IsCommitting = true;
         string? error;
         try
         {
-            error = await Task.Run(() => RunCommit(message, amend));
+            error = await Task.Run(() => RunCommit(message, amend, signOff));
         }
         catch (Exception ex)
         {
@@ -117,14 +142,16 @@ public sealed partial class CommitViewModel : ObservableObject, IDisposable
 
         if (error is not null)
         {
+            ErrorText = error;
             _messages.ShowError(null, error, "Commit failed");
-            return;
+            return false;
         }
 
         _draftMessage = string.Empty;
         Amend = false;
         Message = string.Empty;
-        await _afterCommitAsync();
+        Committed?.Invoke(message);
+        return true;
     }
 
     private async Task LoadPreviousMessageAsync()
@@ -145,7 +172,7 @@ public sealed partial class CommitViewModel : ObservableObject, IDisposable
         }
     }
 
-    private string? RunCommit(string message, bool amend)
+    private string? RunCommit(string message, bool amend, bool signOff)
     {
         string file = Path.Combine(_module.WorkingDirGitDir, "GE_COMMIT_EDITMSG");
         File.WriteAllText(file, message.TrimEnd() + "\n", new UTF8Encoding(false));
@@ -155,6 +182,7 @@ public sealed partial class CommitViewModel : ObservableObject, IDisposable
             {
                 "--cleanup=strip",
                 { amend, "--amend" },
+                { signOff, "--signoff" },
                 "-F",
                 file.QuoteNE(),
             };

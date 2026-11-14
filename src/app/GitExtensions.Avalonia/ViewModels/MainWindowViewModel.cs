@@ -13,10 +13,6 @@ namespace GitExtensions.Desktop.ViewModels;
 
 public sealed partial class MainWindowViewModel : ObservableObject
 {
-    // Enough for browsing; the list is filled incrementally while git is still producing output.
-    // --topo-order: the graph needs every commit listed before all of its parents (git's default order does not guarantee it).
-    private static string RevisionFilter => $"--topo-order --max-count={BehaviorSettings.Current.HistoryLimit} HEAD";
-
     private readonly GitEnvironment _git;
     private readonly IFolderPicker _folderPicker;
     private CancellationTokenSource? _loadCancellation;
@@ -51,17 +47,22 @@ public sealed partial class MainWindowViewModel : ObservableObject
     [NotifyPropertyChangedFor(nameof(ShowStartView))]
     private bool _hasOpenedRepository;
 
-    public MainWindowViewModel(GitEnvironment git, IFolderPicker folderPicker)
+    /// <param name="history">The repository history behind the dashboard and the recent list; the user's own one by default.</param>
+    public MainWindowViewModel(GitEnvironment git, IFolderPicker folderPicker, ILocalRepositoryManager? history = null)
     {
         _git = git;
         _folderPicker = folderPicker;
-        Recent = new RecentRepositoriesViewModel(RepositoryHistoryManager.Locals, OpenAsync);
+        _history = history ?? RepositoryHistoryManager.Locals;
+        Recent = new RecentRepositoriesViewModel(_history, OpenAsync);
         git.Messages.MessageReported += message => ErrorMessage = message;
         Refs = new RefsTreeViewModel(message => Status = message, SelectCommit, () => OpenAsync(RepositoryPath));
         InitializeHistoryExtras();
+        InitializeGrid();
         InitializeOperations();
         InitializeCloneInit();
         InitializeBranchManagement();
+        InitializeMenu();
+        InitializeDashboard();
     }
 
     public RecentRepositoriesViewModel Recent { get; }
@@ -69,7 +70,7 @@ public sealed partial class MainWindowViewModel : ObservableObject
     public bool HasError => !string.IsNullOrEmpty(ErrorMessage);
 
     /// <summary>
-    ///  The "Recent repositories" start view replaces the empty lists until a repository has been opened.
+    ///  The dashboard (start page) is shown until a repository has been opened, and again after it was closed.
     /// </summary>
     public bool ShowStartView => !HasOpenedRepository;
 
@@ -106,6 +107,7 @@ public sealed partial class MainWindowViewModel : ObservableObject
             await _loadCancellation.CancelAsync();
         }
 
+        CancelHistoryReload();
         _loadCancellation = new CancellationTokenSource();
         CancellationToken cancellationToken = _loadCancellation.Token;
 
@@ -141,15 +143,17 @@ public sealed partial class MainWindowViewModel : ObservableObject
             _ = RecordRecentAsync(module.WorkingDir);
 
             // The git calls block, so keep them off the UI thread.
-            (string branch, (List<ChangedFileViewModel> changes, string? statusError), Dictionary<ObjectId, string> refs) = await Task.Run(
+            (string branch, (List<ChangedFileViewModel> changes, string? statusError), Dictionary<ObjectId, CommitRefs> refs, string user) = await Task.Run(
                 () => (
                     module.GetSelectedBranch(),
                     ReadChanges(module),
-                    GetRefsByCommit(module)),
+                    GetRefsByCommit(module),
+                    module.GetEffectiveSetting("user.name")),
                 cancellationToken);
 
             cancellationToken.ThrowIfCancellationRequested();
             Branch = branch;
+            PrepareGrid(module.WorkingDir, refs, user);
             if (statusError is not null)
             {
                 ErrorMessage = statusError;
@@ -160,7 +164,9 @@ public sealed partial class MainWindowViewModel : ObservableObject
             ChangedFiles.AddRange(changes);
 
             Status = "Loading history…";
-            await Task.Run(() => LoadHistory(module, refs, cancellationToken), cancellationToken);
+            RevisionFilter openFilter = CurrentFilter;
+            int generation = Interlocked.Increment(ref _historyGeneration);
+            await Task.Run(() => LoadHistory(module, refs, openFilter, user, generation, cancellationToken), cancellationToken);
 
             // Let the batches still queued for the UI thread land before reporting the final count.
             await Dispatcher.UIThread.InvokeAsync(static () => { }, DispatcherPriority.Background);
@@ -238,16 +244,24 @@ public sealed partial class MainWindowViewModel : ObservableObject
 
     // The details load asynchronously and cancel each other; failures are reported by the details view-model itself.
     partial void OnSelectedCommitChanged(CommitItemViewModel? value)
-        => _ = value is not null && _module is not null
-            ? CommitDetails.LoadAsync(_module, value.ObjectId, value.Refs)
+    {
+        if (value is not null)
+        {
+            IsWorkingTreeSelected = false;
+        }
+
+        _ = value is not null && _module is not null
+            ? CommitDetails.LoadAsync(_module, value.ObjectId, value.Refs, GetChildren(value.ObjectId))
             : CommitDetails.ClearAsync();
+    }
 
     private async Task RecordRecentAsync(string workingDir)
     {
         try
         {
-            await Task.Run(() => RepositoryHistoryManager.Locals.AddAsMostRecentAsync(workingDir));
+            await Task.Run(() => _history.AddAsMostRecentAsync(workingDir));
             await Recent.LoadAsync();
+            await Dashboard.LoadAsync();
         }
         catch (Exception ex)
         {
@@ -276,22 +290,19 @@ public sealed partial class MainWindowViewModel : ObservableObject
         return (items.Select(item => new ChangedFileViewModel(item)).ToList(), error);
     }
 
-    // git log does not report which branches and tags point at a commit, so look them up once and join by commit id.
-    private static Dictionary<ObjectId, string> GetRefsByCommit(GitModule module)
-        => module.GetRefs(RefsFilter.Heads | RefsFilter.Tags | RefsFilter.Remotes)
-            .GroupBy(gitRef => gitRef.ObjectId)
-            .ToDictionary(group => group.Key, group => string.Join("  ", group.Select(gitRef => gitRef.LocalName)));
-
-    private void LoadHistory(GitModule module, Dictionary<ObjectId, string> refs, CancellationToken cancellationToken)
+    private void LoadHistory(GitModule module, Dictionary<ObjectId, CommitRefs> refs, RevisionFilter filter, string? user, int generation, CancellationToken cancellationToken)
     {
         RevisionReader reader = new(module);
+
+        // A newer load (open or filter change, numbered on the UI thread) makes this one stale: its batches must not reach the list any more.
+        int row = 0;
 
         // The graph lanes and row view-models are computed here, on the reader's thread, so the UI thread only has to
         // insert the finished batch. The builder belongs to this load: a newer load never shares it.
         CommitGraphBuilder graphBuilder = new() { CollapseFromLane = Views.CommitGraphCell.MaxVisibleLanes - 1 };
         BatchObserver observer = new(batch =>
         {
-            if (cancellationToken.IsCancellationRequested)
+            if (cancellationToken.IsCancellationRequested || generation != _historyGeneration)
             {
                 return;
             }
@@ -299,10 +310,7 @@ public sealed partial class MainWindowViewModel : ObservableObject
             List<CommitItemViewModel> items = new(batch.Count);
             foreach (GitRevision revision in batch)
             {
-                CommitItemViewModel item = new(revision, refs.GetValueOrDefault(revision.ObjectId, string.Empty))
-                {
-                    Actions = Actions,
-                };
+                CommitItemViewModel item = CreateItem(revision, refs, filter, user, (row++ & 1) == 1, Actions);
                 item.Graph = graphBuilder.Append(item.ObjectId.ToString(), revision.ParentIds?.Select(id => id.ToString()).ToList() ?? []);
                 items.Add(item);
             }
@@ -310,7 +318,7 @@ public sealed partial class MainWindowViewModel : ObservableObject
             int laneCount = Math.Max(1, graphBuilder.MaxLaneCount);
             Dispatcher.UIThread.Post(() =>
             {
-                if (cancellationToken.IsCancellationRequested)
+                if (cancellationToken.IsCancellationRequested || generation != _historyGeneration)
                 {
                     return;
                 }
@@ -321,7 +329,7 @@ public sealed partial class MainWindowViewModel : ObservableObject
             });
         });
 
-        reader.GetLog(observer, RevisionFilter, pathFilter: string.Empty, hasNotes: false, autostashLabel: "autostash", cancellationToken);
+        reader.GetLog(observer, RevisionFilterArgs.Build(filter, BehaviorSettings.Current.HistoryLimit), pathFilter: string.Empty, hasNotes: false, autostashLabel: "autostash", cancellationToken);
     }
 
     private sealed class BatchObserver(Action<IReadOnlyList<GitRevision>> onNext) : IObserver<IReadOnlyList<GitRevision>>

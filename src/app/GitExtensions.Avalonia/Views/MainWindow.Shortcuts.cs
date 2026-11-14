@@ -1,4 +1,4 @@
-using System.ComponentModel;
+﻿using System.ComponentModel;
 using Avalonia;
 using Avalonia.Automation;
 using Avalonia.Controls;
@@ -14,12 +14,9 @@ namespace GitExtensions.Desktop.Views;
 // Window-level keyboard handling, overlay focus management, accessibility names and the responsive history row.
 public sealed partial class MainWindow
 {
-    // The history list is narrower than these widths in the "medium" (no date) and "narrow" (no date, no author) states.
-    internal const double HistoryMediumWidth = 640;
-    internal const double HistoryNarrowWidth = 440;
-
-    // Below this the ref badges give way as well, so the subject keeps its room.
-    internal const double HistoryTinyWidth = 360;
+    internal const double HistoryMediumWidth = RevisionGridView.HistoryMediumWidth;
+    internal const double HistoryNarrowWidth = RevisionGridView.HistoryNarrowWidth;
+    internal const double HistoryTinyWidth = RevisionGridView.HistoryTinyWidth;
 
     private static readonly string[] OverlayNames = ["SettingsOverlay", "FileHistoryOverlay", "CredentialOverlay", "PaletteOverlay", "ShortcutsOverlay"];
 
@@ -35,13 +32,6 @@ public sealed partial class MainWindow
         AddHandler(GotFocusEvent, OnAnyGotFocus, RoutingStrategies.Bubble);
         DataContextChanged += (_, _) => AttachShortcuts();
 
-        CommitList.PropertyChanged += (_, e) =>
-        {
-            if (e.Property == BoundsProperty)
-            {
-                UpdateHistoryLayout(CommitList.Bounds.Width);
-            }
-        };
         SizeChanged += (_, e) => ClampSidebarToWindow(e.NewSize.Width);
         Describe();
     }
@@ -61,19 +51,7 @@ public sealed partial class MainWindow
     /// <summary>
     ///  The compact state of the history rows: "wide", "medium" (no date) or "narrow" (no date, no author; below 360px also no ref badges).
     /// </summary>
-    public string HistoryLayoutState => CommitList.Classes.Contains("narrow") ? "narrow" : CommitList.Classes.Contains("medium") ? "medium" : "wide";
-
-    private void UpdateHistoryLayout(double width)
-    {
-        if (width <= 0)
-        {
-            return;
-        }
-
-        CommitList.Classes.Set("tiny", width < HistoryTinyWidth);
-        CommitList.Classes.Set("narrow", width < HistoryNarrowWidth);
-        CommitList.Classes.Set("medium", width >= HistoryNarrowWidth && width < HistoryMediumWidth);
-    }
+    public string HistoryLayoutState => RevisionGrid.HistoryLayoutState;
 
     private void AttachShortcuts()
     {
@@ -216,10 +194,6 @@ public sealed partial class MainWindow
     {
         switch (target)
         {
-            case UiTarget.PathBox:
-                PathBox.Focus();
-                PathBox.SelectAll();
-                break;
             case UiTarget.SidebarFilter:
                 if (SidebarCollapsed)
                 {
@@ -229,26 +203,21 @@ public sealed partial class MainWindow
                 SidebarPanel.FindControl<TextBox>("FilterBox")?.Focus();
                 break;
             case UiTarget.CommitMessage:
-                CommitPanel.FindControl<TextBox>("MessageBox")?.Focus();
+                // The commit message lives in the Commit window.
+                (DataContext as MainWindowViewModel)?.ShowCommitWindowCommand.Execute(null);
                 break;
             case UiTarget.ToggleSidebar:
                 SidebarCollapsed = !SidebarCollapsed;
                 break;
-            case UiTarget.ShowRecent:
-                if (RecentButton.Flyout is { } recent)
+            case UiTarget.ShowSidebar:
+                if (SidebarCollapsed)
                 {
-                    recent.ShowAt(RecentButton);
+                    SidebarCollapsed = false;
                 }
 
                 break;
-            case UiTarget.ShowStash:
-                if (this.GetVisualDescendants().OfType<StashMenuButton>().FirstOrDefault() is { } stash)
-                {
-                    stash.Flyout?.ShowAt(stash);
-                    (DataContext as MainWindowViewModel)?.Stash.RequestStashCommand.Execute(null);
-                }
 
-                break;
+            // PathBox, ShowRecent, ShowBranches, ShowStash and ShowTools open flyouts of the toolbar (MainToolbarView).
         }
     }
 
@@ -269,20 +238,14 @@ public sealed partial class MainWindow
             }
         }
 
-        Name(PathBox, "Repository path", "Type the path of a Git repository and press Enter to open it");
-        Name(RecentButton, "Recent repositories");
-        Name(SettingsButton, "Settings", "Open the settings (Ctrl+,)");
         Name(this.FindControl<Button>("SidebarToggle"), "Toggle branches sidebar", "Hide or show the branches sidebar (Ctrl+B)");
-        Name(CommitList, "Commit history", "J and K or the arrow keys select the next or previous commit");
-        Name(this.FindControl<ListBox>("ChangeList"), "Changed files", "Files changed in the working tree");
         Name(SidebarPanel.FindControl<TextBox>("FilterBox"), "Filter branches and tags", "Ctrl+F focuses this box");
         Name(SidebarPanel.FindControl<TreeView>("RefsTree"), "Branches, remotes and tags");
-        Name(CommitPanel.FindControl<TextBox>("MessageBox"), "Commit message", "Ctrl+Enter commits");
         Name(this.FindControl<Control>("SettingsOverlay"), "Settings");
         Name(this.FindControl<Control>("FileHistoryOverlay"), "File history and blame");
         Name(this.FindControl<Control>("CredentialOverlay"), "Credentials requested by Git");
         Name(this.FindControl<Control>("PaletteOverlay"), "Command palette");
         Name(this.FindControl<Control>("ShortcutsOverlay"), "Keyboard shortcuts");
-        Name(this.FindControl<Control>("StartView"), "Recent repositories");
+        Name(this.FindControl<Control>("DashboardPage"), "Dashboard: recent and favorite repositories");
     }
 }

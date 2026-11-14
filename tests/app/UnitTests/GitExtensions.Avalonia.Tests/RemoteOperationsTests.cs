@@ -211,7 +211,8 @@ public class RemoteOperationsTests
         await viewModel.OpenAsync(scenario.Alpha);
         await viewModel.Remote.ReloadStateAsync();
 
-        window.FindControl<RemoteOperationsView>("RemoteBar")!.IsVisible.Should().BeTrue();
+        window.FindControl<MainToolbarView>("MainToolbar")!.IsVisible.Should().BeTrue();
+        window.FindControl<MainToolbarView>("MainToolbar")!.FindControl<Button>("PushButton").Should().NotBeNull();
         window.FindControl<OutputPanelView>("OutputPanel")!.IsVisible.Should().BeFalse();
 
         await viewModel.Remote.FetchCommand.ExecuteAsync(null);

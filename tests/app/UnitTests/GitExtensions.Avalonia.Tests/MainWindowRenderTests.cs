@@ -18,6 +18,28 @@ public class MainWindowRenderTests
     }
 
     [AvaloniaTest]
+    public async Task Refs_sidebar_shows_the_counts_in_the_group_headers()
+    {
+        using TestRepository repository = new();
+        repository.AddBranchesRemoteAndTags();
+        MainWindowViewModel viewModel = new(GitEnvironment.Initialize(), new NoFolderPicker());
+        MainWindow window = new() { DataContext = viewModel };
+        window.Show();
+        await viewModel.OpenAsync(repository.Path);
+        ShellTestSupport.Settle();
+
+        string[] headers = [.. viewModel.Refs.Roots.Select(r => r.Header)];
+        int branches = repository.GitOutput("for-each-ref", "refs/heads").Split('\n', StringSplitOptions.RemoveEmptyEntries).Length;
+        int tags = repository.GitOutput("tag").Split('\n', StringSplitOptions.RemoveEmptyEntries).Length;
+        headers.Should().Contain($"Branches ({branches})").And.Contain($"Tags ({tags})").And.Contain("Remotes");
+
+        // The headers (with the counts) are what the tree shows.
+        TreeView tree = window.Find<TreeView>("RefsTree");
+        tree.GetVisualDescendants().OfType<TextBlock>().Select(t => t.Text).Should().Contain($"Branches ({branches})");
+        window.Close();
+    }
+
+    [AvaloniaTest]
     public async Task MainWindow_renders_the_opened_repository()
     {
         using TestRepository repository = new();
@@ -32,8 +54,13 @@ public class MainWindowRenderTests
         AvaloniaHeadlessPlatform.ForceRenderTimerTick();
 
         // The visual tree really contains the data (not just the view-model).
-        window.FindControl<ListBox>("CommitList")!.ItemCount.Should().Be(2);
-        window.FindControl<ListBox>("ChangeList")!.ItemCount.Should().Be(2);
+        window.Find<ListBox>("CommitList").ItemCount.Should().Be(2);
+
+        // The working tree changes are not part of the main window any more (the Commit window shows them).
+        viewModel.ChangedFiles.Count.Should().Be(2);
+        window.TryFind<ListBox>("ChangeList").Should().BeNull();
+        window.TryFind<DiffView>("DiffPanel").Should().BeNull();
+        window.TryFind<CommitView>("CommitPanel").Should().BeNull();
         window.FindControl<TextBlock>("StatusText")!.Text.Should().Contain("2 commits");
 
         WriteableBitmap? frame = window.CaptureRenderedFrame();
@@ -51,14 +78,13 @@ public class MainWindowRenderTests
     }
 
     [AvaloniaTest]
-    public async Task MainWindow_renders_a_selected_diff()
+    public async Task Changes_host_renders_a_selected_diff()
     {
         using TestRepository repository = new();
         File.WriteAllText(Path.Combine(repository.Path, "a.txt"), "changed\nsecond line\n");
         MainWindowViewModel viewModel = new(GitEnvironment.Initialize(), new NoFolderPicker());
-        MainWindow window = new() { DataContext = viewModel };
-        window.Show();
         await viewModel.OpenAsync(repository.Path);
+        Window window = ShellTestSupport.CreateChangesHost(viewModel);
 
         ChangedFileViewModel file = viewModel.ChangedFiles.Single(f => f.Name == "a.txt");
         viewModel.SelectedChangedFile = file;
@@ -67,13 +93,13 @@ public class MainWindowRenderTests
         AvaloniaHeadlessPlatform.ForceRenderTimerTick();
 
         viewModel.Diff.Lines.Should().NotBeEmpty();
-        window.FindControl<ListBox>("ChangeList")!.SelectedItem.Should().BeSameAs(file);
+        window.Find<ListBox>("ChangeList").SelectedItem.Should().BeSameAs(file);
 
         WriteableBitmap? frame = window.CaptureRenderedFrame();
         frame.Should().NotBeNull();
         string directory = Path.Combine(AppContext.BaseDirectory, "screenshots");
         Directory.CreateDirectory(directory);
-        string path = Path.Combine(directory, "main-window-diff.png");
+        string path = Path.Combine(directory, "changes-host-diff.png");
         frame!.Save(path);
         TestContext.AddTestAttachment(path);
         window.Close();

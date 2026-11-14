@@ -165,14 +165,15 @@ public class CommitViewModelTests
     }
 
     [AvaloniaTest]
-    public async Task MainWindow_renders_the_commit_area()
+    public async Task Commit_panel_renders_in_a_host_window()
     {
         using TestRepository repository = new();
         repository.RunGit("add", "a.txt");
         MainWindowViewModel viewModel = new(GitEnvironment.Initialize(), new NoFolderPicker());
-        MainWindow window = new() { DataContext = viewModel };
-        window.Show();
         await viewModel.OpenAsync(repository.Path);
+
+        // The commit panel is shown by the Commit window; a minimal host stands in for it here.
+        Window window = ShellTestSupport.CreateChangesHost(viewModel);
         viewModel.Commit!.Message = "Update a.txt\n\nExplain the change here.";
         Avalonia.Threading.Dispatcher.UIThread.RunJobs();
         AvaloniaHeadlessPlatform.ForceRenderTimerTick();
@@ -184,7 +185,7 @@ public class CommitViewModelTests
         WriteableBitmap? frame = window.CaptureRenderedFrame();
         string directory = Path.Combine(AppContext.BaseDirectory, "screenshots");
         Directory.CreateDirectory(directory);
-        string file = Path.Combine(directory, "main-window-commit.png");
+        string file = Path.Combine(directory, "changes-host-commit.png");
         frame!.Save(file);
         TestContext.AddTestAttachment(file);
         window.Close();
@@ -216,6 +217,6 @@ public class CommitViewModelTests
 
 internal static class CommitRenderExtensions
 {
-    public static CommitView GetCommitView(this MainWindow window)
+    public static CommitView GetCommitView(this Window window)
         => Avalonia.VisualTree.VisualExtensions.GetVisualDescendants(window).OfType<CommitView>().Single();
 }

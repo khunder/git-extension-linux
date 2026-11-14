@@ -535,7 +535,7 @@ public class CloneInitTests
     // ---- Rendering ----
 
     [AvaloniaTest]
-    public async Task Start_view_offers_clone_and_init_and_dialogs_render_in_light_and_dark()
+    public async Task Dashboard_offers_clone_and_init_and_dialogs_render_in_light_and_dark()
     {
         MainWindowViewModel viewModel = new(GitEnvironment.Initialize(), new NoFolderPicker());
         MainWindow window = new() { DataContext = viewModel };
@@ -543,7 +543,7 @@ public class CloneInitTests
         await viewModel.Recent.LoadAsync();
         Avalonia.Threading.Dispatcher.UIThread.RunJobs();
 
-        Avalonia.Controls.Button cloneButton = window.FindControl<RecentRepositoriesView>("StartView")!.FindControl<Avalonia.Controls.Button>("CloneButton")!;
+        Avalonia.Controls.Button cloneButton = window.Find<Avalonia.Controls.Button>("CloneButton");
         cloneButton.IsVisible.Should().BeTrue();
         window.FindControl<CloneView>("CloneOverlay")!.IsVisible.Should().BeFalse();
 

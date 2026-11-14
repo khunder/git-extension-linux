@@ -43,9 +43,10 @@ public class ToolsRenderTests
             window.Show();
             await viewModel.OpenAsync(repository.Path);
 
+            // Repository > Show reflog… opens the tools flyout (anchored at the toolbar) on the reflog tab.
             ToolsMenuButton button = (ToolsMenuButton)window.GetVisualDescendants().First(c => c is ToolsMenuButton);
-            button.Content.Should().Be("Tools ▾");
-            button.Flyout!.ShowAt(button);
+            viewModel.ShowReflogCommand.Execute(null);
+            button.Flyout!.IsOpen.Should().BeTrue();
             RepositoryToolsView view = button.View;
 
             // Reflog tab (the flyout opening loads the selected tab), with an entry selected and the hard reset prompt open.

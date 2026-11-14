@@ -1,4 +1,4 @@
-using Avalonia;
+﻿using Avalonia;
 using Avalonia.Controls.ApplicationLifetimes;
 using Avalonia.Markup.Xaml;
 using GitExtensions.Desktop.Services;
@@ -24,6 +24,7 @@ public sealed class App : Application
             MainWindow window = new();
             MainWindowViewModel viewModel = new(git, new WindowFolderPicker(window));
             window.DataContext = viewModel;
+            viewModel.WindowService = new WindowService(viewModel, window);
             desktop.MainWindow = window;
 
             // A failure in an event handler or command must not close the application: show it in the error banner.
@@ -40,6 +41,7 @@ public sealed class App : Application
             window.Closing += (_, _) => windowState.Capture(window);
 
             _ = viewModel.Recent.LoadAsync();
+            _ = viewModel.Dashboard.LoadAsync();
 
             // "git-extensions-avalonia <path>" opens that repository straight away.
             if (desktop.Args is [string path, ..])

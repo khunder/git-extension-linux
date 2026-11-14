@@ -5,7 +5,7 @@ namespace GitExtensions.Desktop.FileHistory;
 /// <summary>
 ///  One commit of a file's history. <see cref="Path"/> is the name the file had in that commit (renames are followed).
 /// </summary>
-public sealed record FileHistoryEntry(string Hash, string Author, DateTimeOffset Date, string Subject, string Path)
+public sealed record FileHistoryEntry(string Hash, string Author, DateTimeOffset Date, string Subject, string Path, string Refs = "")
 {
     public string ShortHash => Hash.Length > 8 ? Hash[..8] : Hash;
 
@@ -38,7 +38,7 @@ public static class FileLogParser
             }
 
             string path = lines.Skip(1).Select(line => line.TrimEnd('\r')).LastOrDefault(line => line.Length > 0) ?? string.Empty;
-            entries.Add(new FileHistoryEntry(fields[0], fields[1], date, fields[3], path));
+            entries.Add(new FileHistoryEntry(fields[0], fields[1], date, fields[3], path, fields.Length > 4 ? fields[4].Trim() : string.Empty));
         }
 
         return entries;

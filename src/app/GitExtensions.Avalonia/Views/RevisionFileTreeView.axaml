@@ -1,0 +1,72 @@
+<UserControl xmlns="https://github.com/avaloniaui"
+             xmlns:x="http://schemas.microsoft.com/winfx/2006/xaml"
+             xmlns:vm="using:GitExtensions.Desktop.ViewModels"
+             xmlns:rev="using:GitExtensions.Desktop.Revision"
+             x:Class="GitExtensions.Desktop.Views.RevisionFileTreeView"
+             x:DataType="vm:RevisionFileTreeViewModel">
+
+  <Grid ColumnDefinitions="260,4,*">
+    <DockPanel Grid.Column="0">
+      <TextBox x:Name="FilterBox" DockPanel.Dock="Top" Margin="4" MinHeight="24" Padding="6,2" FontSize="12" Watermark="Filter files…" Text="{Binding FilterText}" />
+      <Panel>
+        <TreeView x:Name="Tree" ItemsSource="{Binding Roots}" SelectedItem="{Binding SelectedNode}" Padding="0">
+          <TreeView.Styles>
+            <Style Selector="TreeViewItem" x:DataType="vm:FileTreeNode">
+              <Setter Property="IsExpanded" Value="{Binding IsExpanded, Mode=TwoWay}" />
+              <Setter Property="MinHeight" Value="22" />
+              <Setter Property="Padding" Value="0" />
+            </Style>
+            <Style Selector="TextBlock.folder"><Setter Property="Foreground" Value="{DynamicResource SystemControlHighlightAccentBrush}" /></Style>
+          </TreeView.Styles>
+          <TreeView.ItemTemplate>
+            <TreeDataTemplate ItemsSource="{Binding Children}" x:DataType="vm:FileTreeNode">
+              <StackPanel Orientation="Horizontal" Spacing="6" Background="Transparent">
+                <StackPanel.ContextMenu>
+                  <ContextMenu>
+                    <MenuItem Header="File history" Click="OnFileHistoryClick" IsEnabled="{Binding !IsFolder}" />
+                    <MenuItem Header="Blame" Click="OnBlameClick" IsEnabled="{Binding !IsFolder}" />
+                    <Separator />
+                    <MenuItem Header="Copy path" Click="OnCopyPathClick" />
+                  </ContextMenu>
+                </StackPanel.ContextMenu>
+                <TextBlock Text="{Binding Glyph}" Classes.folder="{Binding IsFolder}" VerticalAlignment="Center" Opacity="0.8" IsVisible="{Binding !IsPlaceholder}" />
+                <TextBlock Text="{Binding Name}" VerticalAlignment="Center" />
+              </StackPanel>
+            </TreeDataTemplate>
+          </TreeView.ItemTemplate>
+        </TreeView>
+        <TextBlock x:Name="TreeMessage" Text="{Binding Message}" Opacity="0.6" Margin="8" HorizontalAlignment="Left" VerticalAlignment="Top" TextWrapping="Wrap"
+                   IsVisible="{Binding Message, Converter={x:Static StringConverters.IsNotNullOrEmpty}}" />
+      </Panel>
+    </DockPanel>
+
+    <GridSplitter Grid.Column="1" Width="4" Background="Transparent" />
+
+    <Panel Grid.Column="2">
+      <ItemsControl x:Name="ContentLines" ItemsSource="{Binding Lines}">
+        <ItemsControl.Template>
+          <ControlTemplate>
+            <ScrollViewer HorizontalScrollBarVisibility="Auto" VerticalScrollBarVisibility="Auto">
+              <ItemsPresenter Name="PART_ItemsPresenter" ItemsPanel="{TemplateBinding ItemsPanel}" />
+            </ScrollViewer>
+          </ControlTemplate>
+        </ItemsControl.Template>
+        <ItemsControl.ItemsPanel>
+          <ItemsPanelTemplate>
+            <VirtualizingStackPanel />
+          </ItemsPanelTemplate>
+        </ItemsControl.ItemsPanel>
+        <ItemsControl.ItemTemplate>
+          <DataTemplate x:DataType="rev:ContentLine">
+            <Grid ColumnDefinitions="52,*">
+              <TextBlock Text="{Binding Number}" FontFamily="Cascadia Mono, Consolas, DejaVu Sans Mono, monospace" FontSize="12" Opacity="0.5" TextAlignment="Right" Margin="0,0,8,0" />
+              <TextBlock Grid.Column="1" Text="{Binding DisplayText}" FontFamily="Cascadia Mono, Consolas, DejaVu Sans Mono, monospace" FontSize="12" TextWrapping="NoWrap" />
+            </Grid>
+          </DataTemplate>
+        </ItemsControl.ItemTemplate>
+      </ItemsControl>
+      <TextBlock x:Name="ContentMessage" Text="{Binding ContentMessage}" Opacity="0.6" Margin="12" HorizontalAlignment="Left" VerticalAlignment="Top" TextWrapping="Wrap"
+                 IsVisible="{Binding ContentMessage, Converter={x:Static StringConverters.IsNotNullOrEmpty}}" />
+    </Panel>
+  </Grid>
+</UserControl>

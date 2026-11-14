@@ -1,0 +1,313 @@
+<UserControl xmlns="https://github.com/avaloniaui"
+             xmlns:x="http://schemas.microsoft.com/winfx/2006/xaml"
+             xmlns:views="using:GitExtensions.Desktop.Views"
+             xmlns:vm="using:GitExtensions.Desktop.ViewModels"
+             xmlns:hist="using:GitExtensions.Desktop.History"
+             x:Class="GitExtensions.Desktop.Views.RevisionGridView"
+             x:DataType="vm:MainWindowViewModel">
+
+  <UserControl.Resources>
+    <ResourceDictionary>
+      <ResourceDictionary.ThemeDictionaries>
+        <ResourceDictionary x:Key="Light">
+          <SolidColorBrush x:Key="RefLocalBackground" Color="#E3F4E1" />
+          <SolidColorBrush x:Key="RefLocalBorder" Color="#5DB85C" />
+          <SolidColorBrush x:Key="RefLocalForeground" Color="#1E6B1C" />
+          <SolidColorBrush x:Key="RefRemoteBackground" Color="#E0EBFA" />
+          <SolidColorBrush x:Key="RefRemoteBorder" Color="#6A9AD8" />
+          <SolidColorBrush x:Key="RefRemoteForeground" Color="#1F4E9A" />
+          <SolidColorBrush x:Key="RefTagBackground" Color="#FFF3C4" />
+          <SolidColorBrush x:Key="RefTagBorder" Color="#D2B13A" />
+          <SolidColorBrush x:Key="RefTagForeground" Color="#6B5300" />
+          <SolidColorBrush x:Key="RefOverflowBackground" Color="#E6E6E6" />
+          <SolidColorBrush x:Key="RefOverflowForeground" Color="#444444" />
+          <SolidColorBrush x:Key="GridHeaderBackground" Color="#F0F0F0" />
+          <SolidColorBrush x:Key="RowMineBackground" Color="#40FFF2A8" />
+          <SolidColorBrush x:Key="RowMergeBackground" Color="#14808080" />
+          <SolidColorBrush x:Key="RowAlternateBackground" Color="#0C808080" />
+          <SolidColorBrush x:Key="RowSelectedBackground" Color="#0078D7" />
+          <SolidColorBrush x:Key="RowSelectedForeground" Color="#FFFFFF" />
+          <SolidColorBrush x:Key="BuildSuccessBrush" Color="#5CC85C" />
+          <SolidColorBrush x:Key="BuildFailureBrush" Color="#F01010" />
+          <SolidColorBrush x:Key="BuildRunningBrush" Color="#909090" />
+        </ResourceDictionary>
+        <ResourceDictionary x:Key="Dark">
+          <SolidColorBrush x:Key="RefLocalBackground" Color="#1F3D20" />
+          <SolidColorBrush x:Key="RefLocalBorder" Color="#4C9A4B" />
+          <SolidColorBrush x:Key="RefLocalForeground" Color="#9BE39A" />
+          <SolidColorBrush x:Key="RefRemoteBackground" Color="#1B3250" />
+          <SolidColorBrush x:Key="RefRemoteBorder" Color="#4F7FBF" />
+          <SolidColorBrush x:Key="RefRemoteForeground" Color="#A9CBF5" />
+          <SolidColorBrush x:Key="RefTagBackground" Color="#4A3F12" />
+          <SolidColorBrush x:Key="RefTagBorder" Color="#A88C27" />
+          <SolidColorBrush x:Key="RefTagForeground" Color="#F2DB86" />
+          <SolidColorBrush x:Key="RefOverflowBackground" Color="#3A3A3A" />
+          <SolidColorBrush x:Key="RefOverflowForeground" Color="#DDDDDD" />
+          <SolidColorBrush x:Key="GridHeaderBackground" Color="#2B2B2B" />
+          <SolidColorBrush x:Key="RowMineBackground" Color="#33B8A02A" />
+          <SolidColorBrush x:Key="RowMergeBackground" Color="#18FFFFFF" />
+          <SolidColorBrush x:Key="RowAlternateBackground" Color="#0CFFFFFF" />
+          <SolidColorBrush x:Key="RowSelectedBackground" Color="#1F5FAE" />
+          <SolidColorBrush x:Key="RowSelectedForeground" Color="#FFFFFF" />
+          <SolidColorBrush x:Key="BuildSuccessBrush" Color="#4CAF50" />
+          <SolidColorBrush x:Key="BuildFailureBrush" Color="#F04444" />
+          <SolidColorBrush x:Key="BuildRunningBrush" Color="#9A9A9A" />
+        </ResourceDictionary>
+      </ResourceDictionary.ThemeDictionaries>
+    </ResourceDictionary>
+  </UserControl.Resources>
+
+  <UserControl.Styles>
+    <Style Selector="TextBlock.mono">
+      <Setter Property="FontFamily" Value="Cascadia Mono, Consolas, DejaVu Sans Mono, monospace" />
+    </Style>
+    <Style Selector="Border.headerCell">
+      <Setter Property="ClipToBounds" Value="True" />
+    </Style>
+    <Style Selector="Border.headerCell > Grid > TextBlock">
+      <Setter Property="FontWeight" Value="SemiBold" />
+      <Setter Property="VerticalAlignment" Value="Center" />
+      <Setter Property="Margin" Value="6,0" />
+    </Style>
+    <Style Selector="Border.grip">
+      <Setter Property="Background" Value="Transparent" />
+      <Setter Property="Cursor" Value="SizeWestEast" />
+      <Setter Property="Width" Value="5" />
+      <Setter Property="HorizontalAlignment" Value="Left" />
+      <Setter Property="BorderBrush" Value="{DynamicResource SubtleBorderBrush}" />
+      <Setter Property="BorderThickness" Value="1,0,0,0" />
+    </Style>
+
+    <!-- Row backgrounds are translucent tints over the list item, so the selection colour still shows through. -->
+    <Style Selector="Border.row.alt">
+      <Setter Property="Background" Value="{DynamicResource RowAlternateBackground}" />
+    </Style>
+    <Style Selector="Border.row.merge">
+      <Setter Property="Background" Value="{DynamicResource RowMergeBackground}" />
+    </Style>
+    <Style Selector="Border.row.mine">
+      <Setter Property="Background" Value="{DynamicResource RowMineBackground}" />
+    </Style>
+    <Style Selector="Border.row.mine TextBlock.author">
+      <Setter Property="FontWeight" Value="Bold" />
+      <Setter Property="Opacity" Value="1" />
+    </Style>
+    <Style Selector="Border.row.mine TextBlock.avatarText">
+      <Setter Property="FontWeight" Value="Bold" />
+    </Style>
+
+    <Style Selector="Border.badge">
+      <Setter Property="CornerRadius" Value="3" />
+      <Setter Property="BorderThickness" Value="1" />
+      <Setter Property="Padding" Value="5,0" />
+      <Setter Property="Margin" Value="0,0,6,0" />
+      <Setter Property="MaxWidth" Value="180" />
+      <Setter Property="VerticalAlignment" Value="Center" />
+    </Style>
+    <Style Selector="Border.badge > TextBlock">
+      <Setter Property="FontSize" Value="12" />
+      <Setter Property="TextTrimming" Value="CharacterEllipsis" />
+    </Style>
+    <Style Selector="Border.badge.local">
+      <Setter Property="Background" Value="{DynamicResource RefLocalBackground}" />
+      <Setter Property="BorderBrush" Value="{DynamicResource RefLocalBorder}" />
+    </Style>
+    <Style Selector="Border.badge.local > TextBlock">
+      <Setter Property="Foreground" Value="{DynamicResource RefLocalForeground}" />
+    </Style>
+    <Style Selector="Border.badge.remote">
+      <Setter Property="Background" Value="{DynamicResource RefRemoteBackground}" />
+      <Setter Property="BorderBrush" Value="{DynamicResource RefRemoteBorder}" />
+    </Style>
+    <Style Selector="Border.badge.remote > TextBlock">
+      <Setter Property="Foreground" Value="{DynamicResource RefRemoteForeground}" />
+    </Style>
+    <Style Selector="Border.badge.tag">
+      <Setter Property="Background" Value="{DynamicResource RefTagBackground}" />
+      <Setter Property="BorderBrush" Value="{DynamicResource RefTagBorder}" />
+    </Style>
+    <Style Selector="Border.badge.tag > TextBlock">
+      <Setter Property="Foreground" Value="{DynamicResource RefTagForeground}" />
+    </Style>
+    <Style Selector="Border.badge.overflow">
+      <Setter Property="Background" Value="{DynamicResource RefOverflowBackground}" />
+      <Setter Property="BorderBrush" Value="Transparent" />
+    </Style>
+    <Style Selector="Border.badge.overflow > TextBlock">
+      <Setter Property="Foreground" Value="{DynamicResource RefOverflowForeground}" />
+    </Style>
+    <Style Selector="Border.badge.current > TextBlock">
+      <Setter Property="FontWeight" Value="Bold" />
+    </Style>
+    <Style Selector="Border.badge.current">
+      <Setter Property="BorderThickness" Value="2" />
+    </Style>
+
+    <!-- Responsive row: the date, then the author and avatar, give way to the subject as the grid narrows. -->
+    <Style Selector="ListBox.narrow Border.ref">
+      <Setter Property="MaxWidth" Value="90" />
+    </Style>
+    <!-- IsVisible is bound on the badge, so a style cannot hide it: collapse its width instead. -->
+    <Style Selector="ListBox.tiny Border.ref">
+      <Setter Property="MaxWidth" Value="0" />
+      <Setter Property="Margin" Value="0" />
+      <Setter Property="ClipToBounds" Value="True" />
+    </Style>
+
+    <Style Selector="ListBoxItem">
+      <Setter Property="Padding" Value="0" />
+      <Setter Property="MinHeight" Value="26" />
+    </Style>
+    <Style Selector="ListBoxItem:selected /template/ ContentPresenter, ListBoxItem:selected:pointerover /template/ ContentPresenter, ListBoxItem:selected:focus /template/ ContentPresenter">
+      <Setter Property="Background" Value="{DynamicResource RowSelectedBackground}" />
+      <Setter Property="Foreground" Value="{DynamicResource RowSelectedForeground}" />
+    </Style>
+    <Style Selector="ListBoxItem:selected Border.row">
+      <Setter Property="Background" Value="Transparent" />
+    </Style>
+    <Style Selector="Border.row.working">
+      <Setter Property="Background" Value="Transparent" />
+    </Style>
+    <Style Selector="Border.row.working.selected">
+      <Setter Property="Background" Value="{DynamicResource RowSelectedBackground}" />
+    </Style>
+    <Style Selector="Border.row.working.selected TextBlock">
+      <Setter Property="Foreground" Value="{DynamicResource RowSelectedForeground}" />
+    </Style>
+    <Style Selector="Border.row.working:not(.selected):pointerover">
+      <Setter Property="Background" Value="{DynamicResource RowMergeBackground}" />
+    </Style>
+  </UserControl.Styles>
+
+  <DockPanel>
+    <views:RevisionFilterBarView x:Name="FilterBar" DockPanel.Dock="Top" />
+
+    <!-- Header row: the same columns as the rows (widths come from the shared Columns object). -->
+    <Border x:Name="HeaderRow" DockPanel.Dock="Top" Background="{DynamicResource GridHeaderBackground}"
+            BorderThickness="0,0,0,1" BorderBrush="{DynamicResource SubtleBorderBrush}" Height="24">
+      <DockPanel>
+        <Border x:Name="HeaderStatus" DockPanel.Dock="Right" Classes="headerCell" Width="{Binding Columns.StatusColumnWidth}" IsVisible="{Binding Columns.ShowStatus}">
+          <Grid><Border Classes="grip" Tag="Status" /></Grid>
+        </Border>
+        <Border x:Name="HeaderHash" DockPanel.Dock="Right" Classes="headerCell" Width="{Binding Columns.HashColumnWidth}" IsVisible="{Binding Columns.ShowHash}">
+          <Grid><TextBlock Text="Hash" /><Border Classes="grip" Tag="Hash" /></Grid>
+        </Border>
+        <Border x:Name="HeaderDate" DockPanel.Dock="Right" Classes="headerCell" Width="{Binding Columns.DateColumnWidth}" IsVisible="{Binding Columns.ShowDate}">
+          <Grid><TextBlock Text="Date" /><Border Classes="grip" Tag="Date" /></Grid>
+        </Border>
+        <Border x:Name="HeaderAuthor" DockPanel.Dock="Right" Classes="headerCell" Width="{Binding Columns.AuthorColumnWidth}" IsVisible="{Binding Columns.ShowAuthor}">
+          <Grid><TextBlock Text="Author" /><Border Classes="grip" Tag="Author" /></Grid>
+        </Border>
+        <Border x:Name="HeaderAvatar" DockPanel.Dock="Right" Classes="headerCell" Width="{Binding Columns.AvatarColumnWidth}" IsVisible="{Binding Columns.ShowAuthor}">
+          <Grid><Border Classes="grip" Tag="Avatar" /></Grid>
+        </Border>
+        <Border x:Name="HeaderMessage" Classes="headerCell">
+          <Grid><TextBlock Text="Message" /></Grid>
+        </Border>
+      </DockPanel>
+    </Border>
+
+    <!-- The working tree row: "Uncommitted changes (N)". -->
+    <Border x:Name="UncommittedRow" DockPanel.Dock="Top" Classes="row working" Classes.selected="{Binding IsWorkingTreeSelected}"
+            IsVisible="{Binding ShowUncommittedRow}" Height="26" Cursor="Hand"
+            BorderThickness="0,0,0,1" BorderBrush="{DynamicResource SubtleBorderBrush}">
+      <DockPanel>
+        <Border DockPanel.Dock="Right" Width="{Binding Columns.StatusColumnWidth}" IsVisible="{Binding Columns.ShowStatus}" />
+        <Border DockPanel.Dock="Right" Width="{Binding Columns.HashColumnWidth}" IsVisible="{Binding Columns.ShowHash}" />
+        <Border DockPanel.Dock="Right" Width="{Binding Columns.DateColumnWidth}" IsVisible="{Binding Columns.ShowDate}" />
+        <Border DockPanel.Dock="Right" Width="{Binding Columns.AuthorColumnWidth}" IsVisible="{Binding Columns.ShowAuthor}" />
+        <Border DockPanel.Dock="Right" Width="{Binding Columns.AvatarColumnWidth}" IsVisible="{Binding Columns.ShowAuthor}" />
+        <DockPanel ClipToBounds="True">
+          <Panel DockPanel.Dock="Left">
+            <views:CommitGraphCell HorizontalAlignment="Left" LaneCount="{Binding GraphLaneCount}" />
+            <Ellipse HorizontalAlignment="Left" VerticalAlignment="Center" Margin="4.5,0,0,0" Width="9" Height="9" StrokeThickness="1.75"
+                     Stroke="{DynamicResource RefTagBorder}" StrokeDashArray="1.5,1" />
+          </Panel>
+          <TextBlock x:Name="UncommittedText" Text="{Binding UncommittedChangesText}" VerticalAlignment="Center" FontStyle="Italic" TextTrimming="CharacterEllipsis" />
+        </DockPanel>
+      </DockPanel>
+    </Border>
+
+    <ListBox x:Name="CommitList" MinHeight="100" ItemsSource="{Binding Commits}" SelectedItem="{Binding SelectedCommit}" BorderThickness="0">
+      <ListBox.Styles>
+        <Style Selector="ListBoxItem" x:DataType="vm:CommitItemViewModel">
+          <Setter Property="(AutomationProperties.Name)" Value="{Binding AccessibleName}" />
+        </Style>
+      </ListBox.Styles>
+      <ListBox.ItemTemplate>
+        <DataTemplate x:DataType="vm:CommitItemViewModel">
+          <Border Classes="row" Classes.alt="{Binding IsAlternate}" Classes.merge="{Binding IsMerge}" Classes.mine="{Binding IsMine}">
+            <Border.ContextMenu>
+              <ContextMenu>
+                <MenuItem Header="Copy commit hash" Command="{Binding Actions.CopyHashCommand}" CommandParameter="{Binding}" />
+                <MenuItem Header="Copy subject" Command="{Binding Actions.CopySubjectCommand}" CommandParameter="{Binding}" />
+                <Separator />
+                <MenuItem Header="Create branch here…" Command="{Binding Actions.RequestCreateBranchCommand}" CommandParameter="{Binding}" />
+                <MenuItem Header="Create tag here…" Command="{Binding Actions.RequestCreateTagCommand}" CommandParameter="{Binding}" />
+                <MenuItem Header="Checkout this commit (detached HEAD)" Command="{Binding Actions.CheckoutCommand}" CommandParameter="{Binding}" />
+                <Separator />
+                <MenuItem Header="Reset current branch to here">
+                  <MenuItem Header="Soft (keep index and working tree)" Command="{Binding Actions.ResetSoftCommand}" CommandParameter="{Binding}" />
+                  <MenuItem Header="Mixed (keep working tree)" Command="{Binding Actions.ResetMixedCommand}" CommandParameter="{Binding}" />
+                  <MenuItem Header="Hard (discard all changes)…" Command="{Binding Actions.RequestHardResetCommand}" CommandParameter="{Binding}" />
+                </MenuItem>
+                <Separator />
+                <MenuItem Header="Revert commit" Command="{Binding Actions.RevertCommand}" CommandParameter="{Binding}" />
+                <MenuItem Header="Cherry-pick commit" Command="{Binding Actions.CherryPickCommand}" CommandParameter="{Binding}" />
+              </ContextMenu>
+            </Border.ContextMenu>
+            <DockPanel>
+              <Border DockPanel.Dock="Right" Classes="cell statusCell" Width="{Binding $parent[views:RevisionGridView].Columns.StatusColumnWidth}"
+                      IsVisible="{Binding $parent[views:RevisionGridView].Columns.ShowStatus}">
+                <Panel IsVisible="{Binding HasBuildStatus}" HorizontalAlignment="Center" VerticalAlignment="Center">
+                  <Ellipse Width="10" Height="10" Fill="{DynamicResource BuildSuccessBrush}" IsVisible="{Binding IsBuildSuccess}" />
+                  <Ellipse Width="10" Height="10" Fill="{DynamicResource BuildFailureBrush}" IsVisible="{Binding IsBuildFailure}" />
+                  <Ellipse Width="10" Height="10" Fill="{DynamicResource BuildRunningBrush}" IsVisible="{Binding IsBuildRunning}" />
+                </Panel>
+              </Border>
+              <Border DockPanel.Dock="Right" Classes="cell hashCell" Width="{Binding $parent[views:RevisionGridView].Columns.HashColumnWidth}"
+                      IsVisible="{Binding $parent[views:RevisionGridView].Columns.ShowHash}" ClipToBounds="True">
+                <TextBlock Classes="mono hash" Text="{Binding ShortHash}" Opacity="0.7" VerticalAlignment="Center" Margin="6,0" />
+              </Border>
+              <Border DockPanel.Dock="Right" Classes="cell dateCell" Width="{Binding $parent[views:RevisionGridView].Columns.DateColumnWidth}"
+                      IsVisible="{Binding $parent[views:RevisionGridView].Columns.ShowDate}" ClipToBounds="True">
+                <TextBlock Classes="date" Text="{Binding RelativeDate}" ToolTip.Tip="{Binding DateToolTip}" Opacity="0.8" VerticalAlignment="Center" Margin="6,0" TextTrimming="CharacterEllipsis" />
+              </Border>
+              <Border DockPanel.Dock="Right" Classes="cell authorCell" Width="{Binding $parent[views:RevisionGridView].Columns.AuthorColumnWidth}"
+                      IsVisible="{Binding $parent[views:RevisionGridView].Columns.ShowAuthor}" ClipToBounds="True">
+                <TextBlock Classes="author" Text="{Binding Author}" Opacity="0.85" VerticalAlignment="Center" Margin="6,0" TextTrimming="CharacterEllipsis" />
+              </Border>
+              <Border DockPanel.Dock="Right" Classes="cell avatarCell" Width="{Binding $parent[views:RevisionGridView].Columns.AvatarColumnWidth}"
+                      IsVisible="{Binding $parent[views:RevisionGridView].Columns.ShowAuthor}" ClipToBounds="True">
+                <Border Width="20" Height="20" CornerRadius="10" Background="{Binding AvatarBrush}" HorizontalAlignment="Center" VerticalAlignment="Center">
+                  <TextBlock Classes="avatarText" Text="{Binding Initials}" FontSize="9" Foreground="White" HorizontalAlignment="Center" VerticalAlignment="Center" />
+                </Border>
+              </Border>
+              <!-- Message: graph lanes, ref badges, subject. -->
+              <DockPanel Classes="message" ClipToBounds="True">
+                <views:CommitGraphCell DockPanel.Dock="Left" Row="{Binding Graph}" IsMerge="{Binding IsMerge}" IsHead="{Binding IsCurrentHead}"
+                                       LaneCount="{Binding $parent[ListBox].((vm:MainWindowViewModel)DataContext).GraphLaneCount}" />
+                <ItemsControl DockPanel.Dock="Left" Classes="badges" ItemsSource="{Binding RefBadges}" IsVisible="{Binding HasRefBadges}" VerticalAlignment="Center">
+                  <ItemsControl.ItemsPanel>
+                    <ItemsPanelTemplate>
+                      <StackPanel Orientation="Horizontal" />
+                    </ItemsPanelTemplate>
+                  </ItemsControl.ItemsPanel>
+                  <ItemsControl.ItemTemplate>
+                    <DataTemplate x:DataType="hist:RefBadge">
+                      <Border Classes="badge ref" Classes.local="{Binding IsLocal}" Classes.remote="{Binding IsRemote}" Classes.tag="{Binding IsTag}"
+                              Classes.overflow="{Binding IsOverflow}" Classes.current="{Binding IsCurrent}" ToolTip.Tip="{Binding ToolTip}">
+                        <TextBlock Text="{Binding Text}" />
+                      </Border>
+                    </DataTemplate>
+                  </ItemsControl.ItemTemplate>
+                </ItemsControl>
+                <TextBlock Classes="subject" Text="{Binding Subject}" TextTrimming="CharacterEllipsis" VerticalAlignment="Center" />
+              </DockPanel>
+            </DockPanel>
+          </Border>
+        </DataTemplate>
+      </ListBox.ItemTemplate>
+    </ListBox>
+  </DockPanel>
+</UserControl>

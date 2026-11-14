@@ -41,6 +41,9 @@ public sealed class BlameLineViewModel
 
     public string Date { get; }
 
+    /// <summary>Gets "Author - date" on the first row of a block (blank elsewhere), as the File History blame column shows it.</summary>
+    public string Annotation => IsBlockStart ? $"{Entry.Author} - {Entry.Date.ToString("g", CultureInfo.CurrentCulture)}" : string.Empty;
+
     /// <summary>Gets the text to draw: truncated for very long lines, control characters made visible.</summary>
     public string DisplayText => DiffLimits.ToDisplayText(Text);
 

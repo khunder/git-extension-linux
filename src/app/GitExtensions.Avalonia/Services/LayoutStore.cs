@@ -3,23 +3,19 @@ using System.Text.Json;
 namespace GitExtensions.Desktop.Services;
 
 /// <summary>
-///  The persisted sizes of the main window's panes. Column and row sizes other than the sidebar are
-///  relative weights (the last measured pixel size), so they scale to whatever window size is current.
+///  The persisted sizes of the browse page's panes: the width of the left panel and the relative weights of the
+///  revision grid (top) and the tabs (bottom). The heights are relative weights (the last measured pixel size),
+///  so they scale to whatever window size is current.
 /// </summary>
 public sealed record LayoutSettings(
     double SidebarWidth = LayoutSettings.DefaultSidebarWidth,
-    double MiddleWidth = 520,
-    double RightWidth = 480,
-    double HistoryHeight = 330,
-    double DetailsHeight = 220,
-    double ChangesHeight = 130,
-    double DiffHeight = 330,
-    double CommitHeight = 150,
+    double GridHeight = 330,
+    double TabsHeight = 270,
     bool SidebarCollapsed = false)
 {
-    public const double DefaultSidebarWidth = 200;
-    public const double MinSidebarWidth = 120;
-    public const double MaxSidebarWidth = 400;
+    public const double DefaultSidebarWidth = 220;
+    public const double MinSidebarWidth = 150;
+    public const double MaxSidebarWidth = 500;
     public const double MinWeight = 60;
     public const double MaxWeight = 3000;
 
@@ -32,13 +28,8 @@ public sealed record LayoutSettings(
         LayoutSettings defaults = new();
         return new LayoutSettings(
             Limit(SidebarWidth, MinSidebarWidth, MaxSidebarWidth, defaults.SidebarWidth),
-            Limit(MiddleWidth, MinWeight, MaxWeight, defaults.MiddleWidth),
-            Limit(RightWidth, MinWeight, MaxWeight, defaults.RightWidth),
-            Limit(HistoryHeight, MinWeight, MaxWeight, defaults.HistoryHeight),
-            Limit(DetailsHeight, MinWeight, MaxWeight, defaults.DetailsHeight),
-            Limit(ChangesHeight, MinWeight, MaxWeight, defaults.ChangesHeight),
-            Limit(DiffHeight, MinWeight, MaxWeight, defaults.DiffHeight),
-            Limit(CommitHeight, MinWeight, MaxWeight, defaults.CommitHeight),
+            Limit(GridHeight, MinWeight, MaxWeight, defaults.GridHeight),
+            Limit(TabsHeight, MinWeight, MaxWeight, defaults.TabsHeight),
             SidebarCollapsed);
     }
 
