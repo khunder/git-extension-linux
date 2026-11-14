@@ -26,10 +26,6 @@
   </ItemGroup>
 
   <ItemGroup>
-    <Compile Include="..\CommonTestUtils\**\*.cs" Exclude="..\CommonTestUtils\obj\**;..\CommonTestUtils\bin\**;..\CommonTestUtils\WinFormsTestHelper.cs" LinkBase="." />
-  </ItemGroup>
-
-  <ItemGroup>
     <PackageReference Include="LibGit2Sharp" />
     <PackageReference Include="Microsoft.CodeAnalysis.Workspaces.Common" />
     <PackageReference Include="AwesomeAssertions" />

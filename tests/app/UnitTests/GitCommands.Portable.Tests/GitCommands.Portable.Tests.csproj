@@ -1,9 +1,6 @@
 <Project Sdk="Microsoft.NET.Sdk">
 
-  <!--
-    Runs the platform-neutral subset of GitCommands.Tests on plain net10.0 (so also on Linux).
-    It links the original test sources instead of copying them; files that need WinForms are listed in Exclusions.props.
-  -->
+  <!-- Unit tests of the portable core (GitCommands) on plain net10.0. -->
   <PropertyGroup>
     <TargetFramework>net10.0</TargetFramework>
     <UseWindowsForms>false</UseWindowsForms>
@@ -12,18 +9,11 @@
     <GenerateAssemblyInfo>false</GenerateAssemblyInfo>
     <TreatWarningsAsErrors>false</TreatWarningsAsErrors>
     <GenerateDocumentationFile>false</GenerateDocumentationFile>
-    <!-- Documentation files are intentionally not generated for the portable test builds -->
     <NoWarn>$(NoWarn);SA0001</NoWarn>
   </PropertyGroup>
 
-  <Import Project="Exclusions.props" />
-
   <ItemGroup>
     <Using Include="System.Drawing" />
-  </ItemGroup>
-
-  <ItemGroup>
-    <Compile Include="..\GitCommands.Tests\**\*.cs" Exclude="..\GitCommands.Tests\obj\**;..\GitCommands.Tests\bin\**;@(ExcludedTests)" LinkBase="." />
   </ItemGroup>
 
   <ItemGroup>
@@ -41,12 +31,10 @@
     <ProjectReference Include="..\..\..\CommonTestUtils.Portable\CommonTestUtils.Portable.csproj" />
   </ItemGroup>
 
-  <!-- Test data, with the same logical names / output paths as in GitCommands.Tests -->
   <ItemGroup>
-    <EmbeddedResource Include="..\GitCommands.Tests\**\MockData\**\*.xml;..\GitCommands.Tests\**\MockData\**\*.bin;..\GitCommands.Tests\**\MockData\**\*.txt" Exclude="..\GitCommands.Tests\obj\**;..\GitCommands.Tests\bin\**" Link="%(RecursiveDir)%(Filename)%(Extension)" />
-    <None Include="..\GitCommands.Tests\Patches\testdata\*" Link="Patches\testdata\%(Filename)%(Extension)" CopyToOutputDirectory="PreserveNewest" />
-    <None Include="..\GitCommands.Tests\TestData\**\*" Link="TestData\%(RecursiveDir)%(Filename)%(Extension)" CopyToOutputDirectory="PreserveNewest" />
-    <None Include="..\GitCommands.Tests\**\*.approved.*" Exclude="..\GitCommands.Tests\obj\**;..\GitCommands.Tests\bin\**" Link="%(RecursiveDir)%(Filename)%(Extension)" />
+    <EmbeddedResource Include="**\MockData\**\*.xml;**\MockData\**\*.bin;**\MockData\**\*.txt" Exclude="obj\**;bin\**" />
+    <None Update="Patches\testdata\*" CopyToOutputDirectory="PreserveNewest" />
+    <None Update="TestData\**\*" CopyToOutputDirectory="PreserveNewest" />
   </ItemGroup>
 
 </Project>

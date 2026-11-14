@@ -1,8 +1,13 @@
-﻿<Project Sdk="Microsoft.NET.Sdk">
+<Project Sdk="Microsoft.NET.Sdk">
+
+  <PropertyGroup>
+    <TargetFramework>net10.0</TargetFramework>
+    <UseWindowsForms>false</UseWindowsForms>
+  </PropertyGroup>
 
   <ItemGroup>
     <ProjectReference Include="..\..\..\..\src\plugins\GitUIPluginInterfaces\GitUIPluginInterfaces.csproj" />
-    <ProjectReference Include="..\..\..\CommonTestUtils\CommonTestUtils.csproj" />
+    <ProjectReference Include="..\..\..\CommonTestUtils.Portable\CommonTestUtils.Portable.csproj" />
   </ItemGroup>
 
   <ItemGroup>
