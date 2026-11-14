@@ -15,6 +15,7 @@ icon_dir="$prefix/share/icons/hicolor/scalable/apps"
 
 if [[ "${1:-}" == "--uninstall" ]]; then
   rm -rf "$app_dir" "$bin_dir/git-extensions" "$desktop_dir/git-extensions.desktop" "$icon_dir/git-extensions.svg"
+  for size in 16 32 48 64 128 256 512; do rm -f "$prefix/share/icons/hicolor/${size}x${size}/apps/git-extensions.png"; done
   echo "Removed Git Extensions from $prefix"
   exit 0
 fi
@@ -27,6 +28,13 @@ chmod +x "$app_dir/GitExtensions.Avalonia" "$app_dir/GitExtensions.AskPass"
 
 ln -sf "$app_dir/GitExtensions.Avalonia" "$bin_dir/git-extensions"
 cp "$here/git-extensions.svg" "$icon_dir/git-extensions.svg"
+for size in 16 32 48 64 128 256 512; do
+  mkdir -p "$prefix/share/icons/hicolor/${size}x${size}/apps"
+  cp "$here/icons/git-extensions-${size}.png" "$prefix/share/icons/hicolor/${size}x${size}/apps/git-extensions.png"
+done
+if command -v gtk-update-icon-cache >/dev/null 2>&1; then
+  gtk-update-icon-cache -q -t "$prefix/share/icons/hicolor" >/dev/null 2>&1 || true
+fi
 
 # Absolute Exec path so the launcher works even when ~/.local/bin is not on the desktop session's PATH.
 sed "s|^Exec=.*|Exec=$app_dir/GitExtensions.Avalonia %f|" "$here/git-extensions.desktop" > "$desktop_dir/git-extensions.desktop"

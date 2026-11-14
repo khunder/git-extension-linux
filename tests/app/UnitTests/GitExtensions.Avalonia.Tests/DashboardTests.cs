@@ -227,6 +227,35 @@ public class DashboardTests
     }
 
     [AvaloniaTest]
+    public async Task Enter_on_the_dashboard_opens_the_first_repository_without_clicking()
+    {
+        using TestRepository repository = new();
+        FakeHistory history = new();
+        history.Recent.Add(new GitCommands.UserRepositoryHistory.Repository(repository.Path));
+        MainWindowViewModel viewModel = CreateViewModel(history);
+        MainWindow window = new() { DataContext = viewModel };
+        window.Show();
+        await viewModel.Dashboard.LoadAsync();
+        ShellTestSupport.Settle();
+        ShellTestSupport.Settle();
+        ListBox[] lists = [.. window.GetVisualDescendants().OfType<ListBox>().Where(l => l.Classes.Contains("repos"))];
+        lists.Should().NotBeEmpty("the dashboard shows the recent repository");
+        lists[0].SelectedItem.Should().NotBeNull("the first repository is selected");
+        TopLevel.GetTopLevel(window)!.FocusManager!.GetFocusedElement().Should().NotBeNull();
+
+        window.KeyPress(Key.Enter, Avalonia.Input.RawInputModifiers.None, PhysicalKey.None, null);
+        window.KeyRelease(Key.Enter, Avalonia.Input.RawInputModifiers.None, PhysicalKey.None, null);
+        for (int i = 0; i < 100 && !viewModel.HasOpenedRepository; i++)
+        {
+            await Task.Delay(25);
+            ShellTestSupport.Settle();
+        }
+
+        viewModel.HasOpenedRepository.Should().BeTrue();
+        window.Close();
+    }
+
+    [AvaloniaTest]
     public async Task Ctrl_W_closes_the_repository_only_when_one_is_open()
     {
         using TestRepository repository = new();

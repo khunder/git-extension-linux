@@ -22,6 +22,7 @@ dotnet publish "$root/src/app/GitExtensions.Avalonia/GitExtensions.Avalonia.cspr
   -o "$stage/app"
 
 cp "$root/packaging/linux/git-extensions.desktop" "$root/packaging/linux/git-extensions.svg" "$stage/"
+cp -r "$root/packaging/linux/icons" "$stage/icons"
 cp "$root/packaging/linux/install.sh" "$stage/install.sh"
 chmod +x "$stage/install.sh"
 

@@ -11,5 +11,9 @@
   </Application.Resources>
   <Application.Styles>
     <FluentTheme />
+    <!-- The Git Extensions logo is the icon of every window. -->
+    <Style Selector="Window">
+      <Setter Property="Icon" Value="avares://GitExtensions.Avalonia/Assets/AppIcon/git-extensions.png" />
+    </Style>
   </Application.Styles>
 </Application>

@@ -17,6 +17,7 @@
 
   <ItemGroup>
     <AvaloniaResource Include="Assets\Icons\*.png" />
+    <AvaloniaResource Include="Assets\AppIcon\*.png" />
   </ItemGroup>
 
   <ItemGroup>
