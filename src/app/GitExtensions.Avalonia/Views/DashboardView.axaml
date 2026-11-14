@@ -39,6 +39,10 @@
           <Button x:Name="CloneButton" Classes="link" AutomationProperties.Name="Clone repository" Command="{Binding CloneRepositoryCommand}">
             <StackPanel Orientation="Horizontal" Spacing="6"><views:AppIcon IconName="CloneRepoGit" /><TextBlock Text="Clone repository…" VerticalAlignment="Center" /></StackPanel>
           </Button>
+          <Button x:Name="SettingsButton" Classes="link" AutomationProperties.Name="Settings"
+                  Command="{Binding $parent[Window].((vm:MainWindowViewModel)DataContext).OpenSettingsCommand}">
+            <StackPanel Orientation="Horizontal" Spacing="6"><views:AppIcon IconName="Settings" /><TextBlock Text="Settings…" VerticalAlignment="Center" /></StackPanel>
+          </Button>
         </StackPanel>
         <Panel />
       </DockPanel>

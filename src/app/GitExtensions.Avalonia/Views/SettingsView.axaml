@@ -1,67 +1,218 @@
 <UserControl xmlns="https://github.com/avaloniaui"
              xmlns:x="http://schemas.microsoft.com/winfx/2006/xaml"
              xmlns:vm="using:GitExtensions.Desktop.ViewModels"
+             xmlns:local="using:GitExtensions.Desktop.Views"
              x:Class="GitExtensions.Desktop.Views.SettingsView"
              x:DataType="vm:SettingsViewModel">
-  <!-- Scrim over the content area; the card is centered. -->
+  <UserControl.Styles>
+    <Style Selector="Border.match">
+      <Setter Property="Background" Value="{DynamicResource SystemControlHighlightListAccentLowBrush}" />
+    </Style>
+    <Style Selector="TreeViewItem" x:DataType="vm:SettingsPageViewModel">
+      <Setter Property="IsExpanded" Value="{Binding IsExpanded, Mode=TwoWay}" />
+      <Setter Property="IsVisible" Value="{Binding IsVisible}" />
+      <Setter Property="MinHeight" Value="22" />
+    </Style>
+    <Style Selector="TextBlock.pageTitle.match">
+      <Setter Property="FontWeight" Value="Bold" />
+    </Style>
+  </UserControl.Styles>
+
+  <!-- Scrim over the content area; the dialog card is centered. -->
   <Panel Background="{DynamicResource ScrimBrush}">
-    <Border x:Name="Card" MaxWidth="600" MaxHeight="560" Margin="24" Padding="20" VerticalAlignment="Center" HorizontalAlignment="Stretch"
-            CornerRadius="8" BorderThickness="1"
+    <Border x:Name="Card" MaxWidth="1000" MaxHeight="780" Margin="24" VerticalAlignment="Stretch" HorizontalAlignment="Stretch"
+            CornerRadius="6" BorderThickness="1"
             Background="{DynamicResource DialogBackground}"
             BorderBrush="{DynamicResource SubtleBorderBrush}">
-      <DockPanel LastChildFill="True">
-        <TextBlock DockPanel.Dock="Top" Text="Settings" FontSize="18" FontWeight="SemiBold" Margin="0,0,0,12" />
+      <Grid RowDefinitions="Auto,*,Auto">
 
-        <StackPanel DockPanel.Dock="Bottom" Margin="0,12,0,0" Spacing="8">
+        <!-- Title bar -->
+        <Grid Grid.Row="0" ColumnDefinitions="Auto,*,Auto" Margin="12,8" ColumnSpacing="8">
+          <local:AppIcon IconName="GitLogo16" />
+          <TextBlock x:Name="TitleText" Grid.Column="1" Text="{Binding WindowTitle}" VerticalAlignment="Center" />
+          <Button x:Name="CloseButton" Grid.Column="2" Content="✕" Command="{Binding CancelCommand}" Background="Transparent" BorderThickness="0" Padding="8,2"
+                  ToolTip.Tip="Close (Esc)" />
+        </Grid>
+
+        <Grid Grid.Row="1" ColumnDefinitions="260,*" Margin="12,0,12,0" ColumnSpacing="12">
+
+          <!-- Left: search and the tree of pages -->
+          <DockPanel>
+            <TextBox x:Name="SearchBox" DockPanel.Dock="Top" Text="{Binding SearchText}" Watermark="Type to find" Margin="0,0,0,8" />
+            <Border BorderThickness="1" BorderBrush="{DynamicResource SubtleBorderBrush}">
+              <TreeView x:Name="PageTree" ItemsSource="{Binding Pages}" SelectedItem="{Binding SelectedPage, Mode=TwoWay}">
+                <TreeView.ItemTemplate>
+                  <TreeDataTemplate x:DataType="vm:SettingsPageViewModel" ItemsSource="{Binding Children}">
+                    <StackPanel Orientation="Horizontal" Spacing="6">
+                      <local:AppIcon IconName="{Binding IconName}" />
+                      <TextBlock Classes="pageTitle" Classes.match="{Binding IsTitleMatch}" Text="{Binding Title}" VerticalAlignment="Center" />
+                    </StackPanel>
+                  </TreeDataTemplate>
+                </TreeView.ItemTemplate>
+              </TreeView>
+            </Border>
+          </DockPanel>
+
+          <!-- Right: settings source and the page -->
+          <DockPanel Grid.Column="1">
+            <WrapPanel DockPanel.Dock="Top" Margin="0,2,0,6">
+              <TextBlock Text="Settings source:" FontWeight="SemiBold" VerticalAlignment="Center" Margin="0,0,16,0" />
+              <RadioButton x:Name="GlobalSourceRadio" GroupName="SettingsSource" Margin="0,0,16,0" Content="Global for all repositories" IsChecked="{Binding IsGlobalSource, Mode=TwoWay}" />
+              <RadioButton x:Name="LocalSourceRadio" GroupName="SettingsSource" Margin="0,0,16,0" Content="Local for this repository" IsChecked="{Binding IsLocalSource, Mode=TwoWay}">
+                <RadioButton.IsVisible>
+                  <MultiBinding Converter="{x:Static BoolConverters.And}">
+                    <Binding Path="ShowSourceSelector" />
+                    <Binding Path="HasRepository" />
+                  </MultiBinding>
+                </RadioButton.IsVisible>
+              </RadioButton>
+              <RadioButton x:Name="EffectiveSourceRadio" GroupName="SettingsSource" Content="Effective" IsChecked="{Binding IsEffectiveSource, Mode=TwoWay}">
+                <RadioButton.IsVisible>
+                  <MultiBinding Converter="{x:Static BoolConverters.And}">
+                    <Binding Path="ShowSourceSelector" />
+                    <Binding Path="HasRepository" />
+                  </MultiBinding>
+                </RadioButton.IsVisible>
+              </RadioButton>
+            </WrapPanel>
+            <Border DockPanel.Dock="Top" Height="3" Margin="0,0,0,8" Background="{DynamicResource SystemControlForegroundBaseLowBrush}" />
+
+            <!-- Rows of the selected page -->
+            <ScrollViewer x:Name="PageScroll" IsVisible="{Binding IsRowPage}" VerticalScrollBarVisibility="Auto">
+              <ItemsControl x:Name="RowsList" ItemsSource="{Binding SelectedPage.Rows}" Margin="0,0,12,0">
+                <ItemsControl.ItemsPanel>
+                  <ItemsPanelTemplate>
+                    <StackPanel Spacing="4" />
+                  </ItemsPanelTemplate>
+                </ItemsControl.ItemsPanel>
+                <ItemsControl.DataTemplates>
+                  <DataTemplate DataType="vm:HeaderRow">
+                    <TextBlock Text="{Binding Label}" FontWeight="SemiBold" Margin="0,10,0,2" />
+                  </DataTemplate>
+                  <DataTemplate DataType="vm:NoticeRow">
+                    <Border Padding="8,6" CornerRadius="3" BorderThickness="1" BorderBrush="{DynamicResource SubtleBorderBrush}" Margin="0,4,0,0">
+                      <StackPanel Orientation="Horizontal" Spacing="8">
+                        <local:AppIcon IconName="information" VerticalAlignment="Top" />
+                        <TextBlock Text="{Binding Label}" TextWrapping="Wrap" MaxWidth="620" />
+                      </StackPanel>
+                    </Border>
+                  </DataTemplate>
+                  <DataTemplate DataType="vm:BoolRow">
+                    <Border Classes.match="{Binding IsMatch}" Padding="4,2" CornerRadius="3">
+                      <StackPanel>
+                        <CheckBox Content="{Binding Label}" IsChecked="{Binding Value, Mode=TwoWay}" IsEnabled="{Binding IsEnabled}" />
+                        <TextBlock Text="{Binding Description}" IsVisible="{Binding HasDescription}" Margin="28,0,0,0" Opacity="0.7" FontSize="12" TextWrapping="Wrap" />
+                      </StackPanel>
+                    </Border>
+                  </DataTemplate>
+                  <DataTemplate DataType="vm:TextRow">
+                    <Border Classes.match="{Binding IsMatch}" Padding="4,2" CornerRadius="3">
+                      <StackPanel Spacing="2">
+                        <TextBlock Text="{Binding Label}" TextWrapping="Wrap" />
+                        <Grid ColumnDefinitions="*,Auto" ColumnSpacing="6">
+                          <TextBox Text="{Binding Value, Mode=TwoWay}" Watermark="{Binding Watermark}" IsEnabled="{Binding IsEnabled}" />
+                          <Button Grid.Column="1" Content="Browse…" IsVisible="{Binding CanBrowse}" IsEnabled="{Binding IsEnabled}"
+                                  Command="{Binding $parent[local:SettingsView].((vm:SettingsViewModel)DataContext).BrowseCommand}" CommandParameter="{Binding}" />
+                        </Grid>
+                        <TextBlock Text="{Binding Description}" IsVisible="{Binding HasDescription}" Opacity="0.7" FontSize="12" TextWrapping="Wrap" />
+                      </StackPanel>
+                    </Border>
+                  </DataTemplate>
+                  <DataTemplate DataType="vm:IntRow">
+                    <Border Classes.match="{Binding IsMatch}" Padding="4,2" CornerRadius="3">
+                      <StackPanel Spacing="2">
+                        <Grid ColumnDefinitions="*,Auto" ColumnSpacing="12">
+                          <TextBlock Text="{Binding Label}" TextWrapping="Wrap" VerticalAlignment="Center" />
+                          <NumericUpDown Grid.Column="1" Width="150" Value="{Binding Value, Mode=TwoWay}" Minimum="{Binding Minimum}" Maximum="{Binding Maximum}"
+                                         FormatString="0" Increment="1" IsEnabled="{Binding IsEnabled}" />
+                        </Grid>
+                        <TextBlock Text="{Binding Description}" IsVisible="{Binding HasDescription}" Opacity="0.7" FontSize="12" TextWrapping="Wrap" />
+                      </StackPanel>
+                    </Border>
+                  </DataTemplate>
+                  <DataTemplate DataType="vm:ChoiceRow">
+                    <Border Classes.match="{Binding IsMatch}" Padding="4,2" CornerRadius="3">
+                      <StackPanel Spacing="2">
+                        <Grid ColumnDefinitions="*,Auto" ColumnSpacing="12">
+                          <TextBlock Text="{Binding Label}" TextWrapping="Wrap" VerticalAlignment="Center" />
+                          <ComboBox Grid.Column="1" MinWidth="170" ItemsSource="{Binding Options}" SelectedItem="{Binding Value, Mode=TwoWay}" IsEnabled="{Binding IsEnabled}" />
+                        </Grid>
+                        <TextBlock Text="{Binding Description}" IsVisible="{Binding HasDescription}" Opacity="0.7" FontSize="12" TextWrapping="Wrap" />
+                      </StackPanel>
+                    </Border>
+                  </DataTemplate>
+                  <DataTemplate DataType="vm:ActionRow">
+                    <StackPanel Spacing="4" Margin="0,2">
+                      <StackPanel Orientation="Horizontal" Spacing="8">
+                        <Button Content="{Binding ButtonText}" Command="{Binding $parent[local:SettingsView].((vm:SettingsViewModel)DataContext).RunActionCommand}" CommandParameter="{Binding}" />
+                        <TextBlock Text="{Binding Label}" VerticalAlignment="Center" />
+                      </StackPanel>
+                      <TextBlock Classes="actionResult" Classes.ok="{Binding ResultOk}" Text="{Binding Result}" TextWrapping="Wrap">
+                        <TextBlock.Styles>
+                          <Style Selector="TextBlock.actionResult">
+                            <Setter Property="Foreground" Value="{DynamicResource ErrorTextForeground}" />
+                          </Style>
+                          <Style Selector="TextBlock.actionResult.ok">
+                            <Setter Property="Foreground" Value="{DynamicResource SuccessTextForeground}" />
+                          </Style>
+                        </TextBlock.Styles>
+                      </TextBlock>
+                    </StackPanel>
+                  </DataTemplate>
+                </ItemsControl.DataTemplates>
+              </ItemsControl>
+            </ScrollViewer>
+
+            <!-- The checklist of the root page -->
+            <Border x:Name="ChecklistPanel" IsVisible="{Binding !IsRowPage}" BorderThickness="1" BorderBrush="{DynamicResource SubtleBorderBrush}" Padding="16" VerticalAlignment="Top">
+              <StackPanel Spacing="8" DataContext="{Binding SelectedPage.Checklist}" x:DataType="vm:ChecklistViewModel">
+                <TextBlock Text="The checklist below validates the basic settings needed for Git Extensions to work properly." TextWrapping="Wrap" />
+                <ItemsControl x:Name="ChecklistItems" ItemsSource="{Binding Items}">
+                  <ItemsControl.ItemsPanel>
+                    <ItemsPanelTemplate>
+                      <StackPanel Spacing="8" />
+                    </ItemsPanelTemplate>
+                  </ItemsControl.ItemsPanel>
+                  <ItemsControl.ItemTemplate>
+                    <DataTemplate x:DataType="vm:ChecklistItem">
+                      <Grid MinHeight="26">
+                        <Border IsVisible="{Binding Ok}" Background="{DynamicResource SuccessTextForeground}" Opacity="0.22" />
+                        <Border IsVisible="{Binding !Ok}" Background="{DynamicResource ErrorTextForeground}" Opacity="0.22" />
+                        <Grid ColumnDefinitions="*,Auto" Margin="8,3">
+                          <TextBlock Text="{Binding Text}" VerticalAlignment="Center" TextWrapping="Wrap" />
+                          <Button Grid.Column="1" Content="{Binding FixText}" IsVisible="{Binding HasFix}" Padding="8,1" Margin="8,0,0,0"
+                                  Command="{Binding $parent[local:SettingsView].((vm:SettingsViewModel)DataContext).GoToPageCommand}" CommandParameter="{Binding FixPageId}" />
+                        </Grid>
+                      </Grid>
+                    </DataTemplate>
+                  </ItemsControl.ItemTemplate>
+                </ItemsControl>
+                <CheckBox x:Name="CheckAtStartupBox" IsChecked="{Binding CheckAtStartup, Mode=TwoWay}"
+                          Content="Check settings at startup (disables automatically if all settings are correct)" />
+                <TextBlock Text="Not available yet: the startup check itself is not run by this application; the option is stored for the other Git Extensions front ends."
+                           TextWrapping="Wrap" FontSize="12" Opacity="0.7" />
+                <Button x:Name="RescanButton" HorizontalAlignment="Right" Content="Save and rescan" Padding="20,5"
+                        Command="{Binding $parent[local:SettingsView].((vm:SettingsViewModel)DataContext).RescanChecklistCommand}" />
+              </StackPanel>
+            </Border>
+          </DockPanel>
+        </Grid>
+
+        <!-- Footer -->
+        <StackPanel Grid.Row="2" Margin="12,8,12,12" Spacing="8">
           <TextBlock x:Name="ErrorText" Text="{Binding ErrorMessage}" IsVisible="{Binding HasError}" TextWrapping="Wrap"
                      Foreground="{DynamicResource ErrorTextForeground}" />
-          <StackPanel Orientation="Horizontal" HorizontalAlignment="Right" Spacing="8">
-            <Button x:Name="CancelButton" Content="Cancel" Command="{Binding CancelCommand}" />
-            <Button x:Name="SaveButton" Content="Save" Classes="accent" Command="{Binding SaveCommand}" />
-          </StackPanel>
+          <Grid ColumnDefinitions="*,Auto" ColumnSpacing="12">
+            <TextBlock x:Name="SaveNote" TextAlignment="Right" TextWrapping="Wrap" VerticalAlignment="Center" Opacity="0.85"
+                       Text="Changes on the selected page will be saved instantly. Therefore the Cancel button does NOT revert any changes made." />
+            <StackPanel Grid.Column="1" Orientation="Horizontal" Spacing="8">
+              <Button x:Name="OkButton" Content="OK" Classes="accent" Width="90" HorizontalContentAlignment="Center" Command="{Binding OkCommand}" />
+              <Button x:Name="CancelButton" Content="Cancel" Width="90" HorizontalContentAlignment="Center" Command="{Binding CancelCommand}" />
+              <Button x:Name="ApplyButton" Content="Apply" Width="90" HorizontalContentAlignment="Center" Command="{Binding ApplyCommand}" />
+            </StackPanel>
+          </Grid>
         </StackPanel>
-
-        <ScrollViewer VerticalScrollBarVisibility="Auto">
-          <StackPanel Spacing="6" Margin="0,0,12,0">
-
-            <TextBlock Text="Git" FontWeight="SemiBold" Margin="0,4,0,0" />
-            <TextBlock Text="Path to the git executable (leave empty to use git from PATH)" Opacity="0.7" FontSize="12" />
-            <Grid ColumnDefinitions="*,Auto,Auto" ColumnSpacing="8">
-              <TextBox x:Name="GitPathBox" Text="{Binding GitPath}" Watermark="git" />
-              <Button Grid.Column="1" Content="Browse…" Command="{Binding BrowseGitCommand}" />
-              <Button Grid.Column="2" x:Name="TestGitButton" Content="Test" Command="{Binding TestGitCommand}" />
-            </Grid>
-            <TextBlock x:Name="GitTestText" Text="{Binding GitTestResult}" IsVisible="{Binding HasGitTestResult}" TextWrapping="Wrap">
-              <TextBlock.Styles>
-                <Style Selector="TextBlock#GitTestText">
-                  <Setter Property="Foreground" Value="{DynamicResource ErrorTextForeground}" />
-                </Style>
-                <Style Selector="TextBlock#GitTestText.ok">
-                  <Setter Property="Foreground" Value="{DynamicResource SuccessTextForeground}" />
-                </Style>
-              </TextBlock.Styles>
-            </TextBlock>
-
-            <TextBlock Text="Identity (global git config)" FontWeight="SemiBold" Margin="0,14,0,0" />
-            <Grid ColumnDefinitions="90,*" RowDefinitions="Auto,Auto" RowSpacing="6" ColumnSpacing="8">
-              <TextBlock Text="user.name" VerticalAlignment="Center" />
-              <TextBox x:Name="UserNameBox" Grid.Column="1" Text="{Binding UserName}" />
-              <TextBlock Grid.Row="1" Text="user.email" VerticalAlignment="Center" />
-              <TextBox x:Name="UserEmailBox" Grid.Row="1" Grid.Column="1" Text="{Binding UserEmail}" />
-            </Grid>
-            <TextBlock x:Name="LocalIdentityText" Text="{Binding LocalIdentityNote}" IsVisible="{Binding HasLocalIdentityOverride}"
-                       TextWrapping="Wrap" FontSize="12" Opacity="0.75" />
-
-            <TextBlock Text="Behavior" FontWeight="SemiBold" Margin="0,14,0,0" />
-            <Grid ColumnDefinitions="Auto,100,*" ColumnSpacing="8">
-              <TextBlock Text="History commit limit" VerticalAlignment="Center" />
-              <TextBox x:Name="HistoryLimitBox" Grid.Column="1" Text="{Binding HistoryLimitText}" />
-            </Grid>
-            <CheckBox x:Name="ShowStashesBox" Content="Show stashes in history" IsChecked="{Binding ShowStashes}" />
-            <TextBlock Text="History options apply when the repository is reloaded; saving reloads it for you." Opacity="0.7" FontSize="12" TextWrapping="Wrap" />
-          </StackPanel>
-        </ScrollViewer>
-      </DockPanel>
+      </Grid>
     </Border>
   </Panel>
 </UserControl>
