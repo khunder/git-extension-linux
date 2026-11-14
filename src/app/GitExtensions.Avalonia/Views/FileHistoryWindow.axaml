@@ -94,7 +94,7 @@
         </Button>
         <Border Width="1" Background="{DynamicResource SubtleBorderBrush}" Margin="4,2" />
         <TextBlock Text="Filter:" VerticalAlignment="Center" />
-        <TextBox x:Name="FilterBox" Width="200" MinHeight="26" Watermark="Message, author or hash" Text="{Binding FilterText}" />
+        <TextBox x:Name="FilterBox" Width="200" MinHeight="26" PlaceholderText="Message, author or hash" Text="{Binding FilterText}" />
         <Button x:Name="FilterOptionsButton" Classes="tool" ToolTip.Tip="Filter options">
           <StackPanel Orientation="Horizontal" Spacing="3">
             <Path Classes="icon" Data="{StaticResource FunnelIcon}" />

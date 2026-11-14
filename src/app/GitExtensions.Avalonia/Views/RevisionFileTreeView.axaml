@@ -7,7 +7,7 @@
 
   <Grid ColumnDefinitions="260,4,*">
     <DockPanel Grid.Column="0">
-      <TextBox x:Name="FilterBox" DockPanel.Dock="Top" Margin="4" MinHeight="24" Padding="6,2" FontSize="12" Watermark="Filter files…" Text="{Binding FilterText}" />
+      <TextBox x:Name="FilterBox" DockPanel.Dock="Top" Margin="4" MinHeight="24" Padding="6,2" FontSize="12" PlaceholderText="Filter files…" Text="{Binding FilterText}" />
       <Panel>
         <TreeView x:Name="Tree" ItemsSource="{Binding Roots}" SelectedItem="{Binding SelectedNode}" Padding="0">
           <TreeView.Styles>

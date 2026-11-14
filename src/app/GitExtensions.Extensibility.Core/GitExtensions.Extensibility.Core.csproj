@@ -2,7 +2,7 @@
 
   <PropertyGroup>
     <!-- Platform-neutral core: must not depend on WinForms. -->
-    <TargetFramework>net10.0</TargetFramework>
+    <TargetFramework>net11.0</TargetFramework>
     <UseWindowsForms>false</UseWindowsForms>
     <RootNamespace>GitExtensions.Extensibility</RootNamespace>
     <IsPackable>true</IsPackable>

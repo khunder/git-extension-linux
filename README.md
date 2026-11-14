@@ -10,7 +10,7 @@
 
 A native Linux port of [Git Extensions](https://github.com/gitextensions/gitextensions), the graphical Git client.
 
-Git Extensions was written for Windows with WinForms. This project takes the portable core of Git Extensions (`GitCommands`, `GitExtUtils` and the plugin interfaces) and puts a new user interface on top of it, built with [Avalonia](https://avaloniaui.net/), a cross-platform .NET UI framework. The WinForms UI is not used any more, so the application runs natively on Linux, with no Wine and no Mono.
+Git Extensions was written for Windows with WinForms. This project takes the portable core of Git Extensions (`GitCommands`, `GitExtUtils` and the plugin interfaces) and puts a new user interface on top of it, built with [Avalonia 12](https://avaloniaui.net/), a cross-platform .NET UI framework (running on .NET 11). The WinForms UI is not used any more, so the application runs natively on Linux, with no Wine and no Mono.
 
 - Website: <https://khunder.github.io/git-extension-linux/>
 - Releases: <https://github.com/khunder/git-extension-linux/releases>
@@ -46,45 +46,45 @@ Download the package for your distribution from the [**latest GitHub release**](
 
 | Distribution | Architecture | Release artifact |
 | --- | --- | --- |
-| Ubuntu / Debian | amd64 | [`git-extensions_0.1.0_amd64.deb`](https://github.com/khunder/git-extension-linux/releases/download/v0.1.0/git-extensions_0.1.0_amd64.deb) |
-| Ubuntu / Debian | arm64 | [`git-extensions_0.1.0_arm64.deb`](https://github.com/khunder/git-extension-linux/releases/download/v0.1.0/git-extensions_0.1.0_arm64.deb) |
-| Fedora | x86_64 | [`git-extensions-0.1.0-1.fedora.x86_64.rpm`](https://github.com/khunder/git-extension-linux/releases/download/v0.1.0/git-extensions-0.1.0-1.fedora.x86_64.rpm) |
-| Fedora | aarch64 | [`git-extensions-0.1.0-1.fedora.aarch64.rpm`](https://github.com/khunder/git-extension-linux/releases/download/v0.1.0/git-extensions-0.1.0-1.fedora.aarch64.rpm) |
-| openSUSE | x86_64 | [`git-extensions-0.1.0-1.opensuse.x86_64.rpm`](https://github.com/khunder/git-extension-linux/releases/download/v0.1.0/git-extensions-0.1.0-1.opensuse.x86_64.rpm) |
-| openSUSE | aarch64 | [`git-extensions-0.1.0-1.opensuse.aarch64.rpm`](https://github.com/khunder/git-extension-linux/releases/download/v0.1.0/git-extensions-0.1.0-1.opensuse.aarch64.rpm) |
-| Arch Linux | x86_64 | [`git-extensions-0.1.0-1-x86_64.pkg.tar.zst`](https://github.com/khunder/git-extension-linux/releases/download/v0.1.0/git-extensions-0.1.0-1-x86_64.pkg.tar.zst) |
-| Any distribution (tarball) | x64 | [`git-extensions-linux-0.1.0-x64.tar.gz`](https://github.com/khunder/git-extension-linux/releases/download/v0.1.0/git-extensions-linux-0.1.0-x64.tar.gz) |
-| Any distribution (tarball) | arm64 | [`git-extensions-linux-0.1.0-arm64.tar.gz`](https://github.com/khunder/git-extension-linux/releases/download/v0.1.0/git-extensions-linux-0.1.0-arm64.tar.gz) |
-| AppImage (any distribution) | x86_64 | [`git-extensions-0.1.0-x86_64.AppImage`](https://github.com/khunder/git-extension-linux/releases/download/v0.1.0/git-extensions-0.1.0-x86_64.AppImage) |
-| AppImage (any distribution) | aarch64 | [`git-extensions-0.1.0-aarch64.AppImage`](https://github.com/khunder/git-extension-linux/releases/download/v0.1.0/git-extensions-0.1.0-aarch64.AppImage) |
-| Checksums | all | [`SHA256SUMS`](https://github.com/khunder/git-extension-linux/releases/download/v0.1.0/SHA256SUMS) |
+| Ubuntu / Debian | amd64 | [`git-extensions_0.2.0_amd64.deb`](https://github.com/khunder/git-extension-linux/releases/download/v0.2.0/git-extensions_0.2.0_amd64.deb) |
+| Ubuntu / Debian | arm64 | [`git-extensions_0.2.0_arm64.deb`](https://github.com/khunder/git-extension-linux/releases/download/v0.2.0/git-extensions_0.2.0_arm64.deb) |
+| Fedora | x86_64 | [`git-extensions-0.2.0-1.fedora.x86_64.rpm`](https://github.com/khunder/git-extension-linux/releases/download/v0.2.0/git-extensions-0.2.0-1.fedora.x86_64.rpm) |
+| Fedora | aarch64 | [`git-extensions-0.2.0-1.fedora.aarch64.rpm`](https://github.com/khunder/git-extension-linux/releases/download/v0.2.0/git-extensions-0.2.0-1.fedora.aarch64.rpm) |
+| openSUSE | x86_64 | [`git-extensions-0.2.0-1.opensuse.x86_64.rpm`](https://github.com/khunder/git-extension-linux/releases/download/v0.2.0/git-extensions-0.2.0-1.opensuse.x86_64.rpm) |
+| openSUSE | aarch64 | [`git-extensions-0.2.0-1.opensuse.aarch64.rpm`](https://github.com/khunder/git-extension-linux/releases/download/v0.2.0/git-extensions-0.2.0-1.opensuse.aarch64.rpm) |
+| Arch Linux | x86_64 | [`git-extensions-0.2.0-1-x86_64.pkg.tar.zst`](https://github.com/khunder/git-extension-linux/releases/download/v0.2.0/git-extensions-0.2.0-1-x86_64.pkg.tar.zst) |
+| Any distribution (tarball) | x64 | [`git-extensions-linux-0.2.0-x64.tar.gz`](https://github.com/khunder/git-extension-linux/releases/download/v0.2.0/git-extensions-linux-0.2.0-x64.tar.gz) |
+| Any distribution (tarball) | arm64 | [`git-extensions-linux-0.2.0-arm64.tar.gz`](https://github.com/khunder/git-extension-linux/releases/download/v0.2.0/git-extensions-linux-0.2.0-arm64.tar.gz) |
+| AppImage (any distribution) | x86_64 | [`git-extensions-0.2.0-x86_64.AppImage`](https://github.com/khunder/git-extension-linux/releases/download/v0.2.0/git-extensions-0.2.0-x86_64.AppImage) |
+| AppImage (any distribution) | aarch64 | [`git-extensions-0.2.0-aarch64.AppImage`](https://github.com/khunder/git-extension-linux/releases/download/v0.2.0/git-extensions-0.2.0-aarch64.AppImage) |
+| Checksums | all | [`SHA256SUMS`](https://github.com/khunder/git-extension-linux/releases/download/v0.2.0/SHA256SUMS) |
 
-With the GitHub CLI you can also fetch an artifact directly: `gh release download v0.1.0 --repo khunder/git-extension-linux --pattern '*.deb'`.
+With the GitHub CLI you can also fetch an artifact directly: `gh release download v0.2.0 --repo khunder/git-extension-linux --pattern '*.deb'`.
 
 ### Ubuntu / Debian (.deb)
 
 ```bash
 # amd64
-curl -LO https://github.com/khunder/git-extension-linux/releases/download/v0.1.0/git-extensions_0.1.0_amd64.deb
-sudo apt install ./git-extensions_0.1.0_amd64.deb
+curl -LO https://github.com/khunder/git-extension-linux/releases/download/v0.2.0/git-extensions_0.2.0_amd64.deb
+sudo apt install ./git-extensions_0.2.0_amd64.deb
 
 # arm64
-curl -LO https://github.com/khunder/git-extension-linux/releases/download/v0.1.0/git-extensions_0.1.0_arm64.deb
-sudo apt install ./git-extensions_0.1.0_arm64.deb
+curl -LO https://github.com/khunder/git-extension-linux/releases/download/v0.2.0/git-extensions_0.2.0_arm64.deb
+sudo apt install ./git-extensions_0.2.0_arm64.deb
 ```
 
 ### Fedora (.rpm)
 
 ```bash
-curl -LO https://github.com/khunder/git-extension-linux/releases/download/v0.1.0/git-extensions-0.1.0-1.fedora.x86_64.rpm
-sudo dnf install ./git-extensions-0.1.0-1.fedora.x86_64.rpm
+curl -LO https://github.com/khunder/git-extension-linux/releases/download/v0.2.0/git-extensions-0.2.0-1.fedora.x86_64.rpm
+sudo dnf install ./git-extensions-0.2.0-1.fedora.x86_64.rpm
 ```
 
 ### openSUSE (.rpm)
 
 ```bash
-curl -LO https://github.com/khunder/git-extension-linux/releases/download/v0.1.0/git-extensions-0.1.0-1.opensuse.x86_64.rpm
-sudo zypper --no-gpg-checks install ./git-extensions-0.1.0-1.opensuse.x86_64.rpm
+curl -LO https://github.com/khunder/git-extension-linux/releases/download/v0.2.0/git-extensions-0.2.0-1.opensuse.x86_64.rpm
+sudo zypper --no-gpg-checks install ./git-extensions-0.2.0-1.opensuse.x86_64.rpm
 ```
 
 The packages are not signed yet, hence `--no-gpg-checks` on openSUSE (on Fedora, `dnf` may need `--nogpgcheck` as well).
@@ -92,16 +92,16 @@ The packages are not signed yet, hence `--no-gpg-checks` on openSUSE (on Fedora,
 ### Arch Linux (.pkg.tar.zst)
 
 ```bash
-curl -LO https://github.com/khunder/git-extension-linux/releases/download/v0.1.0/git-extensions-0.1.0-1-x86_64.pkg.tar.zst
-sudo pacman -U ./git-extensions-0.1.0-1-x86_64.pkg.tar.zst
+curl -LO https://github.com/khunder/git-extension-linux/releases/download/v0.2.0/git-extensions-0.2.0-1-x86_64.pkg.tar.zst
+sudo pacman -U ./git-extensions-0.2.0-1-x86_64.pkg.tar.zst
 ```
 
 ### Any distribution (tarball)
 
 ```bash
-# x64 (use git-extensions-linux-0.1.0-arm64.tar.gz on arm64)
-curl -LO https://github.com/khunder/git-extension-linux/releases/download/v0.1.0/git-extensions-linux-0.1.0-x64.tar.gz
-tar xzf git-extensions-linux-0.1.0-x64.tar.gz
+# x64 (use git-extensions-linux-0.2.0-arm64.tar.gz on arm64)
+curl -LO https://github.com/khunder/git-extension-linux/releases/download/v0.2.0/git-extensions-linux-0.2.0-x64.tar.gz
+tar xzf git-extensions-linux-0.2.0-x64.tar.gz
 cd git-extensions
 ./install.sh              # user-level install under ~/.local, no root needed
 ./install.sh --uninstall  # remove it again
@@ -110,9 +110,9 @@ cd git-extensions
 ### AppImage (any distribution, no installation)
 
 ```bash
-curl -LO https://github.com/khunder/git-extension-linux/releases/download/v0.1.0/git-extensions-0.1.0-x86_64.AppImage
-chmod +x git-extensions-0.1.0-x86_64.AppImage
-./git-extensions-0.1.0-x86_64.AppImage [path-to-repository]
+curl -LO https://github.com/khunder/git-extension-linux/releases/download/v0.2.0/git-extensions-0.2.0-x86_64.AppImage
+chmod +x git-extensions-0.2.0-x86_64.AppImage
+./git-extensions-0.2.0-x86_64.AppImage [path-to-repository]
 ```
 
 The AppImage bundles the application and the .NET runtime; it uses the system's X11, fontconfig and OpenSSL 3 libraries and needs `git` installed. On systems without FUSE 2 run it with `--appimage-extract-and-run`.
@@ -120,7 +120,7 @@ The AppImage bundles the application and the .NET runtime; it uses the system's 
 ### Verify the download
 
 ```bash
-curl -LO https://github.com/khunder/git-extension-linux/releases/download/v0.1.0/SHA256SUMS
+curl -LO https://github.com/khunder/git-extension-linux/releases/download/v0.2.0/SHA256SUMS
 sha256sum --check --ignore-missing SHA256SUMS
 ```
 
@@ -134,7 +134,7 @@ git-extensions [path/to/repository]
 
 ## Build from source
 
-Requirements: the [.NET 10 SDK](https://dotnet.microsoft.com/download) and `git`.
+Requirements: the [.NET 11 SDK](https://dotnet.microsoft.com/download) and `git`.
 
 ```bash
 git clone https://github.com/khunder/git-extension-linux.git
@@ -156,7 +156,7 @@ RID=linux-arm64 packaging/linux/build-tarball.sh  # linux-arm64
 dotnet test GitExtensions.slnx
 ```
 
-The Avalonia UI tests run headless and use real temporary git repositories. The render tests also write screenshots to `artifacts/Debug/bin/tests/UnitTests/GitExtensions.Avalonia.Tests/net10.0/screenshots/`; those are the images used on the website.
+The Avalonia UI tests run headless and use real temporary git repositories. The render tests also write screenshots to `artifacts/Debug/bin/tests/UnitTests/GitExtensions.Avalonia.Tests/net11.0/screenshots/`; those are the images used on the website.
 
 ## Repository layout
 
@@ -175,7 +175,7 @@ The Avalonia UI tests run headless and use real temporary git repositories. The 
 
 ## Known limitations
 
-This is an early release (0.1.0). Not available yet:
+This is an early release (0.2.0). Not available yet:
 
 - Plugins (the plugin interfaces are kept, but plugins are not loaded or ported)
 - Scripts

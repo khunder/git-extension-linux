@@ -10,7 +10,7 @@
     </StackPanel>
     <StackPanel Spacing="8">
     <TextBlock Text="Commit expression:" />
-    <TextBox x:Name="ExpressionBox" Text="{Binding Expression}" Watermark="hash, branch, tag, HEAD~3, v1.0^{}…" AutomationProperties.Name="Revision expression">
+    <TextBox x:Name="ExpressionBox" Text="{Binding Expression}" PlaceholderText="hash, branch, tag, HEAD~3, v1.0^{}…" AutomationProperties.Name="Revision expression">
       <TextBox.KeyBindings>
         <KeyBinding Gesture="Enter" Command="{Binding GoCommand}" />
       </TextBox.KeyBindings>

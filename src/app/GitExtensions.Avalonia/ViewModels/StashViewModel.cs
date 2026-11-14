@@ -157,13 +157,21 @@ public sealed partial class StashViewModel : ObservableObject
 
     private async Task ShowFilesAsync(StashItemViewModel? stash)
     {
-        if (_detailsCancellation is not null)
-        {
-            await _detailsCancellation.CancelAsync();
-        }
-
+        // Swap the source before awaiting the cancellation: when CancelAsync really yields, two overlapping calls would
+        // otherwise both pass the await and each load (and add) the files.
+        CancellationTokenSource? previous = _detailsCancellation;
         CancellationTokenSource cancellation = new();
         _detailsCancellation = cancellation;
+        if (previous is not null)
+        {
+            await previous.CancelAsync();
+        }
+
+        if (cancellation.IsCancellationRequested)
+        {
+            return;
+        }
+
         Files.Clear();
         DiffLines.Clear();
         SelectedFile = null;
@@ -198,13 +206,21 @@ public sealed partial class StashViewModel : ObservableObject
 
     private async Task ShowDiffAsync(StashItemViewModel? stash, ChangedFileViewModel? file)
     {
-        if (_detailsCancellation is not null)
-        {
-            await _detailsCancellation.CancelAsync();
-        }
-
+        // Swap the source before awaiting the cancellation: when CancelAsync really yields, two overlapping calls would
+        // otherwise both pass the await and each load (and add) the files.
+        CancellationTokenSource? previous = _detailsCancellation;
         CancellationTokenSource cancellation = new();
         _detailsCancellation = cancellation;
+        if (previous is not null)
+        {
+            await previous.CancelAsync();
+        }
+
+        if (cancellation.IsCancellationRequested)
+        {
+            return;
+        }
+
         DiffLines.Clear();
         GitModule? module = _getModule();
         if (stash is null || file is null || module is null)

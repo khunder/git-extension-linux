@@ -5,7 +5,7 @@
     Links the original sources; files that need WinForms are excluded.
   -->
   <PropertyGroup>
-    <TargetFramework>net10.0</TargetFramework>
+    <TargetFramework>net11.0</TargetFramework>
     <UseWindowsForms>false</UseWindowsForms>
     <AssemblyName>CommonTestUtils</AssemblyName>
     <RootNamespace>CommonTestUtils</RootNamespace>

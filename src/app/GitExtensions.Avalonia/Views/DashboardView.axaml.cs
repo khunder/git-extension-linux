@@ -21,7 +21,7 @@ public sealed partial class DashboardView : UserControl
         AddHandler(DoubleTappedEvent, OnDoubleTapped);
         MenuKit.AttachBuilt(this, row => row is DashboardEntry entry && DataContext is DashboardViewModel dashboard ? DashboardContextMenu.Build(dashboard, entry) : null);
         AddHandler(SelectingItemsControl.SelectionChangedEvent, OnSelectionChanged);
-        AddHandler(KeyDownEvent, OnKeyDown);
+        AddHandler(KeyDownEvent, OnKeyDown, Avalonia.Interactivity.RoutingStrategies.Tunnel); // tunnel: list items handle Enter themselves in Avalonia 12
         AttachedToVisualTree += (_, _) =>
         {
             AttachClipboard();

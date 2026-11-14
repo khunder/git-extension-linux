@@ -272,7 +272,7 @@ public class FileKeyShortcutTests
         ItemsControl lines = view.FindControl<ItemsControl>("DiffLines")!;
         ContextMenu menu = lines.ContextMenu!;
         viewModel.Diff.SelectLine(Line(viewModel, "+changed 3"), ctrl: false, shift: false);
-        lines.RaiseEvent(new Avalonia.Controls.ContextRequestedEventArgs());
+        lines.RaiseEvent(new Avalonia.Input.ContextRequestedEventArgs());
         var gestures = menu.Items.OfType<MenuItem>().Select(i => ((i.Header as TextBlock)?.Text, i.InputGesture?.Key)).ToArray();
         gestures.Should().Contain(("Stage selected line(s)", Key.S));
         gestures.Should().Contain(("Unstage selected line(s)", Key.U));

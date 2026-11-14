@@ -1,10 +1,10 @@
 #!/usr/bin/env bash
 # Builds the self-contained Linux tarball (no .NET runtime needed on the target machine).
 #
-#   VERSION=0.1.0 ARCH=x64 PUBLISH_DIR=<published tree> packaging/linux/build-tarball.sh
+#   VERSION=0.2.0 ARCH=x64 PUBLISH_DIR=<published tree> packaging/linux/build-tarball.sh
 #
 # Inputs (environment):
-#   VERSION      package version (default 0.1.0)
+#   VERSION      package version (default 0.2.0)
 #   ARCH         x64 (default) or arm64
 #   PUBLISH_DIR  output of publish.sh; when empty the app is published first
 #   OUT_DIR      output directory (default artifacts/dist)
@@ -13,7 +13,7 @@
 set -euo pipefail
 source "$(dirname "${BASH_SOURCE[0]}")/common.sh"
 
-VERSION="${VERSION:-0.1.0}"
+VERSION="${VERSION:-0.2.0}"
 ARCH="${ARCH:-x64}"
 OUT_DIR="${OUT_DIR:-$repo_root/artifacts/dist}"
 RID="$(rid_for_arch "$ARCH")"

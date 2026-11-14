@@ -223,7 +223,7 @@ public class AskPassTests
         AskPassOperation operation = server.BeginOperation(CancellationToken.None);
         string good = operation.Environment["GE_ASKPASS_TOKEN"];
 
-        (await Task.Run(() => RunHelper(server.Endpoint, "00" + good[2..], "Username: "))).ExitCode.Should().Be(1);
+        (await Task.Run(() => RunHelper(server.Endpoint, (good[0] == '0' ? "1" : "0") + good[1..], "Username: "))).ExitCode.Should().Be(1);
         (await Task.Run(() => RunHelper(server.Endpoint, string.Empty, "Username: "))).ExitCode.Should().Be(2, "no token at all: not started by Git Extensions");
 
         operation.Dispose();

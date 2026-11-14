@@ -143,7 +143,9 @@ public sealed class AskPassServer : IDisposable
         _listener?.Dispose();
         try
         {
+#pragma warning disable VSTHRD002 // Shutdown path: bounded wait for the accept loop.
             _acceptLoop?.Wait(TimeSpan.FromSeconds(2));
+#pragma warning restore VSTHRD002
         }
         catch (AggregateException)
         {

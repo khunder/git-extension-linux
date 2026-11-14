@@ -32,9 +32,9 @@
           <ScrollViewer Grid.Column="2" HorizontalScrollBarVisibility="Disabled">
             <StackPanel Spacing="4">
               <TextBlock Text="Name" />
-              <TextBox x:Name="NameBox" Text="{Binding Name}" Watermark="origin" />
+              <TextBox x:Name="NameBox" Text="{Binding Name}" PlaceholderText="origin" />
               <TextBlock Text="Fetch URL" Margin="0,6,0,0" />
-              <TextBox x:Name="UrlBox" Text="{Binding Url}" Watermark="https://host/owner/repo.git" />
+              <TextBox x:Name="UrlBox" Text="{Binding Url}" PlaceholderText="https://host/owner/repo.git" />
               <TextBlock Text="Push URL (optional, defaults to the fetch URL)" Margin="0,6,0,0" />
               <TextBox x:Name="PushUrlBox" Text="{Binding PushUrl}" />
               <StackPanel Orientation="Horizontal" Spacing="8" Margin="0,8,0,0">

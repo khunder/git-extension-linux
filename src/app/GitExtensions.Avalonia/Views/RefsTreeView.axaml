@@ -7,7 +7,7 @@
   <DockPanel Background="{DynamicResource SidebarBackground}">
     <Grid DockPanel.Dock="Top" ColumnDefinitions="Auto,*,Auto" Margin="6,4" ColumnSpacing="4">
       <TextBlock Text="Search:" VerticalAlignment="Center" />
-      <TextBox x:Name="FilterBox" Grid.Column="1" Text="{Binding Filter}" Watermark="Filter…" MinHeight="24" Padding="4,2" />
+      <TextBox x:Name="FilterBox" Grid.Column="1" Text="{Binding Filter}" PlaceholderText="Filter…" MinHeight="24" Padding="4,2" />
       <Button x:Name="NewBranchButton" Grid.Column="2" MinHeight="24" Content="+" FontWeight="Bold" Padding="8,2" Command="{Binding RequestNewBranchCommand}" ToolTip.Tip="New branch…" AutomationProperties.Name="New branch" AutomationProperties.HelpText="Create a new branch from the selected commit or HEAD" />
     </Grid>
     <TreeView x:Name="RefsTree" ItemsSource="{Binding Roots}" SelectedItem="{Binding SelectedNode, Mode=TwoWay}">

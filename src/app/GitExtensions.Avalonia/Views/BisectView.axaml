@@ -11,10 +11,10 @@
     <Border BorderThickness="1" BorderBrush="{DynamicResource SubtleBorderBrush}" CornerRadius="4" Padding="8">
       <Grid ColumnDefinitions="Auto,*,Auto" RowDefinitions="Auto,Auto,Auto" ColumnSpacing="8" RowSpacing="6">
         <TextBlock Text="Bad" VerticalAlignment="Center" />
-        <TextBox x:Name="BadBox" Grid.Column="1" Text="{Binding BadRevision}" IsEnabled="{Binding CanStart}" Watermark="Optional: a revision known to be bad" />
+        <TextBox x:Name="BadBox" Grid.Column="1" Text="{Binding BadRevision}" IsEnabled="{Binding CanStart}" PlaceholderText="Optional: a revision known to be bad" />
         <Button x:Name="UseBadButton" Grid.Column="2" Content="Use selected" Command="{Binding UseSelectedAsBadCommand}" IsEnabled="{Binding CanStart}" />
         <TextBlock Grid.Row="1" Text="Good" VerticalAlignment="Center" />
-        <TextBox x:Name="GoodBox" Grid.Row="1" Grid.Column="1" Text="{Binding GoodRevision}" IsEnabled="{Binding CanStart}" Watermark="Optional: a revision known to be good" />
+        <TextBox x:Name="GoodBox" Grid.Row="1" Grid.Column="1" Text="{Binding GoodRevision}" IsEnabled="{Binding CanStart}" PlaceholderText="Optional: a revision known to be good" />
         <Button x:Name="UseGoodButton" Grid.Row="1" Grid.Column="2" Content="Use selected" Command="{Binding UseSelectedAsGoodCommand}" IsEnabled="{Binding CanStart}" />
         <Button x:Name="StartButton" Grid.Row="2" Grid.ColumnSpan="3" Content="Start bisect" Classes="accent" HorizontalAlignment="Left" Command="{Binding StartCommand}" IsEnabled="{Binding CanStart}" />
       </Grid>
@@ -44,7 +44,7 @@
     </Panel>
 
     <TextBox x:Name="OutputBox" Text="{Binding Output}" IsReadOnly="True" AcceptsReturn="True" TextWrapping="Wrap" Height="90" Classes="mono"
-             Watermark="What git says appears here" AutomationProperties.Name="Bisect output" />
+             PlaceholderText="What git says appears here" AutomationProperties.Name="Bisect output" />
     <ProgressBar Height="3" IsIndeterminate="True" IsVisible="{Binding IsBusy}" />
     <Grid ColumnDefinitions="*,Auto" ColumnSpacing="8">
       <TextBlock Text="Marked commits are tagged good, bad or skip in the history list." Opacity="0.65" FontSize="12" TextWrapping="Wrap" VerticalAlignment="Center" />

@@ -75,7 +75,7 @@
         </SplitButton>
         <StackPanel DockPanel.Dock="Right" Orientation="Horizontal" Margin="8,0" Spacing="4">
           <TextBlock Text="Filter:" VerticalAlignment="Center" Opacity="0.7" />
-          <TextBox x:Name="FilterBox" Width="130" MinHeight="26" Padding="6,3" Text="{Binding Filter}" Watermark="Filter files" />
+          <TextBox x:Name="FilterBox" Width="130" MinHeight="26" Padding="6,3" Text="{Binding Filter}" PlaceholderText="Filter files" />
         </StackPanel>
         <Panel />
       </DockPanel>
@@ -209,7 +209,7 @@
         <TextBlock x:Name="ErrorLabel" DockPanel.Dock="Bottom" Text="{Binding ErrorText}" IsVisible="{Binding HasError}"
                    Foreground="{DynamicResource ErrorTextForeground}" TextWrapping="Wrap" Margin="0,4,0,0" />
         <TextBox x:Name="MessageBox" Text="{Binding Commit.Message}" AcceptsReturn="True" TextWrapping="Wrap" MinHeight="90" Height="120"
-                 Watermark="Enter commit message" />
+                 PlaceholderText="Enter commit message" />
       </DockPanel>
     </Border>
 

@@ -27,7 +27,7 @@
       </Grid>
     </Border>
     <DockPanel Grid.Row="1" Grid.Column="0">
-      <TextBox x:Name="FilterBox" DockPanel.Dock="Top" Margin="4" MinHeight="24" Padding="6,2" FontSize="12" Watermark="Filter files…" Text="{Binding FilterText}" />
+      <TextBox x:Name="FilterBox" DockPanel.Dock="Top" Margin="4" MinHeight="24" Padding="6,2" FontSize="12" PlaceholderText="Filter files…" Text="{Binding FilterText}" />
       <ListBox x:Name="FileList" ItemsSource="{Binding Files}" SelectedItem="{Binding SelectedFile}" Padding="0">
         <ListBox.ItemTemplate>
           <DataTemplate x:DataType="vm:ChangedFileViewModel">

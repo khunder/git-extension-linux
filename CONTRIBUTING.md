@@ -4,7 +4,7 @@ Thanks for helping with Git Extensions for Linux.
 
 ## Getting started
 
-1. Install the .NET 10 SDK (see `global.json`) and `git`.
+1. Install the .NET 11 SDK (see `global.json`) and `git`.
 2. Build and test:
 
    ```sh

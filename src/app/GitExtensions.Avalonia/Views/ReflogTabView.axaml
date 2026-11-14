@@ -26,7 +26,7 @@
       <Border Background="{DynamicResource SystemAccentColor}" Opacity="0.15" />
       <Grid ColumnDefinitions="Auto,*,Auto,Auto" ColumnSpacing="8" Margin="8,6">
         <TextBlock x:Name="PromptText" Text="{Binding PromptText}" TextWrapping="Wrap" VerticalAlignment="Center" MaxWidth="560" />
-        <TextBox x:Name="BranchNameBox" Grid.Column="1" Text="{Binding BranchName}" IsVisible="{Binding NeedsInput}" Watermark="branch-name">
+        <TextBox x:Name="BranchNameBox" Grid.Column="1" Text="{Binding BranchName}" IsVisible="{Binding NeedsInput}" PlaceholderText="branch-name">
           <TextBox.KeyBindings>
             <KeyBinding Gesture="Enter" Command="{Binding ConfirmPromptCommand}" />
             <KeyBinding Gesture="Escape" Command="{Binding CancelPromptCommand}" />

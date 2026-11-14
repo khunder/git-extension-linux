@@ -6,7 +6,7 @@
       <StackPanel Spacing="4" x:Name="Card" Margin="16">
         <TextBlock Text="Folder (created if it does not exist)" />
         <Grid ColumnDefinitions="*,Auto" ColumnSpacing="8">
-          <TextBox x:Name="FolderBox" Text="{Binding Folder}" Watermark="Path of the new repository">
+          <TextBox x:Name="FolderBox" Text="{Binding Folder}" PlaceholderText="Path of the new repository">
             <TextBox.KeyBindings>
               <KeyBinding Gesture="Enter" Command="{Binding InitCommand}" />
               <KeyBinding Gesture="Escape" Command="{Binding CancelCommand}" />
@@ -18,7 +18,7 @@
                    Foreground="{DynamicResource ErrorTextForeground}" />
 
         <TextBlock Text="Initial branch name (optional)" Margin="0,8,0,0" />
-        <TextBox x:Name="BranchBox" Text="{Binding InitialBranch}" Watermark="Git's default (usually main or master)" />
+        <TextBox x:Name="BranchBox" Text="{Binding InitialBranch}" PlaceholderText="Git's default (usually main or master)" />
         <TextBlock x:Name="BranchErrorText" Text="{Binding BranchError}" IsVisible="{Binding HasBranchError}" TextWrapping="Wrap" FontSize="12"
                    Foreground="{DynamicResource ErrorTextForeground}" />
 

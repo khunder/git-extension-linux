@@ -303,7 +303,18 @@ public class StashTests
         viewModel.Stash.SelectedStash = viewModel.Stash.Items[1];
         await WaitAsync(() => viewModel.Stash.Files.Count == 1);
         viewModel.Stash.SelectedFile = viewModel.Stash.Files[0];
-        await WaitAsync(() => viewModel.Stash.DiffLines.Count > 0);
+
+        // A late reload of the list (the refresh after stashing) can re-select the stash and clear the file selection:
+        // select the file again until its diff shows.
+        await WaitAsync(() =>
+        {
+            if (viewModel.Stash.SelectedFile is null && viewModel.Stash.Files.Count == 1)
+            {
+                viewModel.Stash.SelectedFile = viewModel.Stash.Files[0];
+            }
+
+            return viewModel.Stash.DiffLines.Count > 0;
+        });
         viewModel.Stash.RequestDropCommand.Execute(viewModel.Stash.Items[2]);
 
         foreach (ThemeVariant variant in new[] { ThemeVariant.Light, ThemeVariant.Dark })

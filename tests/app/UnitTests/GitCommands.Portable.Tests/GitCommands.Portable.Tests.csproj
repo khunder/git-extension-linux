@@ -1,8 +1,8 @@
 <Project Sdk="Microsoft.NET.Sdk">
 
-  <!-- Unit tests of the portable core (GitCommands) on plain net10.0. -->
+  <!-- Unit tests of the portable core (GitCommands) on plain net11.0. -->
   <PropertyGroup>
-    <TargetFramework>net10.0</TargetFramework>
+    <TargetFramework>net11.0</TargetFramework>
     <UseWindowsForms>false</UseWindowsForms>
     <RootNamespace>GitCommandsTests</RootNamespace>
     <DefineConstants>$(DefineConstants);UNIT_TEST;PORTABLE_TESTS</DefineConstants>

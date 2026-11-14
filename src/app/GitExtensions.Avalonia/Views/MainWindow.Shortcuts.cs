@@ -165,7 +165,7 @@ public sealed partial class MainWindow
     }
 
     // Remember the last control outside the overlays that had the focus, to give it back when the overlays close.
-    private void OnAnyGotFocus(object? sender, GotFocusEventArgs e)
+    private void OnAnyGotFocus(object? sender, FocusChangedEventArgs e)
     {
         if (e.Source is Visual source && !IsInsideOverlay(source))
         {
@@ -184,7 +184,7 @@ public sealed partial class MainWindow
         }
 
         // The last overlay closed.
-        if (_focusBeforeOverlay is Control { IsEffectivelyVisible: true, IsEffectivelyEnabled: true } previous && previous.GetVisualRoot() is not null)
+        if (_focusBeforeOverlay is Control { IsEffectivelyVisible: true, IsEffectivelyEnabled: true } previous && TopLevel.GetTopLevel(previous) is not null)
         {
             previous.Focus();
         }

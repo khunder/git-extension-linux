@@ -18,7 +18,7 @@
       <StackPanel Spacing="8">
       <Grid ColumnDefinitions="Auto,*,Auto" ColumnSpacing="8" IsVisible="{Binding ShowRevision}">
         <TextBlock Text="Revision:" VerticalAlignment="Center" />
-        <TextBox x:Name="RevOpsRevision" Grid.Column="1" Text="{Binding Revision}" Watermark="Revision (commit, branch, tag, HEAD~3, …)">
+        <TextBox x:Name="RevOpsRevision" Grid.Column="1" Text="{Binding Revision}" PlaceholderText="Revision (commit, branch, tag, HEAD~3, …)">
           <TextBox.KeyBindings>
             <KeyBinding Gesture="Enter" Command="{Binding ConfirmCommand}" />
           </TextBox.KeyBindings>
@@ -67,10 +67,10 @@
           <ComboBox x:Name="ArchiveFormatBox" ItemsSource="{Binding ArchiveFormats}" SelectedItem="{Binding ArchiveFormat}" MinWidth="90" />
         </StackPanel>
         <Grid ColumnDefinitions="*,Auto" ColumnSpacing="8">
-          <TextBox x:Name="ArchiveFileBox" Text="{Binding ArchiveFile}" Watermark="Archive file" />
+          <TextBox x:Name="ArchiveFileBox" Text="{Binding ArchiveFile}" PlaceholderText="Archive file" />
           <Button Grid.Column="1" Content="Browse…" Command="{Binding BrowseArchiveFileCommand}" />
         </Grid>
-        <TextBox x:Name="ArchivePathBox" Text="{Binding ArchivePath}" Watermark="Only this path (optional, e.g. src/)" />
+        <TextBox x:Name="ArchivePathBox" Text="{Binding ArchivePath}" PlaceholderText="Only this path (optional, e.g. src/)" />
       </StackPanel>
 
       <!-- Reset -->

@@ -22,8 +22,8 @@
     <Panel x:Name="AddForm" DockPanel.Dock="Top" IsVisible="{Binding IsAddFormVisible}">
       <Border Background="{DynamicResource SystemAccentColor}" Opacity="0.15" />
       <Grid ColumnDefinitions="*,*,Auto,Auto,Auto" ColumnSpacing="8" Margin="8,6">
-        <TextBox x:Name="NewPathBox" Text="{Binding NewPath}" Watermark="Folder (relative: next to the repository)" />
-        <TextBox x:Name="NewBranchBox" Grid.Column="1" Text="{Binding NewBranch}" Watermark="Branch name">
+        <TextBox x:Name="NewPathBox" Text="{Binding NewPath}" PlaceholderText="Folder (relative: next to the repository)" />
+        <TextBox x:Name="NewBranchBox" Grid.Column="1" Text="{Binding NewBranch}" PlaceholderText="Branch name">
           <TextBox.KeyBindings>
             <KeyBinding Gesture="Enter" Command="{Binding ConfirmAddCommand}" />
             <KeyBinding Gesture="Escape" Command="{Binding CancelPromptCommand}" />

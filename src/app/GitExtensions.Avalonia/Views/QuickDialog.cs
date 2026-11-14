@@ -18,7 +18,7 @@ public static class QuickDialog
     /// </summary>
     public static DialogWindow Ask(Window owner, string title, string message, string confirmText, Action<string> confirmed, string? inputText = null, bool destructive = false, string? watermark = null)
     {
-        TextBox? input = inputText is null ? null : new TextBox { Text = inputText, Watermark = watermark, Name = "QuickDialogInput" };
+        TextBox? input = inputText is null ? null : new TextBox { Text = inputText, PlaceholderText = watermark, Name = "QuickDialogInput" };
         DialogWindow? dialog = null;
         Button ok = new() { Content = confirmText, MinWidth = 100, IsDefault = true, Name = "QuickDialogConfirm" };
         if (!destructive)

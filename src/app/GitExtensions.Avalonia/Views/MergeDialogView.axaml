@@ -44,7 +44,7 @@
             <ComboBox x:Name="StrategyCombo" Grid.Column="1" MinWidth="160" HorizontalAlignment="Left" ItemsSource="{Binding Strategies}" SelectedItem="{Binding Strategy}" AutomationProperties.Name="Merge strategy" />
             <TextBlock Grid.Row="1" Text="Merge message" VerticalAlignment="Top" Margin="0,6,0,0" />
             <TextBox x:Name="MessageBox" Grid.Row="1" Grid.Column="1" Text="{Binding Message}" AcceptsReturn="True" TextWrapping="Wrap" Height="70"
-                     Watermark="Optional; the default merge message is used when empty" AutomationProperties.Name="Merge message" />
+                     PlaceholderText="Optional; the default merge message is used when empty" AutomationProperties.Name="Merge message" />
           </Grid>
         </StackPanel>
       </ScrollViewer>

@@ -23,7 +23,7 @@
 
           <!-- Left: search and the tree of pages -->
           <DockPanel>
-            <TextBox x:Name="SearchBox" DockPanel.Dock="Top" Text="{Binding SearchText}" Watermark="Type to find" Margin="0,0,0,8" />
+            <TextBox x:Name="SearchBox" DockPanel.Dock="Top" Text="{Binding SearchText}" PlaceholderText="Type to find" Margin="0,0,0,8" />
             <Border BorderThickness="1" BorderBrush="{DynamicResource SubtleBorderBrush}">
               <TreeView x:Name="PageTree" ItemsSource="{Binding Pages}" SelectedItem="{Binding SelectedPage, Mode=TwoWay}">
                 <TreeView.ItemTemplate>
@@ -95,7 +95,7 @@
                       <StackPanel Spacing="2">
                         <TextBlock Text="{Binding Label}" TextWrapping="Wrap" />
                         <Grid ColumnDefinitions="*,Auto" ColumnSpacing="6">
-                          <TextBox Text="{Binding Value, Mode=TwoWay}" Watermark="{Binding Watermark}" IsEnabled="{Binding IsEnabled}" />
+                          <TextBox Text="{Binding Value, Mode=TwoWay}" PlaceholderText="{Binding Watermark}" IsEnabled="{Binding IsEnabled}" />
                           <Button Grid.Column="1" Content="Browse…" IsVisible="{Binding CanBrowse}" IsEnabled="{Binding IsEnabled}"
                                   Command="{Binding $parent[local:SettingsView].((vm:SettingsViewModel)DataContext).BrowseCommand}" CommandParameter="{Binding}" />
                         </Grid>

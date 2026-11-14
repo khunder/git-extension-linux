@@ -2,17 +2,17 @@
 
 Git Extensions for Linux is shipped as self-contained builds of `GitExtensions.Avalonia` (plus the `GitExtensions.AskPass` helper): the .NET runtime is bundled, the only hard requirement besides the native libraries listed below is `git`. Invariant globalization is enabled, so there is no `libicu` dependency.
 
-Packages are not built by hand: every release is produced by the [Release workflow](../../.github/workflows/release.yml) and published as assets of the [GitHub release](https://github.com/khunder/git-extension-linux/releases/latest). Download them from there (version 0.1.0 shown; builds exist for x86-64 and arm64):
+Packages are not built by hand: every release is produced by the [Release workflow](../../.github/workflows/release.yml) and published as assets of the [GitHub release](https://github.com/khunder/git-extension-linux/releases/latest). Download them from there (version 0.2.0 shown; builds exist for x86-64 and arm64):
 
 | Asset | For |
 | --- | --- |
-| [`git-extensions-linux-0.1.0-x64.tar.gz`](https://github.com/khunder/git-extension-linux/releases/download/v0.1.0/git-extensions-linux-0.1.0-x64.tar.gz), `-arm64.tar.gz` | any distribution, user-level install |
-| [`git-extensions_0.1.0_amd64.deb`](https://github.com/khunder/git-extension-linux/releases/download/v0.1.0/git-extensions_0.1.0_amd64.deb), `_arm64.deb` | Debian, Ubuntu and derivatives |
-| [`git-extensions-0.1.0-1.fedora.x86_64.rpm`](https://github.com/khunder/git-extension-linux/releases/download/v0.1.0/git-extensions-0.1.0-1.fedora.x86_64.rpm), `.aarch64.rpm` | Fedora |
-| [`git-extensions-0.1.0-1.opensuse.x86_64.rpm`](https://github.com/khunder/git-extension-linux/releases/download/v0.1.0/git-extensions-0.1.0-1.opensuse.x86_64.rpm), `.aarch64.rpm` | openSUSE (Tumbleweed, Leap) |
-| [`git-extensions-0.1.0-1-x86_64.pkg.tar.zst`](https://github.com/khunder/git-extension-linux/releases/download/v0.1.0/git-extensions-0.1.0-1-x86_64.pkg.tar.zst) | Arch Linux and derivatives |
-| [`git-extensions-0.1.0-x86_64.AppImage`](https://github.com/khunder/git-extension-linux/releases/download/v0.1.0/git-extensions-0.1.0-x86_64.AppImage), `-aarch64.AppImage` | any distribution, portable single file |
-| [`SHA256SUMS`](https://github.com/khunder/git-extension-linux/releases/download/v0.1.0/SHA256SUMS) | checksums of all of the above |
+| [`git-extensions-linux-0.2.0-x64.tar.gz`](https://github.com/khunder/git-extension-linux/releases/download/v0.2.0/git-extensions-linux-0.2.0-x64.tar.gz), `-arm64.tar.gz` | any distribution, user-level install |
+| [`git-extensions_0.2.0_amd64.deb`](https://github.com/khunder/git-extension-linux/releases/download/v0.2.0/git-extensions_0.2.0_amd64.deb), `_arm64.deb` | Debian, Ubuntu and derivatives |
+| [`git-extensions-0.2.0-1.fedora.x86_64.rpm`](https://github.com/khunder/git-extension-linux/releases/download/v0.2.0/git-extensions-0.2.0-1.fedora.x86_64.rpm), `.aarch64.rpm` | Fedora |
+| [`git-extensions-0.2.0-1.opensuse.x86_64.rpm`](https://github.com/khunder/git-extension-linux/releases/download/v0.2.0/git-extensions-0.2.0-1.opensuse.x86_64.rpm), `.aarch64.rpm` | openSUSE (Tumbleweed, Leap) |
+| [`git-extensions-0.2.0-1-x86_64.pkg.tar.zst`](https://github.com/khunder/git-extension-linux/releases/download/v0.2.0/git-extensions-0.2.0-1-x86_64.pkg.tar.zst) | Arch Linux and derivatives |
+| [`git-extensions-0.2.0-x86_64.AppImage`](https://github.com/khunder/git-extension-linux/releases/download/v0.2.0/git-extensions-0.2.0-x86_64.AppImage), `-aarch64.AppImage` | any distribution, portable single file |
+| [`SHA256SUMS`](https://github.com/khunder/git-extension-linux/releases/download/v0.2.0/SHA256SUMS) | checksums of all of the above |
 
 Verify a download with `sha256sum -c SHA256SUMS --ignore-missing`.
 
@@ -21,21 +21,21 @@ Verify a download with `sha256sum -c SHA256SUMS --ignore-missing`.
 Debian / Ubuntu (resolves dependencies through apt):
 
 ```bash
-sudo apt install ./git-extensions_0.1.0_amd64.deb
+sudo apt install ./git-extensions_0.2.0_amd64.deb
 sudo apt remove git-extensions
 ```
 
 Fedora:
 
 ```bash
-sudo dnf install ./git-extensions-0.1.0-1.fedora.x86_64.rpm
+sudo dnf install ./git-extensions-0.2.0-1.fedora.x86_64.rpm
 sudo dnf remove git-extensions
 ```
 
 openSUSE (the packages are not signed):
 
 ```bash
-sudo zypper --no-gpg-checks install ./git-extensions-0.1.0-1.opensuse.x86_64.rpm
+sudo zypper --no-gpg-checks install ./git-extensions-0.2.0-1.opensuse.x86_64.rpm
 # newer zypper: sudo zypper install --allow-unsigned-rpm ./git-extensions-...rpm
 sudo zypper remove git-extensions
 ```
@@ -43,22 +43,22 @@ sudo zypper remove git-extensions
 Arch Linux:
 
 ```bash
-sudo pacman -U git-extensions-0.1.0-1-x86_64.pkg.tar.zst
+sudo pacman -U git-extensions-0.2.0-1-x86_64.pkg.tar.zst
 sudo pacman -R git-extensions
 ```
 
 AppImage (portable, nothing is installed):
 
 ```bash
-chmod +x git-extensions-0.1.0-x86_64.AppImage
-./git-extensions-0.1.0-x86_64.AppImage [path-to-repository]
-# without FUSE 2: ./git-extensions-0.1.0-x86_64.AppImage --appimage-extract-and-run
+chmod +x git-extensions-0.2.0-x86_64.AppImage
+./git-extensions-0.2.0-x86_64.AppImage [path-to-repository]
+# without FUSE 2: ./git-extensions-0.2.0-x86_64.AppImage --appimage-extract-and-run
 ```
 
 Tarball (nothing needs root; installs under `~/.local`):
 
 ```bash
-tar xzf git-extensions-linux-0.1.0-x64.tar.gz && cd git-extensions
+tar xzf git-extensions-linux-0.2.0-x64.tar.gz && cd git-extensions
 ./install.sh                # ~/.local/opt/git-extensions, ~/.local/bin/git-extensions, desktop entry + icons
 ./install.sh --uninstall
 ```
@@ -77,10 +77,10 @@ packaging/linux/publish.sh linux-x64 artifacts/publish/linux-x64
 packaging/linux/publish.sh linux-arm64 artifacts/publish/linux-arm64
 
 # 2. Packages from a published tree
-VERSION=0.1.0 ARCH=x64 PUBLISH_DIR=artifacts/publish/linux-x64 packaging/linux/build-tarball.sh   # ARCH: x64 | arm64
-VERSION=0.1.0 ARCH=amd64 PUBLISH_DIR=artifacts/publish/linux-x64 packaging/linux/build-deb.sh     # ARCH: amd64 | arm64
-VERSION=0.1.0 ARCH=x86_64 DISTRO=fedora PUBLISH_DIR=artifacts/publish/linux-x64 packaging/linux/build-rpm.sh   # needs rpm-build; DISTRO only names the file
-VERSION=0.1.0 ARCH=x86_64 TARBALL=artifacts/dist/git-extensions-linux-0.1.0-x64.tar.gz packaging/linux/build-arch.sh   # as a non-root user, needs makepkg
+VERSION=0.2.0 ARCH=x64 PUBLISH_DIR=artifacts/publish/linux-x64 packaging/linux/build-tarball.sh   # ARCH: x64 | arm64
+VERSION=0.2.0 ARCH=amd64 PUBLISH_DIR=artifacts/publish/linux-x64 packaging/linux/build-deb.sh     # ARCH: amd64 | arm64
+VERSION=0.2.0 ARCH=x86_64 DISTRO=fedora PUBLISH_DIR=artifacts/publish/linux-x64 packaging/linux/build-rpm.sh   # needs rpm-build; DISTRO only names the file
+VERSION=0.2.0 ARCH=x86_64 TARBALL=artifacts/dist/git-extensions-linux-0.2.0-x64.tar.gz packaging/linux/build-arch.sh   # as a non-root user, needs makepkg
 
 # 3. Check an installed package (files present, native libraries resolve)
 packaging/linux/smoke-check.sh
@@ -94,5 +94,5 @@ packaging/linux/smoke-check.sh
 Notes
 - `GitExtensions.AskPass` (the `GIT_ASKPASS` / `SSH_ASKPASS` helper used for in-window credential prompts) is published next to the app and is self-contained too.
 - The repository sets `IsPublishable=false` globally; the Avalonia project opts back in.
-- The version (`0.1.0`) is set in `src/app/GitExtensions.Avalonia/GitExtensions.Avalonia.csproj` and shown in Help > About; pass the same value as `VERSION` to the scripts.
+- The version (`0.2.0`) is set in `src/app/GitExtensions.Avalonia/GitExtensions.Avalonia.csproj` and shown in Help > About; pass the same value as `VERSION` to the scripts.
 - Not covered yet: AppImage / Flatpak, package signing, macOS and Windows installers.

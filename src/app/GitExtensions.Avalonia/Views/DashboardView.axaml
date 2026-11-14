@@ -54,7 +54,7 @@
     <DockPanel Grid.Column="2">
       <Grid DockPanel.Dock="Top" ColumnDefinitions="*,Auto" Margin="16,16,16,8">
         <TextBlock Text="Recent and favorite repositories" FontSize="16" FontWeight="SemiBold" VerticalAlignment="Center" />
-        <TextBox x:Name="DashboardFilterBox" Grid.Column="1" Width="240" AutomationProperties.Name="Filter repositories" Text="{Binding Filter}" Watermark="Filter repositories…" />
+        <TextBox x:Name="DashboardFilterBox" Grid.Column="1" Width="240" AutomationProperties.Name="Filter repositories" Text="{Binding Filter}" PlaceholderText="Filter repositories…" />
       </Grid>
       <Border x:Name="CategoryEditor" DockPanel.Dock="Top" IsVisible="{Binding IsEditorOpen}" Margin="16,0,16,8" Padding="12" CornerRadius="6" BorderThickness="1"
               BorderBrush="{DynamicResource SubtleBorderBrush}" Background="{DynamicResource CardBackground}">
@@ -71,7 +71,7 @@
               </DataTemplate>
             </ItemsControl.ItemTemplate>
           </ItemsControl>
-          <TextBox x:Name="CategoryNameBox" Text="{Binding EditorText}" IsVisible="{Binding IsTextEditor}" Watermark="Category name" AutomationProperties.Name="Category name">
+          <TextBox x:Name="CategoryNameBox" Text="{Binding EditorText}" IsVisible="{Binding IsTextEditor}" PlaceholderText="Category name" AutomationProperties.Name="Category name">
             <TextBox.KeyBindings>
               <KeyBinding Gesture="Enter" Command="{Binding ApplyEditorCommand}" />
               <KeyBinding Gesture="Escape" Command="{Binding CancelEditorCommand}" />

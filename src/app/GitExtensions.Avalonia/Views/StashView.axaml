@@ -18,7 +18,7 @@
       <Border x:Name="StashForm" Padding="8" CornerRadius="4" BorderThickness="1" BorderBrush="{DynamicResource SubtleBorderBrush}">
         <Grid ColumnDefinitions="Auto,*,Auto,Auto" ColumnSpacing="8">
           <TextBlock Text="Stash message:" VerticalAlignment="Center" />
-          <TextBox x:Name="StashMessageBox" Grid.Column="1" Text="{Binding StashMessage}" Watermark="Message (optional)">
+          <TextBox x:Name="StashMessageBox" Grid.Column="1" Text="{Binding StashMessage}" PlaceholderText="Message (optional)">
             <TextBox.KeyBindings>
               <KeyBinding Gesture="Enter" Command="{Binding ConfirmStashCommand}" />
             </TextBox.KeyBindings>

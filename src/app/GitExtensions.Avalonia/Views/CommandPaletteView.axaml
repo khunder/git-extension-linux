@@ -15,7 +15,7 @@
             AutomationProperties.Name="Command palette"
             AutomationProperties.HelpText="Type to filter commands, Up and Down to choose, Enter to run, Escape to close">
       <DockPanel>
-        <TextBox x:Name="FilterBox" DockPanel.Dock="Top" Text="{Binding Filter}" Watermark="Type a command…" Margin="0,0,0,6"
+        <TextBox x:Name="FilterBox" DockPanel.Dock="Top" Text="{Binding Filter}" PlaceholderText="Type a command…" Margin="0,0,0,6"
                  AutomationProperties.Name="Filter commands" />
         <TextBlock x:Name="EmptyText" DockPanel.Dock="Bottom" Text="No matching commands" Opacity="0.65" Margin="8,6"
                    IsVisible="{Binding !Items.Count}" />

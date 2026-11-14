@@ -20,15 +20,15 @@
         <TextBlock x:Name="RefsPromptDetail" Text="{Binding PromptDetail}" IsVisible="{Binding HasDetail}" TextWrapping="Wrap" Foreground="{DynamicResource ErrorTextForeground}" />
         <Grid ColumnDefinitions="Auto,*" RowDefinitions="Auto,Auto,Auto" ColumnSpacing="8" RowSpacing="8">
           <TextBlock Text="Name:" VerticalAlignment="Center" IsVisible="{Binding ShowName}" />
-          <TextBox x:Name="RefsPromptName" Grid.Column="1" Text="{Binding InputText}" IsVisible="{Binding ShowName}" Watermark="Name">
+          <TextBox x:Name="RefsPromptName" Grid.Column="1" Text="{Binding InputText}" IsVisible="{Binding ShowName}" PlaceholderText="Name">
             <TextBox.KeyBindings>
               <KeyBinding Gesture="Enter" Command="{Binding ConfirmPromptCommand}" />
             </TextBox.KeyBindings>
           </TextBox>
           <TextBlock Grid.Row="1" Text="Start point:" VerticalAlignment="Center" IsVisible="{Binding ShowStartPoint}" />
-          <TextBox x:Name="RefsPromptStart" Grid.Row="1" Grid.Column="1" Text="{Binding StartPoint}" IsVisible="{Binding ShowStartPoint}" Watermark="HEAD, commit, branch or tag" />
+          <TextBox x:Name="RefsPromptStart" Grid.Row="1" Grid.Column="1" Text="{Binding StartPoint}" IsVisible="{Binding ShowStartPoint}" PlaceholderText="HEAD, commit, branch or tag" />
           <TextBlock Grid.Row="2" Text="Message:" VerticalAlignment="Top" Margin="0,6,0,0" IsVisible="{Binding ShowMessage}" />
-          <TextBox x:Name="RefsPromptMessage" Grid.Row="2" Grid.Column="1" Text="{Binding MessageText}" IsVisible="{Binding ShowMessage}" Watermark="Tag message (optional: makes it annotated)" AcceptsReturn="True" MinHeight="60" MaxHeight="120" TextWrapping="Wrap" />
+          <TextBox x:Name="RefsPromptMessage" Grid.Row="2" Grid.Column="1" Text="{Binding MessageText}" IsVisible="{Binding ShowMessage}" PlaceholderText="Tag message (optional: makes it annotated)" AcceptsReturn="True" MinHeight="60" MaxHeight="120" TextWrapping="Wrap" />
         </Grid>
         <StackPanel IsVisible="{Binding ShowCheckout}"><local:CreateBranchOptionsView x:Name="RefsPromptBranchOptions" DataContext="{Binding BranchOptions}" /></StackPanel>
         <StackPanel IsVisible="{Binding ShowMessage}"><local:CreateTagOptionsView x:Name="RefsPromptTagOptions" DataContext="{Binding TagOptions}" /></StackPanel>

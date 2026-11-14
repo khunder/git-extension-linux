@@ -13,7 +13,7 @@
       <StackPanel Spacing="4">
         <TextBlock Text="Output folder" />
         <Grid ColumnDefinitions="*,Auto" ColumnSpacing="8">
-          <TextBox x:Name="FolderBox" Text="{Binding OutputFolder}" Watermark="Folder for the patch files">
+          <TextBox x:Name="FolderBox" Text="{Binding OutputFolder}" PlaceholderText="Folder for the patch files">
             <TextBox.KeyBindings>
               <KeyBinding Gesture="Enter" Command="{Binding CreateCommand}" />
               <KeyBinding Gesture="Escape" Command="{Binding CloseCommand}" />
@@ -25,11 +25,11 @@
         <Grid ColumnDefinitions="*,*" ColumnSpacing="8" Margin="0,8,0,0">
           <StackPanel Spacing="4">
             <TextBlock Text="Oldest commit (from)" />
-            <TextBox x:Name="OldestBox" Text="{Binding OldestRevision}" Watermark="Commit, branch or tag" />
+            <TextBox x:Name="OldestBox" Text="{Binding OldestRevision}" PlaceholderText="Commit, branch or tag" />
           </StackPanel>
           <StackPanel Grid.Column="1" Spacing="4">
             <TextBlock Text="Newest commit (to)" />
-            <TextBox x:Name="NewestBox" Text="{Binding NewestRevision}" Watermark="Commit, branch or tag" />
+            <TextBox x:Name="NewestBox" Text="{Binding NewestRevision}" PlaceholderText="Commit, branch or tag" />
           </StackPanel>
         </Grid>
         <TextBlock Text="Both commits are included. Use the same commit for a single patch." Opacity="0.65" FontSize="12" TextWrapping="Wrap" />

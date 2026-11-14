@@ -2,6 +2,7 @@ using Avalonia;
 using Avalonia.Controls;
 using Avalonia.Headless;
 using Avalonia.Headless.NUnit;
+using Avalonia.Input;
 using Avalonia.Interactivity;
 using Avalonia.Styling;
 using Avalonia.Threading;
@@ -95,7 +96,7 @@ public class ContextMenuTests
         string directory = Path.Combine(AppContext.BaseDirectory, "screenshots");
         Directory.CreateDirectory(directory);
         string file = Path.Combine(directory, name + ".png");
-        if (menu.GetVisualRoot() is TopLevel popup && popup != window)
+        if (TopLevel.GetTopLevel(menu) is { } popup && popup != window)
         {
             popup.CaptureRenderedFrame()!.Save(file);
         }

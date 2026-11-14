@@ -10,7 +10,7 @@
   </UserControl.Styles>
       <StackPanel Spacing="4" x:Name="Card" Margin="16">
         <TextBlock Text="Repository URL or path" />
-        <TextBox x:Name="UrlBox" Text="{Binding Url}" Watermark="https://host/owner/repo.git, git@host:owner/repo.git or a folder">
+        <TextBox x:Name="UrlBox" Text="{Binding Url}" PlaceholderText="https://host/owner/repo.git, git@host:owner/repo.git or a folder">
           <TextBox.KeyBindings>
             <KeyBinding Gesture="Enter" Command="{Binding CloneCommand}" />
             <KeyBinding Gesture="Escape" Command="{Binding CancelCommand}" />
@@ -21,14 +21,14 @@
 
         <TextBlock Text="Clone into folder" Margin="0,8,0,0" />
         <Grid ColumnDefinitions="*,Auto" ColumnSpacing="8">
-          <TextBox x:Name="ParentBox" Text="{Binding ParentFolder}" Watermark="Parent folder" />
+          <TextBox x:Name="ParentBox" Text="{Binding ParentFolder}" PlaceholderText="Parent folder" />
           <Button x:Name="BrowseButton" Grid.Column="1" Content="Browse…" Command="{Binding BrowseCommand}" />
         </Grid>
         <TextBlock x:Name="ParentErrorText" Text="{Binding ParentError}" IsVisible="{Binding HasParentError}" TextWrapping="Wrap" FontSize="12"
                    Foreground="{DynamicResource ErrorTextForeground}" />
 
         <TextBlock Text="New folder name" Margin="0,8,0,0" />
-        <TextBox x:Name="NameBox" Text="{Binding TargetName}" Watermark="Derived from the URL" />
+        <TextBox x:Name="NameBox" Text="{Binding TargetName}" PlaceholderText="Derived from the URL" />
         <TextBlock x:Name="NameErrorText" Text="{Binding NameError}" IsVisible="{Binding HasNameError}" TextWrapping="Wrap" FontSize="12"
                    Foreground="{DynamicResource ErrorTextForeground}" />
         <TextBlock x:Name="TargetPathText" Text="{Binding TargetPath, StringFormat='Creates {0}'}" Opacity="0.65" FontSize="12" TextTrimming="CharacterEllipsis" />
@@ -36,13 +36,13 @@
         <Grid ColumnDefinitions="*,140" ColumnSpacing="12" Margin="0,8,0,0">
           <StackPanel Spacing="4">
             <TextBlock Text="Branch to check out (optional)" />
-            <TextBox x:Name="BranchBox" Text="{Binding Branch}" Watermark="Default branch" />
+            <TextBox x:Name="BranchBox" Text="{Binding Branch}" PlaceholderText="Default branch" />
             <TextBlock x:Name="BranchErrorText" Text="{Binding BranchError}" IsVisible="{Binding HasBranchError}" TextWrapping="Wrap" FontSize="12"
                        Foreground="{DynamicResource ErrorTextForeground}" />
           </StackPanel>
           <StackPanel Grid.Column="1" Spacing="4">
             <TextBlock Text="Shallow depth" />
-            <TextBox x:Name="DepthBox" Text="{Binding Depth}" Watermark="Full history" />
+            <TextBox x:Name="DepthBox" Text="{Binding Depth}" PlaceholderText="Full history" />
             <TextBlock x:Name="DepthErrorText" Text="{Binding DepthError}" IsVisible="{Binding HasDepthError}" TextWrapping="Wrap" FontSize="12"
                        Foreground="{DynamicResource ErrorTextForeground}" />
           </StackPanel>

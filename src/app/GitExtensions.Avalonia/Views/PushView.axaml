@@ -12,7 +12,7 @@
       </StackPanel>
       <ProgressBar DockPanel.Dock="Bottom" Height="3" IsIndeterminate="True" IsVisible="{Binding IsRunning}" Margin="0,8,0,0" />
       <TextBox x:Name="OutputBox" DockPanel.Dock="Bottom" Text="{Binding OutputText}" IsReadOnly="True" AcceptsReturn="True" TextWrapping="NoWrap"
-               Height="110" Classes="mono" Margin="0,10,0,0" Watermark="What git says appears here" AutomationProperties.Name="Push output" />
+               Height="110" Classes="mono" Margin="0,10,0,0" PlaceholderText="What git says appears here" AutomationProperties.Name="Push output" />
       <TextBlock x:Name="ErrorText" DockPanel.Dock="Bottom" Text="{Binding Error}" IsVisible="{Binding HasError}" TextWrapping="Wrap"
                  Foreground="{DynamicResource ErrorTextForeground}" Margin="0,8,0,0" />
 
@@ -26,7 +26,7 @@
                 <ComboBox x:Name="RemoteCombo" Grid.Column="1" HorizontalAlignment="Stretch" ItemsSource="{Binding Remotes}" SelectedItem="{Binding SelectedRemote}"
                           IsEnabled="{Binding UsesRemote}" AutomationProperties.Name="Remote" />
                 <RadioButton x:Name="UrlRadio" Grid.Row="1" GroupName="PushTarget" Content="U_rl" IsChecked="{Binding UseUrl}" VerticalAlignment="Center" />
-                <TextBox x:Name="UrlBox" Grid.Row="1" Grid.Column="1" Text="{Binding Url}" IsEnabled="{Binding UseUrl}" Watermark="https://host/owner/repo.git or a folder" AutomationProperties.Name="URL" />
+                <TextBox x:Name="UrlBox" Grid.Row="1" Grid.Column="1" Text="{Binding Url}" IsEnabled="{Binding UseUrl}" PlaceholderText="https://host/owner/repo.git or a folder" AutomationProperties.Name="URL" />
               </Grid>
             </StackPanel>
           </Border>

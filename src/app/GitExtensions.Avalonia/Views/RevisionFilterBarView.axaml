@@ -16,7 +16,7 @@
       </Button>
       <TextBlock Grid.Column="3" Text="Filter:" VerticalAlignment="Center" Margin="10,0,0,0" />
       <Panel Grid.Column="4" Width="220">
-        <TextBox x:Name="FilterBox" MinHeight="26" Padding="6,2,24,2" Text="{Binding FilterText}" Watermark="Filter revisions" />
+        <TextBox x:Name="FilterBox" MinHeight="26" Padding="6,2,24,2" Text="{Binding FilterText}" PlaceholderText="Filter revisions" />
         <Button x:Name="ClearFilterButton" HorizontalAlignment="Right" VerticalAlignment="Center" Padding="4,0" MinHeight="20" MinWidth="20" Margin="0,0,3,0"
                 Content="✕" FontSize="10" Background="Transparent" BorderThickness="0" ToolTip.Tip="Clear the filter"
                 Command="{Binding ClearFilterCommand}" IsVisible="{Binding HasFilterText}" />

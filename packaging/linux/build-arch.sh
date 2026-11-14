@@ -2,14 +2,14 @@
 # Builds an Arch Linux package with makepkg from the prebuilt tarball (see PKGBUILD). Must run as a NON-root user
 # (makepkg refuses to run as root) on an Arch system or inside an archlinux container.
 #
-#   VERSION=0.1.0 ARCH=x86_64 TARBALL=artifacts/dist/git-extensions-linux-0.1.0-x64.tar.gz packaging/linux/build-arch.sh
+#   VERSION=0.2.0 ARCH=x86_64 TARBALL=artifacts/dist/git-extensions-linux-0.2.0-x64.tar.gz packaging/linux/build-arch.sh
 #
-# Inputs: VERSION (default 0.1.0), ARCH (x86_64 default | aarch64), TARBALL (required), OUT_DIR (default artifacts/dist).
+# Inputs: VERSION (default 0.2.0), ARCH (x86_64 default | aarch64), TARBALL (required), OUT_DIR (default artifacts/dist).
 # Output: $OUT_DIR/git-extensions-$VERSION-1-$ARCH.pkg.tar.zst
 set -euo pipefail
 source "$(dirname "${BASH_SOURCE[0]}")/common.sh"
 
-VERSION="${VERSION:-0.1.0}"
+VERSION="${VERSION:-0.2.0}"
 ARCH="${ARCH:-x86_64}"
 OUT_DIR="${OUT_DIR:-$repo_root/artifacts/dist}"
 require_env TARBALL

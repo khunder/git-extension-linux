@@ -65,7 +65,7 @@ public static class IconCache
     public static double MeanLuma(Bitmap source)
     {
         using MemoryStream copy = new();
-        source.Save(copy);
+        source.Save(copy, new PngBitmapEncoderOptions());
         copy.Position = 0;
         return MeanLuma(WriteableBitmap.Decode(copy));
     }

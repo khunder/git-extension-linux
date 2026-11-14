@@ -18,7 +18,7 @@
           <RadioButton x:Name="FolderRadio" GroupName="PatchSource" Content="All patches in a folder" IsChecked="{Binding IsFolder}" />
         </StackPanel>
         <Grid ColumnDefinitions="*,Auto" ColumnSpacing="8">
-          <TextBox x:Name="PathBox" Text="{Binding PatchPath}" Watermark="Path of the patch file or folder" IsEnabled="{Binding CanStart}">
+          <TextBox x:Name="PathBox" Text="{Binding PatchPath}" PlaceholderText="Path of the patch file or folder" IsEnabled="{Binding CanStart}">
             <TextBox.KeyBindings>
               <KeyBinding Gesture="Escape" Command="{Binding CloseCommand}" />
             </TextBox.KeyBindings>
