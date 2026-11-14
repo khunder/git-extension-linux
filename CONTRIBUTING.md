@@ -1,76 +1,34 @@
-﻿# Contributing to Git Extensions
+# Contributing
 
-:exclamation: As of 23 January 2019 all submissions to this project must be done under [The Developer Certificate of Origin](contributors.txt). You must sign it with your pull request, if you've not done so before.
+Thanks for helping with Git Extensions for Linux.
 
-Git Extensions is a project with a long history, made possible by [hundreds of contributors](https://github.com/gitextensions/gitextensions/graphs/contributors).
+## Getting started
 
-We welcome contributions including:
+1. Install the .NET 10 SDK (see `global.json`) and `git`.
+2. Build and test:
 
-- Ideas for improvements
-- Bug reports
-- Bug fixes
-- New features
+   ```sh
+   dotnet build GitExtensions.slnx
+   dotnet test tests/app/UnitTests/GitCommands.Portable.Tests
+   dotnet test tests/app/UnitTests/GitExtensions.Avalonia.Tests
+   ```
 
-To help the project maintainers be as effective as possible, please follow the simple guidelines below.
+3. Run the app on a repository:
 
-## Reporting Issues
+   ```sh
+   dotnet run --project src/app/GitExtensions.Avalonia -- /path/to/repository
+   ```
 
-[Search the issue tracker](https://github.com/gitextensions/gitextensions/issues?&q=) for an
-existing or closely related issue before creating a new one. Be sure to include closed issues
-in your search.
+## Guidelines
 
-If an open issue already exists, read through the discussion. If you can add something helpful, do so.
-Add a 👍 if you'd like to see it prioritized. Subscribe to the issue for updates.
+- The build treats warnings as errors (StyleCop and threading analyzers); keep it clean.
+- Git calls block: run them off the UI thread and update UI state on the UI thread.
+- Use theme resources for colours so both the light and the dark theme work.
+- Add tests for behaviour changes. The Avalonia tests are headless and use real temporary git repositories.
+- Keep the portable core (`GitCommands`, `GitExtUtils`, `GitExtensions.Extensibility.Core`, `GitUIPluginInterfaces`) free of UI dependencies.
 
-If a closed issue already exists and the issue was addressed, you may like to try one of the
-[CI builds](https://github.com/gitextensions/gitextensions/wiki/Canary-Builds).
+## Pull requests
 
-If no issue exists, create one. Complete the template, and add any further information that
-could be relevant such as steps to reproduce, stack traces, screenshots, git/OS version, etc.
+Open a pull request against `main` with a short description of the change and how you tested it. The CI workflow builds the solution and runs the tests.
 
-## Pull Requests
-
-Want to contribute some code? Great! In addition to the regular GitHub Pull Request workflow,
-you'll want to browse our [wiki](https://github.com/gitextensions/gitextensions/wiki).
-
-Good places to start contributing include:
-
-- Open [bugs](https://github.com/gitextensions/gitextensions/labels/%3Abeetle%3A%20type%3A%20bug)
-- Open issues marked [good first issue](https://github.com/gitextensions/gitextensions/labels/%3Anerd_face%3A%20good%20first%20issue)
-- Open issues marked [up-for-grabs](https://github.com/gitextensions/gitextensions/labels/up-for-grabs)
-
-It's a good idea to mention that you're picking something up by commenting on its issue.
-
-If no issue exists, create one before making a PR. This creates the opportunity to discuss
-the issue before you spend time on its implementation. You will likely be more effective
-this way, and have a greater chance of satisfaction in the end.
-
-Pull requests will be reviewed by one or more team members. To improve the chance of your
-pull request being merged, your contribution should be as easy to review as possible.
-Specifically:
-
-- Be focused in scope
-- Be comprised of clear commits (use interactive rebase to tidy things up if needed)
-- Include a clear description of the changes and why they should be made
-- Be accompanied by unit tests
-- Be consistent with the current code style
-  Most style guides etc are referred to in [Copilot instructions](https://github.com/gitextensions/gitextensions/blob/master/.github/copilot-instructions.md).
-
-When filing a pull request, you should be prepared to answer questions about your changes
-and to perform additional work on the changes in response to review feedback.
-
-[Learn how we deal with translations](https://github.com/gitextensions/gitextensions/wiki/Translations).
-
-## Git Blame
-
-This repository includes a `.git-blame-ignore-revs` file that lists commits with
-large-scale, non-functional changes (e.g. formatting, namespace style). GitHub's
-blame view can use this file. To enable the same behavior locally, run this once per clone:
-
-```
-git config blame.ignoreRevsFile .git-blame-ignore-revs
-```
-
-## Conduct
-
-Please review our [code of conduct](CODE_OF_CONDUCT.md).
+The original project: <https://github.com/gitextensions/gitextensions>.
