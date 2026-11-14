@@ -20,37 +20,6 @@
       <TreeView.ItemTemplate>
         <TreeDataTemplate ItemsSource="{Binding Children}" x:DataType="vm:RefNodeViewModel">
           <StackPanel Orientation="Horizontal" Spacing="4" Background="Transparent">
-            <StackPanel.ContextMenu>
-              <ContextMenu>
-                <MenuItem Header="Checkout"
-                          IsEnabled="{Binding CanCheckout}"
-                          Command="{Binding $parent[UserControl].((vm:RefsTreeViewModel)DataContext).CheckoutCommand}"
-                          CommandParameter="{Binding}" />
-                <Separator />
-                <MenuItem Header="Merge into current branch" IsEnabled="{Binding CanMergeOrRebase}">
-                  <MenuItem Header="Merge (fast-forward when possible)" Command="{Binding $parent[UserControl].((vm:RefsTreeViewModel)DataContext).MergeIntoCurrentCommand}" CommandParameter="{Binding}" />
-                  <MenuItem Header="Merge, always create a merge commit (--no-ff)" Command="{Binding $parent[UserControl].((vm:RefsTreeViewModel)DataContext).MergeNoFastForwardCommand}" CommandParameter="{Binding}" />
-                  <MenuItem Header="Merge, fast-forward only (--ff-only)" Command="{Binding $parent[UserControl].((vm:RefsTreeViewModel)DataContext).MergeFastForwardOnlyCommand}" CommandParameter="{Binding}" />
-                </MenuItem>
-                <MenuItem Header="Rebase current branch onto this" IsEnabled="{Binding CanMergeOrRebase}" Command="{Binding $parent[UserControl].((vm:RefsTreeViewModel)DataContext).RebaseOntoCommand}" CommandParameter="{Binding}" />
-                <Separator IsVisible="{Binding !IsRemoteRoot}" />
-                <MenuItem Header="Rename…" IsVisible="{Binding IsLocalBranch}" Command="{Binding $parent[UserControl].((vm:RefsTreeViewModel)DataContext).RequestRenameCommand}" CommandParameter="{Binding}" />
-                <MenuItem Header="Delete branch" IsVisible="{Binding IsLocalBranch}" Command="{Binding $parent[UserControl].((vm:RefsTreeViewModel)DataContext).DeleteBranchCommand}" CommandParameter="{Binding}" />
-                <MenuItem Header="Set upstream…" IsVisible="{Binding IsLocalBranch}" Command="{Binding $parent[UserControl].((vm:RefsTreeViewModel)DataContext).RequestSetUpstreamCommand}" CommandParameter="{Binding}" />
-                <MenuItem Header="Unset upstream" IsVisible="{Binding IsLocalBranch}" IsEnabled="{Binding HasUpstream}" Command="{Binding $parent[UserControl].((vm:RefsTreeViewModel)DataContext).UnsetUpstreamCommand}" CommandParameter="{Binding}" />
-                <MenuItem Header="Push" IsVisible="{Binding IsLocalBranch}" Command="{Binding $parent[UserControl].((vm:RefsTreeViewModel)DataContext).PushBranchCommand}" CommandParameter="{Binding}" />
-                <MenuItem Header="Create branch from here…" IsVisible="{Binding IsLeaf}" Command="{Binding $parent[UserControl].((vm:RefsTreeViewModel)DataContext).RequestNewBranchCommand}" CommandParameter="{Binding}" />
-                <MenuItem Header="Create tag here…" IsVisible="{Binding IsTagsGroup}" Command="{Binding $parent[UserControl].((vm:RefsTreeViewModel)DataContext).RequestNewTagCommand}" CommandParameter="{Binding}" />
-                <MenuItem Header="Create tag here…" IsVisible="{Binding IsLocalBranch}" Command="{Binding $parent[UserControl].((vm:RefsTreeViewModel)DataContext).RequestNewTagCommand}" CommandParameter="{Binding}" />
-                <MenuItem Header="Push all tags…" IsVisible="{Binding IsTagsGroup}" Command="{Binding $parent[UserControl].((vm:RefsTreeViewModel)DataContext).RequestPushAllTagsCommand}" />
-                <MenuItem Header="Checkout as local tracking branch" IsVisible="{Binding IsRemoteBranch}" Command="{Binding $parent[UserControl].((vm:RefsTreeViewModel)DataContext).CheckoutRemoteAsTrackingCommand}" CommandParameter="{Binding}" />
-                <MenuItem Header="Delete remote branch…" IsVisible="{Binding IsRemoteBranch}" Command="{Binding $parent[UserControl].((vm:RefsTreeViewModel)DataContext).RequestDeleteRemoteBranchCommand}" CommandParameter="{Binding}" />
-                <MenuItem Header="Fetch this remote" IsVisible="{Binding CanFetchRemote}" Command="{Binding $parent[UserControl].((vm:RefsTreeViewModel)DataContext).FetchRemoteCommand}" CommandParameter="{Binding}" />
-                <MenuItem Header="Push tag" IsVisible="{Binding IsTag}" Command="{Binding $parent[UserControl].((vm:RefsTreeViewModel)DataContext).PushTagCommand}" CommandParameter="{Binding}" />
-                <MenuItem Header="Delete tag…" IsVisible="{Binding IsTag}" Command="{Binding $parent[UserControl].((vm:RefsTreeViewModel)DataContext).RequestDeleteTagCommand}" CommandParameter="{Binding}" />
-                <MenuItem Header="Copy name" IsVisible="{Binding IsLeaf}" Command="{Binding $parent[UserControl].((vm:RefsTreeViewModel)DataContext).CopyNameCommand}" CommandParameter="{Binding}" />
-              </ContextMenu>
-            </StackPanel.ContextMenu>
             <TextBlock Text="{Binding Marker}" Width="10" Foreground="{DynamicResource AccentTextForeground}" VerticalAlignment="Center" />
             <mgmt:AppIcon IconName="{Binding IconName}" />
             <TextBlock Text="{Binding Header}" FontWeight="{Binding FontWeight}" VerticalAlignment="Center" />

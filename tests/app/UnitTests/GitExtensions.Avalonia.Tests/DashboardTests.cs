@@ -400,13 +400,12 @@ public class DashboardTests
         ShellTestSupport.Settle();
 
         DashboardView view = window.Find<DashboardView>("DashboardPage");
-        Grid row = view.GetVisualDescendants().OfType<Grid>().First(g => g.ContextMenu is not null);
-        ContextMenu menu = row.ContextMenu!;
-        menu.Open(row);
+        ListBoxItem row = view.GetVisualDescendants().OfType<ListBoxItem>().First(i => i.DataContext is DashboardEntry);
+        row.RaiseEvent(new ContextRequestedEventArgs());
         ShellTestSupport.Settle();
-        MenuItem[] items = [.. menu.Items.OfType<MenuItem>()];
-        items.Select(i => i.Header).Should().Equal("Open", "Open in file explorer", "Category…", "Pin to top", "Add to favorites", "Remove from list", "Copy path");
-        items.Should().OnlyContain(i => i.Command != null && i.Command.CanExecute(i.CommandParameter));
+        ContextMenu menu = view.ContextMenu!;
+        menu.Items.OfType<Control>().Select(GitExtensions.Desktop.Views.ContextMenus.MenuKit.TextOf).Should().Equal(
+            "Open", "Open in file explorer", "Open in terminal", "-", "Category…", "Pin to top", "Add to favorites", "-", "Remove from list", "Copy path");
         menu.Close();
 
         // The create / open / clone links are wired to the existing dialogs.

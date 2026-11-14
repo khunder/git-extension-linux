@@ -1,4 +1,5 @@
 using Avalonia.Controls;
+using Avalonia.Input;
 using Avalonia.Headless;
 using Avalonia.Headless.NUnit;
 using Avalonia.Styling;
@@ -441,22 +442,20 @@ public class MergeRebaseTests
         AvaloniaHeadlessPlatform.ForceRenderTimerTick();
 
         TreeView tree = window.GetVisualDescendants().OfType<TreeView>().First();
-        StackPanel row = tree.GetVisualDescendants().OfType<StackPanel>()
-            .First(p => p.ContextMenu is not null && p.DataContext is RefNodeViewModel { Name: "topic" });
-        ContextMenu menu = row.ContextMenu!;
-        menu.Open(row);
+        TreeViewItem row = tree.GetVisualDescendants().OfType<TreeViewItem>().First(p => p.DataContext is RefNodeViewModel { Name: "topic" });
+        row.RaiseEvent(new ContextRequestedEventArgs());
+        ContextMenu menu = tree.ContextMenu!;
         Avalonia.Threading.Dispatcher.UIThread.RunJobs();
 
         MenuItem[] items = menu.Items.OfType<MenuItem>().ToArray();
-        MenuItem merge = items.Single(i => (string?)i.Header == "Merge into current branch");
-        MenuItem rebase = items.Single(i => (string?)i.Header == "Rebase current branch onto this");
+        MenuItem merge = items.Single(i => (i.Header as TextBlock)?.Text == "Merge into current branch…");
+        MenuItem rebase = items.Single(i => (i.Header as TextBlock)?.Text == "Rebase current branch on this");
         merge.IsEnabled.Should().BeTrue();
         rebase.IsEnabled.Should().BeTrue();
-        rebase.Command.Should().NotBeNull();
-        merge.Items.OfType<MenuItem>().Should().HaveCount(3).And.OnlyContain(i => i.Command != null);
+        merge.Items.OfType<MenuItem>().Should().HaveCount(3);
 
-        MenuItem noFf = merge.Items.OfType<MenuItem>().Single(i => ((string)i.Header!).Contains("--no-ff", StringComparison.Ordinal));
-        noFf.Command!.Execute(noFf.CommandParameter);
+        MenuItem noFf = merge.Items.OfType<MenuItem>().Single(i => ((TextBlock)i.Header!).Text!.Contains("--no-ff", StringComparison.Ordinal));
+        noFf.RaiseEvent(new Avalonia.Interactivity.RoutedEventArgs(MenuItem.ClickEvent));
         for (int i = 0; i < 200 && repository.Parents().Length < 2; i++)
         {
             await Task.Delay(50);

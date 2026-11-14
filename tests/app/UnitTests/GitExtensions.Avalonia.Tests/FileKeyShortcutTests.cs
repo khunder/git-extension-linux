@@ -269,14 +269,16 @@ public class FileKeyShortcutTests
         (Window owner, _, CommitWindow window, CommitWindowViewModel viewModel) = await ShowAsync(repo.Path);
         await SelectAsync(window, viewModel, "m.txt", staged: false);
         DiffView view = window.FindControl<DiffView>("DiffPanel")!;
-        ContextMenu menu = view.FindControl<ItemsControl>("DiffLines")!.ContextMenu!;
-        menu.Items.OfType<MenuItem>().Select(i => (i.Header, i.InputGesture?.Key)).Should().Equal(
-            ("Stage selected line(s)", Key.S), ("Unstage selected line(s)", Key.U), ("Reset selected line(s)", Key.R));
+        ItemsControl lines = view.FindControl<ItemsControl>("DiffLines")!;
+        ContextMenu menu = lines.ContextMenu!;
+        viewModel.Diff.SelectLine(Line(viewModel, "+changed 3"), ctrl: false, shift: false);
+        lines.RaiseEvent(new Avalonia.Controls.ContextRequestedEventArgs());
+        var gestures = menu.Items.OfType<MenuItem>().Select(i => ((i.Header as TextBlock)?.Text, i.InputGesture?.Key)).ToArray();
+        gestures.Should().Contain(("Stage selected line(s)", Key.S));
+        gestures.Should().Contain(("Unstage selected line(s)", Key.U));
+        gestures.Should().Contain(("Reset selected line(s)", Key.R));
         ToolTip.GetTip(window.FindControl<Button>("StageSelectedButton")!).Should().Be("Stage the selected files (S, or double-click a file)");
 
-        viewModel.Diff.SelectLine(Line(viewModel, "+changed 3"), ctrl: false, shift: false);
-        var items = menu.Items.OfType<MenuItem>().ToArray();
-        items.Should().HaveCount(3);
         viewModel.Diff.CanStageSelected.Should().BeTrue();
         viewModel.Diff.CanUnstageSelected.Should().BeFalse();
         owner.Close();

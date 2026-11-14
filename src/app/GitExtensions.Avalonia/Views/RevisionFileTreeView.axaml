@@ -21,14 +21,6 @@
           <TreeView.ItemTemplate>
             <TreeDataTemplate ItemsSource="{Binding Children}" x:DataType="vm:FileTreeNode">
               <StackPanel Orientation="Horizontal" Spacing="6" Background="Transparent">
-                <StackPanel.ContextMenu>
-                  <ContextMenu>
-                    <MenuItem Header="File history" Click="OnFileHistoryClick" IsEnabled="{Binding !IsFolder}" />
-                    <MenuItem Header="Blame" Click="OnBlameClick" IsEnabled="{Binding !IsFolder}" />
-                    <Separator />
-                    <MenuItem Header="Copy path" Click="OnCopyPathClick" />
-                  </ContextMenu>
-                </StackPanel.ContextMenu>
                 <TextBlock Text="{Binding Glyph}" Classes.folder="{Binding IsFolder}" VerticalAlignment="Center" Opacity="0.8" IsVisible="{Binding !IsPlaceholder}" />
                 <TextBlock Text="{Binding Name}" VerticalAlignment="Center" />
               </StackPanel>

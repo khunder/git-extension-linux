@@ -3,7 +3,9 @@ using Avalonia.Input;
 using Avalonia.Interactivity;
 using Avalonia.VisualTree;
 using GitExtensions.Desktop.Diff;
+using GitExtensions.Desktop.Services;
 using GitExtensions.Desktop.ViewModels;
+using GitExtensions.Desktop.Views.ContextMenus;
 
 namespace GitExtensions.Desktop.Views;
 
@@ -17,6 +19,11 @@ public partial class DiffView : UserControl
         DiffLines.AddHandler(PointerMovedEvent, OnPointerMoved, RoutingStrategies.Bubble, handledEventsToo: true);
         DiffLines.AddHandler(PointerReleasedEvent, (_, _) => _dragging = false, RoutingStrategies.Bubble, handledEventsToo: true);
         DiffLines.AddHandler(PointerCaptureLostEvent, (_, _) => _dragging = false, RoutingStrategies.Bubble, handledEventsToo: true);
+        MenuKit.AttachBuilt(
+            DiffLines,
+            row => DataContext is FileDiffViewModel diff && diff.File is not null
+                ? DiffContextMenu.Build(diff, row as DiffLine, new TopLevelClipboardService(TopLevel.GetTopLevel(this)))
+                : null);
     }
 
     private void OnLinePressed(object? sender, PointerPressedEventArgs e)

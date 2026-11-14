@@ -1,4 +1,5 @@
 ﻿using Avalonia.Controls;
+using Avalonia.Input;
 using Avalonia.Headless;
 using Avalonia.Headless.NUnit;
 using Avalonia.Media.Imaging;
@@ -239,6 +240,8 @@ public class CommitActionsTests
         }
     }
 
+    private static string MenuText(MenuItem item) => (item.Header as TextBlock)?.Text ?? string.Empty;
+
     [AvaloniaTest]
     public async Task Context_menu_items_are_bound_and_copy_uses_the_clipboard()
     {
@@ -253,18 +256,18 @@ public class CommitActionsTests
             AvaloniaHeadlessPlatform.ForceRenderTimerTick();
 
             ListBox list = window.Find<ListBox>("CommitList");
-            Border row = list.GetVisualDescendants().OfType<Border>().First(g => g.ContextMenu is not null);
-            ContextMenu menu = row.ContextMenu!;
-            menu.Open(row);
+            list.GetVisualDescendants().OfType<ListBoxItem>().First().RaiseEvent(new ContextRequestedEventArgs());
             Avalonia.Threading.Dispatcher.UIThread.RunJobs();
+            ContextMenu menu = list.ContextMenu!;
             MenuItem[] items = menu.Items.OfType<MenuItem>().ToArray();
 
-            items.Select(i => i.Header as string).Should().Contain(["Copy commit hash", "Copy subject", "Create branch here…", "Create tag here…", "Revert commit", "Cherry-pick commit"]);
-            items.Single(i => (i.Header as string)!.StartsWith("Reset", StringComparison.Ordinal)).Items.Should().HaveCount(3);
-            items.Where(i => i.Items.Count == 0 && i.Command is null).Select(i => i.Header).Should().BeEmpty();
+            items.Select(MenuText).Should().Contain(["Copy to clipboard", "Create new branch here…", "Create new tag here…", "Revert this commit…", "Cherry pick this commit…", "Reset current branch to here…"]);
+            items.Where(i => i.IsEnabled && i.Items.Count == 0).Should().OnlyContain(i => i.Icon != null);
 
-            MenuItem copyHash = items.Single(i => (string?)i.Header == "Copy commit hash");
-            copyHash.Command!.Execute(copyHash.CommandParameter);
+            MenuItem copy = items.Single(i => MenuText(i) == "Copy to clipboard");
+            MenuItem copyHash = copy.Items.OfType<MenuItem>().Single(i => MenuText(i).StartsWith("Commit hash", StringComparison.Ordinal));
+            copyHash.RaiseEvent(new Avalonia.Interactivity.RoutedEventArgs(MenuItem.ClickEvent));
+            await Task.Yield();
             clipboard.Text.Should().Be(viewModel.Commits[0].ObjectId.ToString());
             menu.Close();
             window.Close();

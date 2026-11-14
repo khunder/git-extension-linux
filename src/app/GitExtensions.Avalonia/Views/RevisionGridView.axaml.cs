@@ -6,6 +6,7 @@ using Avalonia.Interactivity;
 using Avalonia.LogicalTree;
 using GitExtensions.Desktop.Services;
 using GitExtensions.Desktop.ViewModels;
+using GitExtensions.Desktop.Views.ContextMenus;
 
 namespace GitExtensions.Desktop.Views;
 
@@ -22,6 +23,7 @@ public sealed partial class RevisionGridView : UserControl
     // Below this the ref badges and the hash give way as well, so the subject keeps its room.
     internal const double HistoryTinyWidth = 360;
 
+    private MainWindowViewModel? _filterFocusSource;
     private string? _resizing;
     private double _resizeStart;
 
@@ -40,6 +42,11 @@ public sealed partial class RevisionGridView : UserControl
             }
         };
         AddHandler(KeyDownEvent, OnListKeyDown, RoutingStrategies.Tunnel);
+        MenuKit.AttachBuilt(
+            CommitList,
+            row => row is CommitItemViewModel commit && DataContext is MainWindowViewModel viewModel
+                ? RevisionGridContextMenu.Build(viewModel, commit, viewModel.Actions.Clipboard ?? new TopLevelClipboardService(TopLevel.GetTopLevel(this)))
+                : null);
         UncommittedRow.Focusable = true;
         CommitList.DoubleTapped += (_, _) => RowActivated?.Invoke(this, EventArgs.Empty);
         UncommittedRow.PointerPressed += OnUncommittedPressed;
@@ -87,8 +94,23 @@ public sealed partial class RevisionGridView : UserControl
     protected override void OnDataContextChanged(EventArgs e)
     {
         base.OnDataContextChanged(e);
+        if (_filterFocusSource is not null)
+        {
+            _filterFocusSource.RevisionFilterFocusRequested -= OnRevisionFilterFocusRequested;
+        }
+
+        _filterFocusSource = DataContext as MainWindowViewModel;
+        if (_filterFocusSource is not null)
+        {
+            _filterFocusSource.RevisionFilterFocusRequested += OnRevisionFilterFocusRequested;
+        }
+
         UpdateLayoutState(CommitList.Bounds.Width);
     }
+
+    // "Advanced filter…" of the context menu: the filter box becomes visible this frame, so focus it afterwards.
+    private void OnRevisionFilterFocusRequested()
+        => Avalonia.Threading.Dispatcher.UIThread.Post(() => FilterTextBox.Focus(), Avalonia.Threading.DispatcherPriority.Input);
 
     private void OnUncommittedPressed(object? sender, PointerPressedEventArgs e)
     {
@@ -106,6 +128,12 @@ public sealed partial class RevisionGridView : UserControl
         // Typing in the filter box (or the combo) is not row navigation.
         if (DataContext is not MainWindowViewModel viewModel || e.Source is TextBox or ComboBox or ComboBoxItem)
         {
+            return;
+        }
+
+        if (RevisionGridContextMenu.TryHandleKey(viewModel, e))
+        {
+            e.Handled = true;
             return;
         }
 

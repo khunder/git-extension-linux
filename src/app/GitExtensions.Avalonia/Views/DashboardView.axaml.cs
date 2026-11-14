@@ -6,6 +6,7 @@ using Avalonia.Threading;
 using Avalonia.VisualTree;
 using GitExtensions.Desktop.Services;
 using GitExtensions.Desktop.ViewModels;
+using GitExtensions.Desktop.Views.ContextMenus;
 
 namespace GitExtensions.Desktop.Views;
 
@@ -18,6 +19,7 @@ public sealed partial class DashboardView : UserControl
     {
         InitializeComponent();
         AddHandler(DoubleTappedEvent, OnDoubleTapped);
+        MenuKit.AttachBuilt(this, row => row is DashboardEntry entry && DataContext is DashboardViewModel dashboard ? DashboardContextMenu.Build(dashboard, entry) : null);
         AddHandler(SelectingItemsControl.SelectionChangedEvent, OnSelectionChanged);
         AddHandler(KeyDownEvent, OnKeyDown);
         AttachedToVisualTree += (_, _) =>

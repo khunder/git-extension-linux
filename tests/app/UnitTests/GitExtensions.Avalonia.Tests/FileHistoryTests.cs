@@ -272,11 +272,10 @@ public class FileHistoryTests
         Avalonia.Threading.Dispatcher.UIThread.RunJobs();
 
         ListBox files = window.GetVisualDescendants().OfType<ListBox>().First(l => l.Name == "FileList");
-        Grid row = files.GetVisualDescendants().OfType<Grid>().First(g => g.ContextMenu is not null);
-        row.ContextMenu!.Open(row);
+        files.GetVisualDescendants().OfType<ListBoxItem>().First().RaiseEvent(new ContextRequestedEventArgs());
         Avalonia.Threading.Dispatcher.UIThread.RunJobs();
-        row.ContextMenu.Items.OfType<MenuItem>().Select(i => i.Header?.ToString()).Should().Contain(["File history", "Blame", "Copy path"]);
-        row.ContextMenu.Close();
+        files.ContextMenu!.Items.OfType<MenuItem>().Select(i => (i.Header as TextBlock)?.Text).Should().Contain(["File history", "Blame", "Copy path"]);
+        files.ContextMenu.Close();
 
         // Blame from a commit's file list starts at that commit.
         main.ShowFileBlameCommand.Execute(main.RevisionTabs.Diff.Files[0]);

@@ -21,6 +21,7 @@ public sealed partial class CommitWindow : Window
         AddHandler(KeyDownEvent, OnWindowKeyDown, RoutingStrategies.Tunnel);
         Closing += OnClosing;
         DataContextChanged += OnDataContextChanged;
+        AttachContextMenus();
     }
 
     /// <summary>
@@ -157,58 +158,6 @@ public sealed partial class CommitWindow : Window
         if (ViewModel is { } viewModel && e.Source is Control { DataContext: ChangedFileViewModel })
         {
             viewModel.UnstageSelectedCommand.Execute(null);
-        }
-    }
-
-    private void OnOpenFile(object? sender, RoutedEventArgs e)
-    {
-        if (sender is Control { DataContext: ChangedFileViewModel file } && ViewModel is { } viewModel)
-        {
-            // Handles its own failures.
-            _ = OpenFileAsync(viewModel, file);
-        }
-    }
-
-    private void OnCopyPath(object? sender, RoutedEventArgs e)
-    {
-        if (sender is Control { DataContext: ChangedFileViewModel file } && ViewModel is { } viewModel)
-        {
-            _ = CopyPathAsync(viewModel, file);
-        }
-    }
-
-    private async Task OpenFileAsync(CommitWindowViewModel viewModel, ChangedFileViewModel file)
-    {
-        try
-        {
-            string path = System.IO.Path.Combine(viewModel.WorkingDir, file.Name);
-            if (await StorageProvider.TryGetFileFromPathAsync(new Uri(path)) is { } item && Launcher is { } launcher)
-            {
-                await launcher.LaunchFileAsync(item);
-            }
-            else
-            {
-                viewModel.ErrorText = $"Could not open {file.Name}.";
-            }
-        }
-        catch (Exception ex)
-        {
-            viewModel.ErrorText = $"Could not open {file.Name}: {ex.Message}";
-        }
-    }
-
-    private async Task CopyPathAsync(CommitWindowViewModel viewModel, ChangedFileViewModel file)
-    {
-        try
-        {
-            if (Clipboard is { } clipboard)
-            {
-                await clipboard.SetTextAsync(System.IO.Path.Combine(viewModel.WorkingDir, file.Name));
-            }
-        }
-        catch (Exception ex)
-        {
-            viewModel.ErrorText = $"Could not copy the path: {ex.Message}";
         }
     }
 

@@ -32,18 +32,6 @@
         <ListBox.ItemTemplate>
           <DataTemplate x:DataType="vm:ChangedFileViewModel">
             <Grid ColumnDefinitions="16,*,Auto" ColumnSpacing="6" Background="Transparent">
-              <Grid.ContextMenu>
-                <ContextMenu>
-                  <MenuItem Header="Stage" InputGesture="S" Command="{Binding $parent[UserControl].((vm:RevisionDiffViewModel)DataContext).StageSelectedFileCommand}" />
-                  <MenuItem Header="Revert changes…" InputGesture="R" Command="{Binding $parent[UserControl].((vm:RevisionDiffViewModel)DataContext).RevertSelectedFileCommand}" />
-                  <Separator />
-                  <MenuItem Header="File history" Click="OnFileHistoryClick" />
-                  <MenuItem Header="Blame" Click="OnBlameClick" />
-                  <Separator />
-                  <MenuItem Header="Copy path" Click="OnCopyPathClick" />
-                  <MenuItem Header="Copy file name" Click="OnCopyNameClick" />
-                </ContextMenu>
-              </Grid.ContextMenu>
               <TextBlock Text="{Binding Status}" FontFamily="Cascadia Mono, Consolas, DejaVu Sans Mono, monospace" FontWeight="Bold" HorizontalAlignment="Center"
                          Classes.added="{Binding Status, Converter={x:Static ObjectConverters.Equal}, ConverterParameter=A}"
                          Classes.deleted="{Binding Status, Converter={x:Static ObjectConverters.Equal}, ConverterParameter=D}" />

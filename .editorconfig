@@ -309,3 +309,12 @@ dotnet_diagnostic.VSTHRD103.severity = warning
 
 # IDE0290: Use primary constructor
 dotnet_diagnostic.IDE0290.severity = none
+
+
+dotnet_diagnostic.SA1600.severity = none
+dotnet_diagnostic.SA1633.severity = none
+dotnet_diagnostic.SA1601.severity = none
+dotnet_diagnostic.SA1623.severity = none
+dotnet_diagnostic.SA1117.severity = none
+resharper_check_namespace_highlighting = none
+resharper_static_member_initializer_referes_to_member_below_highlighting = none

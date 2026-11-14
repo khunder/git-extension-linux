@@ -106,19 +106,6 @@
                     <ListBox.ItemTemplate>
                       <DataTemplate x:DataType="vm:DashboardEntry">
                         <Grid ColumnDefinitions="Auto,*,Auto" Background="Transparent">
-                          <Grid.ContextMenu>
-                            <ContextMenu>
-                              <MenuItem Header="Open" Command="{Binding $parent[UserControl].((vm:DashboardViewModel)DataContext).OpenCommand}" CommandParameter="{Binding}" />
-                              <MenuItem Header="Open in file explorer" Command="{Binding $parent[UserControl].((vm:DashboardViewModel)DataContext).OpenInExplorerCommand}" CommandParameter="{Binding}" />
-                              <Separator />
-                              <MenuItem Header="Category…" Command="{Binding $parent[UserControl].((vm:DashboardViewModel)DataContext).BeginAssignCategoryCommand}" CommandParameter="{Binding}" />
-                              <MenuItem Header="{Binding PinMenuText}" IsVisible="{Binding FavoriteCategory, Converter={x:Static ObjectConverters.IsNull}}" Command="{Binding $parent[UserControl].((vm:DashboardViewModel)DataContext).TogglePinCommand}" CommandParameter="{Binding}" />
-                              <MenuItem Header="{Binding FavoriteMenuText}" Command="{Binding $parent[UserControl].((vm:DashboardViewModel)DataContext).ToggleFavoriteCommand}" CommandParameter="{Binding}" />
-                              <MenuItem Header="Remove from list" Command="{Binding $parent[UserControl].((vm:DashboardViewModel)DataContext).RemoveFromListCommand}" CommandParameter="{Binding}" />
-                              <Separator />
-                              <MenuItem Header="Copy path" Command="{Binding $parent[UserControl].((vm:DashboardViewModel)DataContext).CopyPathCommand}" CommandParameter="{Binding}" />
-                            </ContextMenu>
-                          </Grid.ContextMenu>
                           <views:AppIcon Grid.Column="0" IconName="GitLogo16" Margin="0,0,10,0" VerticalAlignment="Center" />
                           <StackPanel Grid.Column="1" Spacing="1">
                             <StackPanel Orientation="Horizontal" Spacing="6">

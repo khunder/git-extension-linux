@@ -1,6 +1,8 @@
 using Avalonia.Controls;
-using Avalonia.Interactivity;
+using Avalonia.VisualTree;
+using GitExtensions.Desktop.Services;
 using GitExtensions.Desktop.ViewModels;
+using GitExtensions.Desktop.Views.ContextMenus;
 
 namespace GitExtensions.Desktop.Views;
 
@@ -8,13 +10,27 @@ namespace GitExtensions.Desktop.Views;
 public sealed partial class RevisionFileTreeView : UserControl
 {
     public RevisionFileTreeView()
-        => InitializeComponent();
+    {
+        InitializeComponent();
+        MenuKit.AttachBuilt(
+            Tree,
+            row => row is FileTreeNode { IsPlaceholder: false } node ? FileListContextMenu.Build(MenuContext(node)) : null);
+    }
 
     private string? Revision => (DataContext as RevisionFileTreeViewModel)?.Revision;
 
-    private void OnFileHistoryClick(object? sender, RoutedEventArgs e) => FileActions.History(this, e, Revision);
-
-    private void OnBlameClick(object? sender, RoutedEventArgs e) => FileActions.Blame(this, e, Revision);
-
-    private void OnCopyPathClick(object? sender, RoutedEventArgs e) => FileActions.CopyPath(this, e);
+    private FileMenuContext MenuContext(FileTreeNode node)
+    {
+        MainWindowViewModel? main = this.FindAncestorOfType<Window>()?.DataContext as MainWindowViewModel;
+        string? revision = Revision;
+        return new FileMenuContext
+        {
+            Paths = [node.FullPath],
+            WorkingDir = main?.RepositoryPath ?? string.Empty,
+            Revision = revision,
+            IsFolder = node.IsFolder,
+            OpenHistory = (path, blame) => _ = main?.RevisionTabs.OpenFileHistoryAsync(path, blame, revision),
+            Clipboard = new TopLevelClipboardService(TopLevel.GetTopLevel(this)),
+        };
+    }
 }

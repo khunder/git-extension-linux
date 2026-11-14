@@ -116,17 +116,6 @@
               <ListBox.ItemTemplate>
                 <DataTemplate x:DataType="vm:ChangedFileViewModel">
                   <Grid ColumnDefinitions="20,Auto,*" ColumnSpacing="6" ToolTip.Tip="{Binding Description}">
-                    <Grid.ContextMenu>
-                      <ContextMenu>
-                        <MenuItem Header="Stage" InputGesture="S" Command="{Binding $parent[Window].((vm:CommitWindowViewModel)DataContext).StageSelectedCommand}" />
-                        <MenuItem Header="Reset file or directory changes…" InputGesture="R" Command="{Binding $parent[Window].((vm:CommitWindowViewModel)DataContext).ResetSelectedCommand}" />
-                        <MenuItem Header="Add to .gitignore" Command="{Binding $parent[Window].((vm:CommitWindowViewModel)DataContext).AddToGitIgnoreCommand}" />
-                        <Separator />
-                        <MenuItem Header="Open" Click="OnOpenFile" />
-                        <MenuItem Header="File history" Command="{Binding $parent[Window].((vm:CommitWindowViewModel)DataContext).ShowFileHistoryCommand}" CommandParameter="{Binding}" />
-                        <MenuItem Header="Copy path" Click="OnCopyPath" />
-                      </ContextMenu>
-                    </Grid.ContextMenu>
                     <TextBlock Classes="glyph" Text="{Binding Status}"
                                Classes.added="{Binding Status, Converter={x:Static ObjectConverters.Equal}, ConverterParameter=A}"
                                Classes.deleted="{Binding Status, Converter={x:Static ObjectConverters.Equal}, ConverterParameter=D}"
@@ -157,16 +146,6 @@
               <ListBox.ItemTemplate>
                 <DataTemplate x:DataType="vm:ChangedFileViewModel">
                   <Grid ColumnDefinitions="20,Auto,*" ColumnSpacing="6" ToolTip.Tip="{Binding Description}">
-                    <Grid.ContextMenu>
-                      <ContextMenu>
-                        <MenuItem Header="Unstage" InputGesture="U" Command="{Binding $parent[Window].((vm:CommitWindowViewModel)DataContext).UnstageSelectedCommand}" />
-                        <MenuItem Header="Reset…" InputGesture="R" Command="{Binding $parent[Window].((vm:CommitWindowViewModel)DataContext).ResetSelectedCommand}" />
-                        <Separator />
-                        <MenuItem Header="Open" Click="OnOpenFile" />
-                        <MenuItem Header="File history" Command="{Binding $parent[Window].((vm:CommitWindowViewModel)DataContext).ShowFileHistoryCommand}" CommandParameter="{Binding}" />
-                        <MenuItem Header="Copy path" Click="OnCopyPath" />
-                      </ContextMenu>
-                    </Grid.ContextMenu>
                     <TextBlock Classes="glyph" Text="{Binding Status}"
                                Classes.added="{Binding Status, Converter={x:Static ObjectConverters.Equal}, ConverterParameter=A}"
                                Classes.deleted="{Binding Status, Converter={x:Static ObjectConverters.Equal}, ConverterParameter=D}"

@@ -250,27 +250,6 @@
       <ListBox.ItemTemplate>
         <DataTemplate x:DataType="vm:CommitItemViewModel">
           <Border Classes="row" Classes.alt="{Binding IsAlternate}" Classes.merge="{Binding IsMerge}" Classes.mine="{Binding IsMine}">
-            <Border.ContextMenu>
-              <ContextMenu>
-                <MenuItem Header="Copy commit hash" Command="{Binding Actions.CopyHashCommand}" CommandParameter="{Binding}" />
-                <MenuItem Header="Copy subject" Command="{Binding Actions.CopySubjectCommand}" CommandParameter="{Binding}" />
-                <Separator />
-                <MenuItem Header="Create branch here…" Command="{Binding Actions.RequestCreateBranchCommand}" CommandParameter="{Binding}" />
-                <MenuItem Header="Create tag here…" Command="{Binding Actions.RequestCreateTagCommand}" CommandParameter="{Binding}" />
-                <MenuItem Header="Checkout this commit (detached HEAD)" Command="{Binding Actions.CheckoutCommand}" CommandParameter="{Binding}" />
-                <Separator />
-                <MenuItem Header="Reset current branch to here">
-                  <MenuItem Header="Soft (keep index and working tree)" Command="{Binding Actions.ResetSoftCommand}" CommandParameter="{Binding}" />
-                  <MenuItem Header="Mixed (keep working tree)" Command="{Binding Actions.ResetMixedCommand}" CommandParameter="{Binding}" />
-                  <MenuItem Header="Hard (discard all changes)…" Command="{Binding Actions.RequestHardResetCommand}" CommandParameter="{Binding}" />
-                </MenuItem>
-                <Separator />
-                <MenuItem Header="Revert commit" Command="{Binding Actions.RevertCommand}" CommandParameter="{Binding}" />
-                <MenuItem Header="Cherry-pick commit" Command="{Binding Actions.CherryPickCommand}" CommandParameter="{Binding}" />
-                <Separator />
-                <MenuItem Header="Format patch…" Command="{Binding $parent[Window].((vm:MainWindowViewModel)DataContext).ShowFormatPatchForCommand}" CommandParameter="{Binding}" />
-              </ContextMenu>
-            </Border.ContextMenu>
             <DockPanel>
               <Border DockPanel.Dock="Right" Classes="cell statusCell" Width="{Binding $parent[views:RevisionGridView].Columns.StatusColumnWidth}"
                       IsVisible="{Binding $parent[views:RevisionGridView].Columns.ShowStatus}">
