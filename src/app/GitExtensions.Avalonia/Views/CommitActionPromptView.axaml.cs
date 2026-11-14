@@ -1,5 +1,4 @@
 using Avalonia.Controls;
-using GitExtensions.Desktop.Services;
 using GitExtensions.Desktop.ViewModels;
 
 namespace GitExtensions.Desktop.Views;
@@ -10,27 +9,12 @@ public sealed partial class CommitActionPromptView : UserControl
     {
         InitializeComponent();
 
-        // The window clipboard is only known once the view is in the tree; the context menu commands use it.
+        // Focus the name box when the dialog opens.
         AttachedToVisualTree += (_, _) =>
         {
-            if (DataContext is CommitActionsViewModel { Clipboard: null } actions)
+            if (DataContext is CommitActionsViewModel actions && actions.NeedsInput)
             {
-                actions.Clipboard = new TopLevelClipboardService(TopLevel.GetTopLevel(this));
-            }
-        };
-        DataContextChanged += (_, _) =>
-        {
-            if (DataContext is CommitActionsViewModel { Clipboard: null } actions && TopLevel.GetTopLevel(this) is { } topLevel)
-            {
-                actions.Clipboard = new TopLevelClipboardService(topLevel);
-            }
-        };
-        PropertyChanged += (_, e) =>
-        {
-            // Focus the name box when the prompt opens.
-            if (e.Property == IsVisibleProperty && IsVisible && DataContext is CommitActionsViewModel { NeedsInput: true })
-            {
-                this.FindControl<TextBox>("PromptInput")?.Focus();
+                Avalonia.Threading.Dispatcher.UIThread.Post(() => this.FindControl<TextBox>("PromptInput")?.Focus(), Avalonia.Threading.DispatcherPriority.Loaded);
             }
         };
     }

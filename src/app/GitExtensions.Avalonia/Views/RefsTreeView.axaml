@@ -10,7 +10,6 @@
       <TextBox x:Name="FilterBox" Grid.Column="1" Text="{Binding Filter}" Watermark="Filter…" MinHeight="24" Padding="4,2" />
       <Button x:Name="NewBranchButton" Grid.Column="2" MinHeight="24" Content="+" FontWeight="Bold" Padding="8,2" Command="{Binding RequestNewBranchCommand}" ToolTip.Tip="New branch…" AutomationProperties.Name="New branch" AutomationProperties.HelpText="Create a new branch from the selected commit or HEAD" />
     </Grid>
-    <mgmt:RefsPromptView x:Name="RefsPrompt" DockPanel.Dock="Top" />
     <TreeView x:Name="RefsTree" ItemsSource="{Binding Roots}" SelectedItem="{Binding SelectedNode, Mode=TwoWay}">
       <TreeView.Styles>
         <Style Selector="TreeViewItem" x:DataType="vm:RefNodeViewModel">

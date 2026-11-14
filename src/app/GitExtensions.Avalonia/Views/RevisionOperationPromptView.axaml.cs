@@ -10,12 +10,12 @@ public sealed partial class RevisionOperationPromptView : UserControl
     {
         InitializeComponent();
 
-        // The window's file dialog is only known once the view is in the tree; "Archive" uses it.
+        // The dialog window is only known once the view is in the tree; "Archive" uses it for its file dialog.
         AttachedToVisualTree += (_, _) =>
         {
-            if (DataContext is RevisionOperationsViewModel { SavePicker: null } operations && TopLevel.GetTopLevel(this) is { } top)
+            if (DataContext is RevisionOperationsViewModel operations && TopLevel.GetTopLevel(this) is { } top)
             {
-                operations.SavePicker = new WindowFileSavePicker(top);
+                operations.SavePicker ??= new WindowFileSavePicker(top);
             }
         };
     }

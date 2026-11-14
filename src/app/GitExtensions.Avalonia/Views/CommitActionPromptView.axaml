@@ -2,21 +2,33 @@
              xmlns:x="http://schemas.microsoft.com/winfx/2006/xaml"
              xmlns:vm="using:GitExtensions.Desktop.ViewModels"
              x:Class="GitExtensions.Desktop.Views.CommitActionPromptView"
-             x:DataType="vm:CommitActionsViewModel"
-             IsVisible="{Binding IsPromptVisible}">
-  <!-- Inline prompt shown above the history list: asks for a branch/tag name or confirms a hard reset. -->
-  <Panel>
-    <Border Background="{DynamicResource SystemAccentColor}" Opacity="0.15" />
-    <Grid ColumnDefinitions="*,Auto,Auto" RowDefinitions="Auto,Auto" ColumnSpacing="8" RowSpacing="6" Margin="8,6">
-      <TextBlock x:Name="PromptText" Text="{Binding PromptTitle}" VerticalAlignment="Center" TextWrapping="Wrap" />
-      <Button x:Name="PromptConfirm" Grid.Column="1" Content="{Binding ConfirmText}" Command="{Binding ConfirmPromptCommand}" />
-      <Button x:Name="PromptCancel" Grid.Column="2" Content="Cancel" Command="{Binding CancelPromptCommand}" />
-      <TextBox x:Name="PromptInput" Grid.Row="1" Grid.ColumnSpan="3" Text="{Binding InputText}" IsVisible="{Binding NeedsInput}" Watermark="Name">
-        <TextBox.KeyBindings>
-          <KeyBinding Gesture="Enter" Command="{Binding ConfirmPromptCommand}" />
-          <KeyBinding Gesture="Escape" Command="{Binding CancelPromptCommand}" />
-        </TextBox.KeyBindings>
-      </TextBox>
-    </Grid>
-  </Panel>
+             x:DataType="vm:CommitActionsViewModel">
+  <!-- Content of the modal dialogs of the commit context menu: create branch, create tag, reset current branch, revert commit. -->
+  <Border Padding="12" Background="{DynamicResource DialogBackground}">
+    <DockPanel LastChildFill="True">
+      <StackPanel DockPanel.Dock="Bottom" Spacing="6" Margin="0,8,0,0">
+        <TextBlock x:Name="PromptError" Text="{Binding DialogError}" IsVisible="{Binding HasDialogError}" TextWrapping="Wrap" Foreground="{DynamicResource ErrorTextForeground}" />
+        <StackPanel Orientation="Horizontal" HorizontalAlignment="Right" Spacing="8">
+          <Button x:Name="PromptConfirm" Classes="accent" MinWidth="90" Content="{Binding ConfirmText}" Command="{Binding ConfirmPromptCommand}" IsDefault="True" />
+          <Button x:Name="PromptCancel" MinWidth="90" Content="Cancel" Command="{Binding CancelPromptCommand}" IsCancel="True" />
+        </StackPanel>
+      </StackPanel>
+      <StackPanel Spacing="8">
+        <TextBlock x:Name="PromptText" Text="{Binding PromptTitle}" TextWrapping="Wrap" />
+        <Grid ColumnDefinitions="Auto,*" ColumnSpacing="8" IsVisible="{Binding NeedsInput}">
+          <TextBlock Text="Name:" VerticalAlignment="Center" />
+          <TextBox x:Name="PromptInput" Grid.Column="1" Text="{Binding InputText}" Watermark="Name">
+            <TextBox.KeyBindings>
+              <KeyBinding Gesture="Enter" Command="{Binding ConfirmPromptCommand}" />
+            </TextBox.KeyBindings>
+          </TextBox>
+        </Grid>
+        <StackPanel x:Name="PromptResetModes" Spacing="2" IsVisible="{Binding ShowResetModes}">
+          <RadioButton GroupName="CommitResetMode" IsChecked="{Binding IsSoftResetMode}" Content="Soft: keep the index and the working tree" />
+          <RadioButton GroupName="CommitResetMode" IsChecked="{Binding IsMixedResetMode}" Content="Mixed: reset the index, keep the working tree" />
+          <RadioButton x:Name="PromptResetHard" GroupName="CommitResetMode" IsChecked="{Binding IsHardResetMode}" Content="Hard: reset the index and the working tree (loses changes)" />
+        </StackPanel>
+      </StackPanel>
+    </DockPanel>
+  </Border>
 </UserControl>

@@ -1,3 +1,4 @@
+using Avalonia;
 using Avalonia.Controls;
 using Avalonia.Headless;
 using Avalonia.Headless.NUnit;
@@ -21,7 +22,7 @@ public class ToolsRenderTests
     }
 
     [AvaloniaTest]
-    public async Task Tools_flyout_renders_each_tab_in_light_and_dark()
+    public async Task Tools_dialogs_render_in_light_and_dark()
     {
         using SubmoduleScenario scenario = new();
         string worktrees = MakeTempFolder();
@@ -43,34 +44,57 @@ public class ToolsRenderTests
             window.Show();
             await viewModel.OpenAsync(repository.Path);
 
-            // Repository > Show reflog… opens the tools flyout (anchored at the toolbar) on the reflog tab.
-            ToolsMenuButton button = (ToolsMenuButton)window.GetVisualDescendants().First(c => c is ToolsMenuButton);
+            // Repository > Show reflog… opens the Reflog dialog.
             viewModel.ShowReflogCommand.Execute(null);
-            button.Flyout!.IsOpen.Should().BeTrue();
-            RepositoryToolsView view = button.View;
+            ShellTestSupport.Settle();
+            DialogWindow reflog = DialogWindow.Open.Should().ContainSingle().Which;
+            reflog.Title.Should().Be("Reflog");
+            reflog.Find<Button>("CloseButton").Should().NotBeNull();
 
-            // Reflog tab (the flyout opening loads the selected tab), with an entry selected and the hard reset prompt open.
+            // The dialog loads the reflog, with an entry selected and the hard reset prompt open.
             await ReflogTests.WaitAsync(() => viewModel.Tools.Reflog.Entries.Count >= 4);
             viewModel.Tools.Reflog.SelectedEntry = viewModel.Tools.Reflog.Entries.First(e => e.Message.Contains("Fourth", StringComparison.Ordinal));
             await ReflogTests.WaitAsync(() => viewModel.Tools.Reflog.Details.HasCommit);
             viewModel.Tools.Reflog.RequestHardResetCommand.Execute(null);
-            Capture(window, "reflog");
-            view.FindControl<TabControl>("ToolsTabs")!.SelectedIndex.Should().Be(0);
+            Capture(reflog, "reflog");
+            viewModel.Tools.Reflog.CloseCommand.Execute(null);
+            ShellTestSupport.Settle();
+            DialogWindow.Open.Should().BeEmpty();
 
-            viewModel.Tools.SelectedTabIndex = RepositoryToolsViewModel.SubmodulesTab;
+            viewModel.ShowSubmodulesCommand.Execute(null);
+            ShellTestSupport.Settle();
+            DialogWindow submodules = DialogWindow.Open.Should().ContainSingle().Which;
+            submodules.Title.Should().Be("Submodules");
             await ReflogTests.WaitAsync(() => viewModel.Tools.Submodules.Items.Count == 1);
             viewModel.Tools.Submodules.SelectedSubmodule = viewModel.Tools.Submodules.Items[0];
-            Capture(window, "submodules");
+            Capture(submodules, "submodules");
+            viewModel.Tools.Submodules.CloseCommand.Execute(null);
+            ShellTestSupport.Settle();
 
-            viewModel.Tools.SelectedTabIndex = RepositoryToolsViewModel.WorktreesTab;
+            viewModel.ShowWorktreesCommand.Execute(null);
+            ShellTestSupport.Settle();
+            DialogWindow worktreesDialog = DialogWindow.Open.Should().ContainSingle().Which;
+            worktreesDialog.Title.Should().Be("Worktrees");
             await ReflogTests.WaitAsync(() => viewModel.Tools.Worktrees.Items.Count == 4);
             viewModel.Tools.Worktrees.SelectedWorktree = viewModel.Tools.Worktrees.Items[1];
             viewModel.Tools.Worktrees.RequestRemoveCommand.Execute(null);
-            Capture(window, "worktrees");
+            Capture(worktreesDialog, "worktrees");
 
             viewModel.Tools.Worktrees.CancelPromptCommand.Execute(null);
             viewModel.Tools.Worktrees.RequestAddCommand.Execute(null);
-            Capture(window, "worktrees-add");
+            Capture(worktreesDialog, "worktrees-add");
+            viewModel.Tools.Worktrees.CloseCommand.Execute(null);
+            ShellTestSupport.Settle();
+            DialogWindow.Open.Should().BeEmpty();
+
+            // Tools > Command log.
+            viewModel.ShowCommandLogCommand.Execute(null);
+            ShellTestSupport.Settle();
+            DialogWindow log = DialogWindow.Open.Should().ContainSingle().Which;
+            log.Find<ItemsControl>("LogLines").ItemCount.Should().BeGreaterThan(0);
+            Capture(log, "command-log");
+            viewModel.CommandLogDialog.CloseCommand.Execute(null);
+            ShellTestSupport.Settle();
 
             window.Close();
         }
@@ -80,15 +104,12 @@ public class ToolsRenderTests
         }
     }
 
-    private static void Capture(MainWindow window, string name)
+    private static void Capture(Window window, string name)
     {
         foreach (ThemeVariant variant in new[] { ThemeVariant.Light, ThemeVariant.Dark })
         {
-            window.RequestedThemeVariant = variant;
-            Avalonia.Threading.Dispatcher.UIThread.RunJobs();
-            AvaloniaHeadlessPlatform.ForceRenderTimerTick();
-            Avalonia.Threading.Dispatcher.UIThread.RunJobs();
-            AvaloniaHeadlessPlatform.ForceRenderTimerTick();
+            Application.Current!.RequestedThemeVariant = variant;
+            ShellTestSupport.Settle();
 
             WriteableBitmap? frame = window.CaptureRenderedFrame();
             frame.Should().NotBeNull();
@@ -98,5 +119,7 @@ public class ToolsRenderTests
             frame!.Save(file);
             TestContext.AddTestAttachment(file);
         }
+
+        Application.Current!.RequestedThemeVariant = ThemeVariant.Default;
     }
 }

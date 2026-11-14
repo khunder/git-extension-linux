@@ -1,0 +1,14 @@
+<UserControl xmlns="https://github.com/avaloniaui"
+             xmlns:x="http://schemas.microsoft.com/winfx/2006/xaml"
+             xmlns:vm="using:GitExtensions.Desktop.ViewModels"
+             xmlns:local="using:GitExtensions.Desktop.Views"
+             x:Class="GitExtensions.Desktop.Views.CommandLogDialogView"
+             x:DataType="vm:CommandLogDialogViewModel">
+  <DockPanel x:Name="Card" Margin="12">
+    <Button x:Name="CloseButton" DockPanel.Dock="Bottom" Content="Close" MinWidth="80" HorizontalContentAlignment="Center" HorizontalAlignment="Right"
+            Margin="0,10,0,0" Command="{Binding CloseCommand}" />
+    <Border BorderThickness="1" BorderBrush="{DynamicResource SubtleBorderBrush}">
+      <local:CommandLogView x:Name="LogView" DataContext="{Binding Log}" />
+    </Border>
+  </DockPanel>
+</UserControl>

@@ -392,11 +392,17 @@ public class ContextMenuTests
         CommitItemViewModel head = viewModel.Commits[0];
 
         Click(Find(RevisionGridContextMenu.Build(viewModel, head, null), "Revert this commit…"));
+        head.Actions!.PromptKind.Should().Be(CommitPromptKind.Revert);
+        await head.Actions.ConfirmPromptAsync();
+        head.Actions.IsOpen.Should().BeFalse(head.Actions.DialogError);
         await WaitUntilAsync(() => repository.GitOutput("log", "--format=%s", "-1").StartsWith("Revert", StringComparison.Ordinal));
         await WaitUntilAsync(() => viewModel.Commits.Any(c => c.Subject.StartsWith("Revert", StringComparison.Ordinal)));
 
         CommitItemViewModel first = viewModel.Commits.Single(c => c.Subject == "Add a.txt");
         Click(Find(RevisionGridContextMenu.Build(viewModel, first, null), "Checkout this commit…"));
+        viewModel.RevisionOps.IsCheckout.Should().BeTrue();
+        viewModel.RevisionOps.Revision.Should().Be(first.ObjectId.ToString());
+        await viewModel.RevisionOps.ConfirmAsync();
         await WaitUntilAsync(() => repository.GitOutput("rev-parse", "HEAD").Trim() == first.ObjectId.ToString());
         window.Close();
     }

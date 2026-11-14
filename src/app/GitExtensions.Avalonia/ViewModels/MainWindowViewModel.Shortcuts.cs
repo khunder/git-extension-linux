@@ -131,7 +131,7 @@ public sealed partial class MainWindowViewModel
             FromCommand("remote.pull", "Pull", "Repository", () => Remote.PullCommand, HasRepo, Keys(CommandGesture.Of(Key.L, CtrlShift))),
             FromCommand("remote.push", "Push", "Repository", () => Remote.PushCommand, HasRepo, Keys(CommandGesture.Of(Key.K, CtrlShift))),
             Make("window.commit", "Commit…", "Repository", () => ShowCommitWindowCommand.Execute(null), HasRepo, Keys(CommandGesture.Of(Key.K, Ctrl))),
-            Make("stash.show", "Stash changes…", "Repository", () => UiRequested?.Invoke(UiTarget.ShowStash), HasRepo, Keys(CommandGesture.Of(Key.T, CtrlShift))),
+            Make("stash.show", "Manage stashes…", "Repository", () => Stash.Open(), HasRepo, Keys(CommandGesture.Of(Key.T, CtrlShift))),
 
             // Changes
             FromCommand("index.stageAll", "Stage all changes", "Changes", () => Diff?.StageAllCommand, HasRepo, Keys(CommandGesture.Of(Key.S, CtrlShift))),

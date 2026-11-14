@@ -211,12 +211,18 @@ public class MainMenuToolbarTests
         // Settings… opens the settings overlay.
         Click(Item(window, "SettingsMenuItem"));
         await WaitAsync(() => viewModel.Settings.IsOpen);
+        Pump();
+        DialogWindow.Open.Should().ContainSingle().Which.Title.Should().Be("Settings");
         viewModel.Settings.CancelCommand.Execute(null);
+        Pump();
 
-        // Help > Keyboard shortcuts toggles the help overlay.
+        // Help > Keyboard shortcuts opens the shortcuts dialog.
         Click(Item(window, "ShortcutsMenuItem"));
         viewModel.ShortcutsHelp.IsOpen.Should().BeTrue();
+        Pump();
+        DialogWindow.Open.Should().ContainSingle();
         viewModel.ShortcutsHelp.Close();
+        Pump();
 
         // Ctrl+K is the shortcut of Commands > Commit.
         window.KeyPress(Key.K, RawInputModifiers.Control, PhysicalKey.None, null);
@@ -224,15 +230,34 @@ public class MainMenuToolbarTests
         Pump();
         windows.CommitWindows.Should().Be(2);
 
-        // Show reflog… opens the tools flyout on its first tab; Manage submodules… on the second.
-        ToolsMenuButton tools = (ToolsMenuButton)window.GetVisualDescendants().First(c => c is ToolsMenuButton);
+        // Show reflog… opens its dialog; Manage submodules… and Manage worktrees… open theirs (separate windows).
+        Click(Item(window, "ReflogMenuItem"));
+        Pump();
+        DialogWindow.Open.Should().ContainSingle().Which.Title.Should().Be("Reflog");
+        viewModel.Tools.SelectedTabIndex.Should().Be(RepositoryToolsViewModel.ReflogTab);
+        viewModel.Tools.Reflog.CloseCommand.Execute(null);
+        Pump();
         Click(Item(window, "SubmodulesMenuItem"));
-        tools.Flyout!.IsOpen.Should().BeTrue();
+        Pump();
+        DialogWindow.Open.Should().ContainSingle().Which.Title.Should().Be("Submodules");
         viewModel.Tools.SelectedTabIndex.Should().Be(RepositoryToolsViewModel.SubmodulesTab);
-        tools.Flyout.Hide();
+        viewModel.Tools.Submodules.CloseCommand.Execute(null);
+        Pump();
         Click(Item(window, "WorktreesMenuItem"));
+        Pump();
+        DialogWindow.Open.Should().ContainSingle().Which.Title.Should().Be("Worktrees");
         viewModel.Tools.SelectedTabIndex.Should().Be(RepositoryToolsViewModel.WorktreesTab);
-        tools.Flyout.Hide();
+        viewModel.Tools.Worktrees.CloseCommand.Execute(null);
+        Pump();
+        DialogWindow.Open.Should().BeEmpty();
+
+        // Tools > Command log opens the log dialog.
+        Click(Item(window, "CommandLogMenuItem"));
+        Pump();
+        DialogWindow.Open.Should().ContainSingle().Which.Title.Should().Be("Command log");
+        viewModel.CommandLogDialog.CloseCommand.Execute(null);
+        Pump();
+        DialogWindow.Open.Should().BeEmpty();
         Pump();
         window.Close();
     }

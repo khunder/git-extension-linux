@@ -106,9 +106,9 @@ public static class RevisionGridContextMenu
         items.Add(MenuKit.Sep());
 
         // ---- commit operations ----
-        items.Add(MenuKit.Item("Checkout this commit…", "Checkout", () => commit.Actions?.CheckoutCommand.Execute(commit), enabled: commit.Actions is not null));
-        items.Add(MenuKit.Item("Revert this commit…", "RevertCommit", () => commit.Actions?.RevertCommand.Execute(commit), enabled: commit.Actions is not null));
-        items.Add(MenuKit.Item("Cherry pick this commit…", "CherryPick", () => commit.Actions?.CherryPickCommand.Execute(commit), enabled: commit.Actions is not null));
+        items.Add(MenuKit.Item("Checkout this commit…", "Checkout", () => On(vm.RevisionOps.OpenCheckoutRevision)));
+        items.Add(MenuKit.Item("Revert this commit…", "RevertCommit", () => commit.Actions?.RequestRevertCommand.Execute(commit), enabled: commit.Actions is not null));
+        items.Add(MenuKit.Item("Cherry pick this commit…", "CherryPick", () => On(vm.RevisionOps.OpenCherryPick)));
         items.Add(MenuKit.Item("Archive this commit…", "ArchiveRevision", () => On(vm.RevisionOps.OpenArchive)));
         items.Add(MenuKit.Item("Format patch…", "PatchFormat", () => vm.ShowFormatPatchForCommand.Execute(commit)));
         items.Add(MenuKit.Sub("Advanced", "Advanced", Advanced()));

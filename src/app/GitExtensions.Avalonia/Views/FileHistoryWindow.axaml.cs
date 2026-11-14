@@ -30,6 +30,7 @@ public sealed partial class FileHistoryWindow : Window
         DataContext = viewModel;
         viewModel.Clipboard ??= new TopLevelClipboardService(this);
         stateStore?.Apply(this);
+        DialogHost.Bind(this, viewModel.CommitDetails, () => new CommitNotesView { DataContext = viewModel.CommitDetails }, "Commit notes", 520, 300);
 
         AuthorGrip.DragDelta += (_, e) => Resize(c => c.AuthorWidth, (c, w) => c.AuthorWidth = w, e);
         DateGrip.DragDelta += (_, e) => Resize(c => c.DateWidth, (c, w) => c.DateWidth = w, e);

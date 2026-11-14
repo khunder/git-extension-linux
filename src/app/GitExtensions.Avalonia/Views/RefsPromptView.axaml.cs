@@ -1,5 +1,4 @@
 using Avalonia.Controls;
-using GitExtensions.Desktop.Services;
 using GitExtensions.Desktop.ViewModels;
 
 namespace GitExtensions.Desktop.Views;
@@ -10,12 +9,12 @@ public sealed partial class RefsPromptView : UserControl
     {
         InitializeComponent();
 
-        // The window clipboard is only known once the view is in the tree; "Copy name" uses it.
+        // Focus the name box when the dialog opens.
         AttachedToVisualTree += (_, _) =>
         {
-            if (DataContext is RefsTreeViewModel { Clipboard: null } refs)
+            if (DataContext is RefsTreeViewModel refs && refs.ShowName)
             {
-                refs.Clipboard = new TopLevelClipboardService(TopLevel.GetTopLevel(this));
+                Avalonia.Threading.Dispatcher.UIThread.Post(() => this.FindControl<TextBox>("RefsPromptName")?.Focus(), Avalonia.Threading.DispatcherPriority.Loaded);
             }
         };
     }

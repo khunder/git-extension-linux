@@ -21,6 +21,7 @@ public enum CommitPromptKind
     CreateBranch,
     CreateTag,
     ConfirmHardReset,
+    Revert,
 }
 
 /// <summary>
@@ -37,8 +38,17 @@ public sealed partial class CommitActionsViewModel : ObservableObject
     private CommitItemViewModel? _promptCommit;
 
     [ObservableProperty]
-    [NotifyPropertyChangedFor(nameof(IsPromptVisible), nameof(NeedsInput), nameof(PromptTitle), nameof(ConfirmText))]
+    [NotifyPropertyChangedFor(nameof(IsPromptVisible), nameof(IsOpen), nameof(NeedsInput), nameof(PromptTitle), nameof(ConfirmText), nameof(DialogTitle), nameof(ShowResetModes))]
     private CommitPromptKind _promptKind;
+
+    [ObservableProperty]
+    private CommitResetMode _promptResetMode = CommitResetMode.Hard;
+
+    [ObservableProperty]
+    [NotifyPropertyChangedFor(nameof(HasDialogError))]
+    private string? _dialogError;
+
+    private bool _confirming;
 
     [ObservableProperty]
     private string _inputText = string.Empty;
@@ -57,13 +67,58 @@ public sealed partial class CommitActionsViewModel : ObservableObject
 
     public bool IsPromptVisible => PromptKind != CommitPromptKind.None;
 
+    /// <summary>Whether the prompt dialog is open; closing the dialog window sets it to false (cancels the prompt).</summary>
+    public bool IsOpen
+    {
+        get => IsPromptVisible;
+        set
+        {
+            if (!value)
+            {
+                CancelPrompt();
+            }
+        }
+    }
+
+    public bool HasDialogError => !string.IsNullOrEmpty(DialogError);
+
+    public bool ShowResetModes => PromptKind == CommitPromptKind.ConfirmHardReset;
+
+    public string DialogTitle => PromptKind switch
+    {
+        CommitPromptKind.CreateBranch => "Create branch",
+        CommitPromptKind.CreateTag => "Create tag",
+        CommitPromptKind.ConfirmHardReset => "Reset current branch",
+        CommitPromptKind.Revert => "Revert commit",
+        _ => string.Empty,
+    };
+
+    public bool IsSoftResetMode
+    {
+        get => PromptResetMode == CommitResetMode.Soft;
+        set => SelectResetMode(value, CommitResetMode.Soft);
+    }
+
+    public bool IsMixedResetMode
+    {
+        get => PromptResetMode == CommitResetMode.Mixed;
+        set => SelectResetMode(value, CommitResetMode.Mixed);
+    }
+
+    public bool IsHardResetMode
+    {
+        get => PromptResetMode == CommitResetMode.Hard;
+        set => SelectResetMode(value, CommitResetMode.Hard);
+    }
+
     public bool NeedsInput => PromptKind is CommitPromptKind.CreateBranch or CommitPromptKind.CreateTag;
 
     public string PromptTitle => PromptKind switch
     {
         CommitPromptKind.CreateBranch => $"New branch at {_promptCommit?.ShortHash}:",
         CommitPromptKind.CreateTag => $"New tag at {_promptCommit?.ShortHash}:",
-        CommitPromptKind.ConfirmHardReset => $"Hard reset the current branch to {_promptCommit?.ShortHash}? Uncommitted changes and later commits on this branch will be lost.",
+        CommitPromptKind.ConfirmHardReset => $"Reset the current branch to {_promptCommit?.ShortHash} ({_promptCommit?.Subject}).",
+        CommitPromptKind.Revert => $"Revert commit {_promptCommit?.ShortHash} ({_promptCommit?.Subject}) by creating a new commit that undoes it?",
         _ => string.Empty,
     };
 
@@ -71,7 +126,8 @@ public sealed partial class CommitActionsViewModel : ObservableObject
     {
         CommitPromptKind.CreateBranch => "Create branch",
         CommitPromptKind.CreateTag => "Create tag",
-        CommitPromptKind.ConfirmHardReset => "Reset --hard",
+        CommitPromptKind.ConfirmHardReset => PromptResetMode switch { CommitResetMode.Soft => "Reset --soft", CommitResetMode.Mixed => "Reset --mixed", _ => "Reset --hard" },
+        CommitPromptKind.Revert => "Revert",
         _ => "OK",
     };
 
@@ -87,10 +143,20 @@ public sealed partial class CommitActionsViewModel : ObservableObject
     private void RequestHardReset(CommitItemViewModel? commit) => OpenPrompt(CommitPromptKind.ConfirmHardReset, commit);
 
     [RelayCommand]
+    private void RequestRevert(CommitItemViewModel? commit) => OpenPrompt(CommitPromptKind.Revert, commit);
+
+    [RelayCommand]
     private void CancelPrompt()
     {
+        if (_confirming)
+        {
+            // Keep the dialog open while git runs: a failure is shown in it, success closes it afterwards.
+            return;
+        }
+
         PromptKind = CommitPromptKind.None;
         _promptCommit = null;
+        DialogError = null;
     }
 
     [RelayCommand]
@@ -104,18 +170,67 @@ public sealed partial class CommitActionsViewModel : ObservableObject
             return;
         }
 
-        if (kind != CommitPromptKind.ConfirmHardReset && name.Length == 0)
+        if (NeedsInput && name.Length == 0)
         {
             return;
         }
 
-        CancelPrompt();
-        _ = kind switch
+        if (_confirming)
         {
-            CommitPromptKind.CreateBranch => await CreateBranchAsync(commit, name),
-            CommitPromptKind.CreateTag => await CreateTagAsync(commit, name),
-            _ => await ResetAsync(commit, CommitResetMode.Hard, confirmed: true),
-        };
+            return;
+        }
+
+        _confirming = true;
+        DialogError = null;
+        bool succeeded;
+        try
+        {
+            succeeded = kind switch
+            {
+                CommitPromptKind.CreateBranch => await CreateBranchAsync(commit, name),
+                CommitPromptKind.CreateTag => await CreateTagAsync(commit, name),
+                CommitPromptKind.Revert => await RevertAsync(commit),
+                _ => await ResetAsync(commit, PromptResetMode, confirmed: true),
+            };
+        }
+        finally
+        {
+            _confirming = false;
+        }
+
+        // A failure stays in the dialog (shown inline); success, or an operation left in progress on conflicts, closes it.
+        if (succeeded || !HasDialogError)
+        {
+            CancelPrompt();
+        }
+    }
+
+    private void SelectResetMode(bool selected, CommitResetMode mode)
+    {
+        if (selected)
+        {
+            PromptResetMode = mode;
+        }
+    }
+
+    partial void OnPromptResetModeChanged(CommitResetMode value)
+    {
+        OnPropertyChanged(nameof(IsSoftResetMode));
+        OnPropertyChanged(nameof(IsMixedResetMode));
+        OnPropertyChanged(nameof(IsHardResetMode));
+        OnPropertyChanged(nameof(ConfirmText));
+    }
+
+    private void Report(string message)
+    {
+        if (_confirming)
+        {
+            DialogError = message;
+        }
+        else
+        {
+            _reportError(message);
+        }
     }
 
     private void OpenPrompt(CommitPromptKind kind, CommitItemViewModel? commit)
@@ -127,6 +242,8 @@ public sealed partial class CommitActionsViewModel : ObservableObject
 
         _promptCommit = commit;
         InputText = string.Empty;
+        DialogError = null;
+        PromptResetMode = CommitResetMode.Hard;
         PromptKind = kind;
         OnPropertyChanged(nameof(PromptTitle));
     }
@@ -196,7 +313,7 @@ public sealed partial class CommitActionsViewModel : ObservableObject
 
     private Task<bool> InvalidAsync(string name)
     {
-        _reportError($"'{name}' is not a valid name.");
+        Report($"'{name}' is not a valid name.");
         return Task.FromResult(false);
     }
 
@@ -230,13 +347,13 @@ public sealed partial class CommitActionsViewModel : ObservableObject
                 }
 
                 string error = string.IsNullOrWhiteSpace(result.StandardError) ? result.StandardOutput : result.StandardError;
-                _reportError($"git {arguments.Arguments?.Split(' ')[0]} failed: {error.Trim()}");
+                Report($"git {arguments.Arguments?.Split(' ')[0]} failed: {error.Trim()}");
                 return false;
             }
         }
         catch (Exception ex)
         {
-            _reportError($"Git operation failed: {ex.Message}");
+            Report($"Git operation failed: {ex.Message}");
             return false;
         }
 

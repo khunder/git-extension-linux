@@ -154,8 +154,7 @@ public sealed partial class MainWindowViewModel
             return;
         }
 
-        Tools.SelectedTabIndex = tab;
-        UiRequested?.Invoke(UiTarget.ShowTools);
+        Tools.Open(tab);
     }
 
     [RelayCommand]
@@ -289,7 +288,7 @@ public sealed partial class MainWindowViewModel
     {
         if (HasOpenedRepository)
         {
-            UiRequested?.Invoke(UiTarget.ShowStash);
+            Stash.Open();
         }
     }
 

@@ -19,5 +19,7 @@ public sealed partial class MainWindow
 
         _dialogsBoundTo = viewModel;
         DialogHost.Bind(this, viewModel.Remotes, () => new RemotesView { DataContext = viewModel.Remotes }, "Remote repositories", 860, 580);
+        BindCoreDialogs(viewModel);
+        BindRevisionDialogs(viewModel);
     }
 }

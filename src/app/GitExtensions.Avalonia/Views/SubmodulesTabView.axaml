@@ -10,8 +10,15 @@
     <Style Selector="TextBlock.changed"><Setter Property="FontWeight" Value="SemiBold" /><Setter Property="FontStyle" Value="Italic" /></Style>
   </UserControl.Styles>
 
-  <DockPanel>
-    <StackPanel DockPanel.Dock="Top" Orientation="Horizontal" Spacing="8" Margin="8">
+  <DockPanel x:Name="Card" Margin="12">
+    <StackPanel DockPanel.Dock="Bottom" Spacing="6" Margin="0,10,0,0">
+      <ProgressBar Height="3" IsIndeterminate="True" IsVisible="{Binding Owner.IsBusy}" />
+      <Grid ColumnDefinitions="*,Auto" ColumnSpacing="8">
+        <Button x:Name="BackButton" Content="{Binding Owner.BackText}" Command="{Binding Owner.GoBackCommand}" IsVisible="{Binding Owner.HasBackPath}" HorizontalAlignment="Left" />
+        <Button x:Name="CloseButton" Grid.Column="1" Content="Close" MinWidth="80" HorizontalContentAlignment="Center" Command="{Binding CloseCommand}" />
+      </Grid>
+    </StackPanel>
+    <StackPanel DockPanel.Dock="Top" Orientation="Horizontal" Spacing="8" Margin="0,0,0,8">
       <Button x:Name="InitButton" Content="Init" Command="{Binding InitCommand}" IsEnabled="{Binding HasSelection}" ToolTip.Tip="git submodule init" />
       <Button x:Name="UpdateButton" Content="Update" Command="{Binding UpdateCommand}" IsEnabled="{Binding HasSelection}" ToolTip.Tip="git submodule update --init --recursive" />
       <Button x:Name="UpdateAllButton" Content="Update all" Command="{Binding UpdateAllCommand}" />

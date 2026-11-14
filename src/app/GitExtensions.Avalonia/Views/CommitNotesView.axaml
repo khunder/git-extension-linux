@@ -1,0 +1,27 @@
+<UserControl xmlns="https://github.com/avaloniaui"
+             xmlns:x="http://schemas.microsoft.com/winfx/2006/xaml"
+             xmlns:vm="using:GitExtensions.Desktop.ViewModels"
+             x:Class="GitExtensions.Desktop.Views.CommitNotesView"
+             x:DataType="vm:CommitDetailsViewModel">
+  <!-- Content of the "Commit notes" dialog: add or edit the note of the shown commit, or confirm its deletion. -->
+  <Border Padding="12" Background="{DynamicResource DialogBackground}">
+    <DockPanel LastChildFill="True">
+      <StackPanel DockPanel.Dock="Bottom" Spacing="6" Margin="0,8,0,0">
+        <TextBlock x:Name="NoteErrorText" Text="{Binding NoteError}" IsVisible="{Binding HasNoteError}" TextWrapping="Wrap" Foreground="{DynamicResource ErrorTextForeground}" />
+        <Grid ColumnDefinitions="Auto,*">
+          <Button x:Name="NoteDeleteButton" Content="Delete note…" Command="{Binding RequestDeleteNoteCommand}" IsVisible="{Binding CanDeleteFromEditor}" />
+          <StackPanel Grid.Column="1" Orientation="Horizontal" HorizontalAlignment="Right" Spacing="8">
+            <Button x:Name="NoteSaveButton" Classes="accent" MinWidth="90" Content="Save note" Command="{Binding SaveNoteCommand}" IsVisible="{Binding IsEditingNote}" IsDefault="{Binding IsEditingNote}" />
+            <Button x:Name="NoteDeleteYesButton" Classes="accent" MinWidth="90" Content="Delete" Command="{Binding ConfirmDeleteNoteCommand}" IsVisible="{Binding IsConfirmingNoteDelete}" IsDefault="{Binding IsConfirmingNoteDelete}" />
+            <Button x:Name="NoteCancelButton" MinWidth="90" Content="Cancel" Command="{Binding CancelNoteCommand}" IsCancel="True" />
+          </StackPanel>
+        </Grid>
+      </StackPanel>
+      <Grid RowDefinitions="Auto,Auto,*" RowSpacing="8">
+        <TextBlock x:Name="NoteDeleteConfirm" Text="Delete the note of this commit?" IsVisible="{Binding IsConfirmingNoteDelete}" TextWrapping="Wrap" />
+        <TextBlock Grid.Row="1" Text="Note for this commit:" IsVisible="{Binding IsEditingNote}" />
+        <TextBox x:Name="NoteEditBox" Grid.Row="2" Text="{Binding NoteDraft}" IsVisible="{Binding IsEditingNote}" AcceptsReturn="True" TextWrapping="Wrap" VerticalAlignment="Stretch" MinHeight="120" AutomationProperties.Name="Note" />
+      </Grid>
+    </DockPanel>
+  </Border>
+</UserControl>

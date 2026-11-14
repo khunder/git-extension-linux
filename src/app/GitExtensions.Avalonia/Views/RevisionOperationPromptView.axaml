@@ -2,22 +2,28 @@
              xmlns:x="http://schemas.microsoft.com/winfx/2006/xaml"
              xmlns:vm="using:GitExtensions.Desktop.ViewModels"
              x:Class="GitExtensions.Desktop.Views.RevisionOperationPromptView"
-             x:DataType="vm:RevisionOperationsViewModel"
-             IsVisible="{Binding IsOpen}">
-  <!-- Inline dialog above the history list for cherry pick, checkout revision, delete branch, archive, reset and clean. -->
-  <Panel>
-    <Border Background="{DynamicResource SystemAccentColor}" Opacity="0.15" />
-    <StackPanel Spacing="6" Margin="8,6">
-      <TextBlock x:Name="RevOpsTitle" Text="{Binding Title}" FontWeight="SemiBold" TextWrapping="Wrap" />
-
-      <Grid ColumnDefinitions="*,Auto" ColumnSpacing="8" IsVisible="{Binding ShowRevision}">
-        <TextBox x:Name="RevOpsRevision" Text="{Binding Revision}" Watermark="Revision (commit, branch, tag, HEAD~3, …)">
+             x:DataType="vm:RevisionOperationsViewModel">
+  <!-- Content of the modal dialogs for cherry pick, checkout revision, delete branches, archive, reset and clean. -->
+  <Border Padding="12" Background="{DynamicResource DialogBackground}">
+    <DockPanel LastChildFill="True">
+      <StackPanel DockPanel.Dock="Bottom" Spacing="6" Margin="0,8,0,0">
+        <TextBlock x:Name="RevOpsWarning" Text="{Binding Warning}" IsVisible="{Binding HasWarning}" TextWrapping="Wrap" Foreground="{DynamicResource ErrorTextForeground}" />
+        <TextBlock x:Name="RevOpsError" Text="{Binding ValidationError}" IsVisible="{Binding ValidationError, Converter={x:Static StringConverters.IsNotNullOrEmpty}}" TextWrapping="Wrap" Foreground="{DynamicResource ErrorTextForeground}" />
+        <StackPanel Orientation="Horizontal" HorizontalAlignment="Right" Spacing="8">
+          <Button x:Name="RevOpsConfirm" Classes="accent" MinWidth="90" Content="{Binding ConfirmText}" Command="{Binding ConfirmCommand}" IsDefault="True" />
+          <Button x:Name="RevOpsCancel" MinWidth="90" Content="Cancel" Command="{Binding CancelCommand}" IsCancel="True" />
+        </StackPanel>
+      </StackPanel>
+      <ScrollViewer VerticalScrollBarVisibility="Auto">
+      <StackPanel Spacing="8">
+      <Grid ColumnDefinitions="Auto,*,Auto" ColumnSpacing="8" IsVisible="{Binding ShowRevision}">
+        <TextBlock Text="Revision:" VerticalAlignment="Center" />
+        <TextBox x:Name="RevOpsRevision" Grid.Column="1" Text="{Binding Revision}" Watermark="Revision (commit, branch, tag, HEAD~3, …)">
           <TextBox.KeyBindings>
             <KeyBinding Gesture="Enter" Command="{Binding ConfirmCommand}" />
-            <KeyBinding Gesture="Escape" Command="{Binding CancelCommand}" />
           </TextBox.KeyBindings>
         </TextBox>
-        <Button Grid.Column="1" x:Name="RevOpsUseSelected" Content="Selected commit" Command="{Binding UseSelectedCommitCommand}" />
+        <Button Grid.Column="2" x:Name="RevOpsUseSelected" Content="Selected commit" Command="{Binding UseSelectedCommitCommand}" />
       </Grid>
 
       <!-- Cherry pick -->
@@ -88,12 +94,8 @@
         </StackPanel>
       </StackPanel>
 
-      <TextBlock x:Name="RevOpsWarning" Text="{Binding Warning}" IsVisible="{Binding HasWarning}" TextWrapping="Wrap" Foreground="{DynamicResource ErrorTextForeground}" />
-      <TextBlock x:Name="RevOpsError" Text="{Binding ValidationError}" IsVisible="{Binding ValidationError, Converter={x:Static StringConverters.IsNotNullOrEmpty}}" TextWrapping="Wrap" Foreground="{DynamicResource ErrorTextForeground}" />
-      <WrapPanel Orientation="Horizontal">
-        <Button x:Name="RevOpsConfirm" Margin="0,0,8,4" Content="{Binding ConfirmText}" Command="{Binding ConfirmCommand}" />
-        <Button x:Name="RevOpsCancel" Margin="0,0,0,4" Content="Cancel" Command="{Binding CancelCommand}" />
-      </WrapPanel>
-    </StackPanel>
-  </Panel>
+      </StackPanel>
+      </ScrollViewer>
+    </DockPanel>
+  </Border>
 </UserControl>

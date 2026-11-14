@@ -30,6 +30,31 @@ public sealed partial class CommitDetailsViewModel
     [ObservableProperty]
     private bool _isConfirmingNoteDelete;
 
+    /// <summary>Whether the "Commit notes" dialog is open (editing or confirming the deletion); closing the window cancels.</summary>
+    public bool IsOpen
+    {
+        get => IsEditingNote || IsConfirmingNoteDelete;
+        set
+        {
+            if (!value)
+            {
+                IsEditingNote = false;
+                IsConfirmingNoteDelete = false;
+                NoteError = null;
+            }
+        }
+    }
+
+    public bool CanDeleteFromEditor => IsEditingNote && HasNote;
+
+    partial void OnIsEditingNoteChanged(bool value)
+    {
+        OnPropertyChanged(nameof(IsOpen));
+        OnPropertyChanged(nameof(CanDeleteFromEditor));
+    }
+
+    partial void OnIsConfirmingNoteDeleteChanged(bool value) => OnPropertyChanged(nameof(IsOpen));
+
     public bool HasNote => Note.Length > 0;
 
     public bool HasNoteError => !string.IsNullOrEmpty(NoteError);
@@ -141,18 +166,36 @@ public sealed partial class CommitDetailsViewModel
     }
 
     [RelayCommand]
-    private void RequestDeleteNote() => IsConfirmingNoteDelete = HasNote;
+    private void RequestDeleteNote()
+    {
+        if (HasNote)
+        {
+            NoteError = null;
+            IsConfirmingNoteDelete = true;
+            IsEditingNote = false;
+        }
+    }
 
     [RelayCommand]
-    private void CancelDeleteNote() => IsConfirmingNoteDelete = false;
+    private void CancelDeleteNote()
+    {
+        IsConfirmingNoteDelete = false;
+        NoteError = null;
+    }
 
     [RelayCommand]
     private async Task ConfirmDeleteNoteAsync()
     {
-        IsConfirmingNoteDelete = false;
         if (_noteDir is { } dir && _noteCommit is { } id)
         {
+            NoteError = null;
             await RemoveNoteAsync(dir, id);
+        }
+
+        // A failure stays in the dialog (with its error); success closes it.
+        if (!HasNoteError)
+        {
+            IsConfirmingNoteDelete = false;
         }
     }
 
@@ -171,6 +214,7 @@ public sealed partial class CommitDetailsViewModel
             {
                 Note = string.Empty;
                 IsEditingNote = false;
+                IsConfirmingNoteDelete = false;
                 NoteError = null;
             }
         }

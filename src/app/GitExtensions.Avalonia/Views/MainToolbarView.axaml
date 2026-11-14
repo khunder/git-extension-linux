@@ -171,7 +171,6 @@
       <Button x:Name="SettingsButton" Classes="tb" Command="{Binding OpenSettingsCommand}" ToolTip.Tip="Settings (Ctrl+,)">
         <views:AppIcon IconName="Settings" />
       </Button>
-      <views:ToolsMenuButton x:Name="ToolsButton" IsVisible="False" />
     </views:ToolStripPanel>
   </Border>
 </UserControl>

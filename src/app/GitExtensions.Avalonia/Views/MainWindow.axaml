@@ -65,8 +65,6 @@
       <GridSplitter x:Name="SidebarSplitter" Grid.Column="1" Width="5" Background="Transparent" />
 
       <DockPanel Grid.Column="2">
-        <views:CommitActionPromptView x:Name="CommitPrompt" DockPanel.Dock="Top" DataContext="{Binding Actions}" />
-        <views:RevisionOperationPromptView x:Name="RevisionOpsPrompt" DockPanel.Dock="Top" DataContext="{Binding RevisionOps}" />
         <Grid x:Name="BrowseRows" RowDefinitions="330*,Auto,270*">
           <views:RevisionGridView x:Name="RevisionGrid" Grid.Row="0" MinHeight="120" />
           <GridSplitter x:Name="TabsSplitter" Grid.Row="1" Height="5" Background="Transparent" HorizontalAlignment="Stretch" />
@@ -74,16 +72,10 @@
         </Grid>
       </DockPanel>
     </Grid>
-    <views:SettingsView x:Name="SettingsOverlay" DataContext="{Binding Settings}" IsVisible="{Binding IsOpen}" />
     <views:FileHistoryView x:Name="FileHistoryOverlay" DataContext="{Binding FileHistory}" IsVisible="{Binding IsOpen}" />
-    <views:CloneView x:Name="CloneOverlay" DataContext="{Binding Clone}" IsVisible="{Binding IsOpen}" />
-    <views:InitView x:Name="InitOverlay" DataContext="{Binding Init}" IsVisible="{Binding IsOpen}" />
-    <views:RepositoryListsView x:Name="RepositoryListsOverlay" DataContext="{Binding RepositoryLists}" IsVisible="{Binding IsOpen}" />
     <views:PatchesHostView x:Name="PatchesOverlay" />
     <views:CommandPaletteView x:Name="PaletteOverlay" DataContext="{Binding Palette}" />
-    <views:ShortcutsHelpView x:Name="ShortcutsOverlay" DataContext="{Binding ShortcutsHelp}" />
     <views:ToolDialogsView x:Name="ToolDialogsOverlay" DataContext="{Binding Dialogs}" />
-    <views:CredentialPromptView x:Name="CredentialOverlay" DataContext="{Binding Credentials}" />
     </Panel>
   </DockPanel>
 </Window>

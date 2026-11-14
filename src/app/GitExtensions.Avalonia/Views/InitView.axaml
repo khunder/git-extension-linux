@@ -3,15 +3,7 @@
              xmlns:vm="using:GitExtensions.Desktop.ViewModels"
              x:Class="GitExtensions.Desktop.Views.InitView"
              x:DataType="vm:InitViewModel">
-  <!-- Scrim over the content area; the card is centered. -->
-  <Panel Background="{DynamicResource ScrimBrush}">
-    <Border x:Name="Card" MaxWidth="560" Margin="24" Padding="20" VerticalAlignment="Center" HorizontalAlignment="Stretch"
-            CornerRadius="8" BorderThickness="1"
-            Background="{DynamicResource DialogBackground}"
-            BorderBrush="{DynamicResource SubtleBorderBrush}">
-      <StackPanel Spacing="4">
-        <TextBlock Text="Init repository" FontSize="18" FontWeight="SemiBold" Margin="0,0,0,8" />
-
+      <StackPanel Spacing="4" x:Name="Card" Margin="16">
         <TextBlock Text="Folder (created if it does not exist)" />
         <Grid ColumnDefinitions="*,Auto" ColumnSpacing="8">
           <TextBox x:Name="FolderBox" Text="{Binding Folder}" Watermark="Path of the new repository">
@@ -39,9 +31,7 @@
 
         <StackPanel Orientation="Horizontal" HorizontalAlignment="Right" Spacing="8" Margin="0,12,0,0">
           <Button x:Name="CancelButton" Content="Cancel" Command="{Binding CancelCommand}" />
-          <Button x:Name="InitButton" Content="Init" Classes="accent" Command="{Binding InitCommand}" />
+          <Button x:Name="InitButton" Content="Init" Classes="accent" IsDefault="True" Command="{Binding InitCommand}" />
         </StackPanel>
       </StackPanel>
-    </Border>
-  </Panel>
 </UserControl>

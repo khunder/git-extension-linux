@@ -9,13 +9,19 @@ public sealed partial class CredentialPromptView : UserControl
     {
         InitializeComponent();
 
-        // Focus the answer field when the prompt opens.
-        PropertyChanged += (_, e) =>
-        {
-            if (e.Property == IsVisibleProperty && IsVisible && DataContext is CredentialPromptViewModel { ShowTextInput: true })
+        // Focus the answer field (or the OK button of a confirmation) when the dialog opens.
+        AttachedToVisualTree += (_, _) => Avalonia.Threading.Dispatcher.UIThread.Post(
+            () =>
             {
-                this.FindControl<TextBox>("InputBox")?.Focus();
-            }
-        };
+                if (DataContext is CredentialPromptViewModel { ShowTextInput: true })
+                {
+                    this.FindControl<TextBox>("InputBox")?.Focus();
+                }
+                else
+                {
+                    this.FindControl<Button>("OkButton")?.Focus();
+                }
+            },
+            Avalonia.Threading.DispatcherPriority.Loaded);
     }
 }

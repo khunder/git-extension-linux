@@ -8,7 +8,7 @@ using GitExtUtils;
 namespace GitExtensions.Desktop.ViewModels;
 
 /// <summary>Submodules of the open repository (recursive) with init/update/sync and "open as repository".</summary>
-public sealed partial class SubmodulesViewModel : ObservableObject
+public sealed partial class SubmodulesViewModel : ToolDialogViewModel
 {
     private readonly ToolsContext _context;
     private int _loadVersion;

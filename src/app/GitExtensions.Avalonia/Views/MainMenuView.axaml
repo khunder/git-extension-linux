@@ -287,6 +287,9 @@
       <MenuItem x:Name="ShellMenuItem" Header="Git _bash / terminal" IsEnabled="{Binding HasOpenedRepository}" Command="{Binding OpenShellCommand}" >
         <MenuItem.Icon><local:AppIcon IconName="GitForWindows" /></MenuItem.Icon>
       </MenuItem>
+      <MenuItem x:Name="CommandLogMenuItem" Header="_Command log" Command="{Binding ShowCommandLogCommand}" >
+        <MenuItem.Icon><local:AppIcon IconName="Console" /></MenuItem.Icon>
+      </MenuItem>
       <MenuItem Header="Start authentication _agent" Classes="stub" >
         <MenuItem.Icon><local:AppIcon IconName="pageant" /></MenuItem.Icon>
       </MenuItem>

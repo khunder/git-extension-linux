@@ -5,7 +5,7 @@ using GitCommands;
 namespace GitExtensions.Desktop.ViewModels;
 
 /// <summary>
-///  The "Tools" flyout: tabs for the reflog, the submodules and the worktrees. A tab loads when it is selected (or when the flyout opens);
+///  The repository tools: the reflog, the submodules and the worktrees, each in its own dialog. A tool loads when its dialog opens;
 ///  everything reloads when the repository changes.
 /// </summary>
 public sealed partial class RepositoryToolsViewModel : ObservableObject
@@ -21,9 +21,6 @@ public sealed partial class RepositoryToolsViewModel : ObservableObject
     private int _selectedTabIndex;
 
     [ObservableProperty]
-    private bool _isOpen;
-
-    [ObservableProperty]
     private bool _isBusy;
 
     [ObservableProperty]
@@ -37,6 +34,12 @@ public sealed partial class RepositoryToolsViewModel : ObservableObject
         Reflog = new ReflogViewModel(context);
         Submodules = new SubmodulesViewModel(context);
         Worktrees = new WorktreesViewModel(context);
+        Reflog.Owner = this;
+        Submodules.Owner = this;
+        Worktrees.Owner = this;
+        Reflog.PropertyChanged += (_, e) => OnToolOpenChanged(e, ReflogTab, Reflog);
+        Submodules.PropertyChanged += (_, e) => OnToolOpenChanged(e, SubmodulesTab, Submodules);
+        Worktrees.PropertyChanged += (_, e) => OnToolOpenChanged(e, WorktreesTab, Worktrees);
         context.BusyChanged += () => IsBusy = context.IsBusy;
     }
 
@@ -54,6 +57,9 @@ public sealed partial class RepositoryToolsViewModel : ObservableObject
         set => _context.Clipboard = value;
     }
 
+    /// <summary>Gets a value indicating whether one of the tool dialogs is open.</summary>
+    public bool IsOpen => Reflog.IsOpen || Submodules.IsOpen || Worktrees.IsOpen;
+
     public bool HasBackPath => BackPath is not null;
 
     public string BackText => BackPath is null ? string.Empty : $"◂ Back to {Path.GetFileName(BackPath.TrimEnd('/', '\\'))}";
@@ -67,7 +73,29 @@ public sealed partial class RepositoryToolsViewModel : ObservableObject
             BackPath = current;
         }
 
+        // The dialog is modal over the old repository: close it before switching.
+        Reflog.IsOpen = false;
+        Submodules.IsOpen = false;
+        Worktrees.IsOpen = false;
         await OpenRepository(path);
+    }
+
+    /// <summary>Opens the dialog of a tool: <see cref="ReflogTab"/>, <see cref="SubmodulesTab"/> or <see cref="WorktreesTab"/>.</summary>
+    public void Open(int tab)
+    {
+        if (tab is >= 0 and <= 2)
+        {
+            _loaded[tab] = false; // always show fresh data
+        }
+
+        SelectedTabIndex = tab;
+        ToolDialogViewModel dialog = tab switch
+        {
+            SubmodulesTab => Submodules,
+            WorktreesTab => Worktrees,
+            _ => Reflog,
+        };
+        dialog.IsOpen = true;
     }
 
     [RelayCommand]
@@ -82,11 +110,18 @@ public sealed partial class RepositoryToolsViewModel : ObservableObject
 
     partial void OnSelectedTabIndexChanged(int value) => _ = EnsureLoadedAsync();
 
-    partial void OnIsOpenChanged(bool value)
+    private void OnToolOpenChanged(System.ComponentModel.PropertyChangedEventArgs e, int tab, ToolDialogViewModel tool)
     {
-        if (value)
+        if (e.PropertyName != nameof(ToolDialogViewModel.IsOpen))
         {
-            _ = EnsureLoadedAsync();
+            return;
+        }
+
+        OnPropertyChanged(nameof(IsOpen));
+        if (tool.IsOpen)
+        {
+            SelectedTabIndex = tab;
+            _ = EnsureLoadedAsync(tab);
         }
     }
 
@@ -109,9 +144,10 @@ public sealed partial class RepositoryToolsViewModel : ObservableObject
     }
 
     /// <summary>Loads the selected tab if it has not been loaded since the repository changed.</summary>
-    public async Task EnsureLoadedAsync()
+    public Task EnsureLoadedAsync() => EnsureLoadedAsync(SelectedTabIndex);
+
+    private async Task EnsureLoadedAsync(int tab)
     {
-        int tab = SelectedTabIndex;
         if (tab is < 0 or > 2 || _loaded[tab])
         {
             return;

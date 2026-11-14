@@ -85,17 +85,6 @@ public sealed partial class MainToolbarView : UserControl
             case UiTarget.ShowBranches:
                 BranchButton.Flyout?.ShowAt(BranchButton);
                 break;
-            case UiTarget.ShowStash:
-                if (this.GetVisualDescendants().OfType<StashMenuButton>().FirstOrDefault() is { } stash)
-                {
-                    stash.Flyout?.ShowAt(stash);
-                    _viewModel?.Stash.RequestStashCommand.Execute(null);
-                }
-
-                break;
-            case UiTarget.ShowTools:
-                ToolsButton.Flyout?.ShowAt(RepoPathButton);
-                break;
         }
     }
 

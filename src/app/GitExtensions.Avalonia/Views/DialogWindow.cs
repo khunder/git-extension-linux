@@ -46,6 +46,13 @@ public sealed class DialogWindow : Window
         base.OnClosing(e);
     }
 
+    protected override void OnClosed(EventArgs e)
+    {
+        // Also when the owner was closed with the dialog still open.
+        Open.Remove(this);
+        base.OnClosed(e);
+    }
+
     private void FocusFirstInput()
     {
         Avalonia.Threading.Dispatcher.UIThread.Post(
@@ -78,7 +85,8 @@ public static class DialogHost
 {
     /// <summary>Connects <paramref name="viewModel"/> (an object with a settable bool <c>IsOpen</c>) to a dialog owned by <paramref name="owner"/>.</summary>
     /// <param name="createView">Creates the view (with its DataContext) each time the dialog opens.</param>
-    public static void Bind(Window owner, INotifyPropertyChanged viewModel, Func<Control> createView, string title, double width, double height, bool canResize = true)
+    /// <param name="describe">When given, supplies the title and size each time the dialog opens (for dialogs whose title depends on the operation); overrides <paramref name="title"/>, <paramref name="width"/> and <paramref name="height"/>.</param>
+    public static void Bind(Window owner, INotifyPropertyChanged viewModel, Func<Control> createView, string title, double width, double height, bool canResize = true, Func<(string Title, double Width, double Height)>? describe = null)
     {
         var isOpen = viewModel.GetType().GetProperty("IsOpen") ?? throw new ArgumentException("The view-model needs an IsOpen property.", nameof(viewModel));
         DialogWindow? dialog = null;
@@ -88,7 +96,8 @@ public static class DialogHost
             bool wanted = (bool)isOpen.GetValue(viewModel)!;
             if (wanted && dialog is null)
             {
-                DialogWindow created = new(title, createView(), width, height, canResize);
+                (string openTitle, double openWidth, double openHeight) = describe?.Invoke() ?? (title, width, height);
+                DialogWindow created = new(openTitle, createView(), openWidth, openHeight, canResize);
                 dialog = created;
                 created.Closed += (_, _) =>
                 {

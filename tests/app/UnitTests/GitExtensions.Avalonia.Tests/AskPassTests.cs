@@ -2,6 +2,7 @@ using System.Diagnostics;
 using System.Net;
 using System.Net.Sockets;
 using System.Text;
+using Avalonia;
 using Avalonia.Controls;
 using Avalonia.Headless;
 using Avalonia.Headless.NUnit;
@@ -439,26 +440,74 @@ public class AskPassTests
         Task<AskPassResponse> request = viewModel.Credentials.RequestAsync(AskPassPromptClassifier.Classify("Password for 'https://octocat@github.com': "), CancellationToken.None);
         await WaitUntilAsync(() => viewModel.Credentials.IsOpen);
         viewModel.Credentials.InputText = "hunter2-hunter2";
+        ShellTestSupport.Settle();
+        DialogWindow dialog = DialogWindow.Open.Should().ContainSingle().Which;
+        dialog.Title.Should().Be("Authentication required");
+        dialog.CanResize.Should().BeFalse();
+        dialog.Find<TextBox>("InputBox").IsFocused.Should().BeTrue("the password box has the focus when the prompt opens");
 
         string directory = Path.Combine(AppContext.BaseDirectory, "screenshots");
         Directory.CreateDirectory(directory);
         foreach ((ThemeVariant variant, string name) in new[] { (ThemeVariant.Light, "light"), (ThemeVariant.Dark, "dark") })
         {
-            window.RequestedThemeVariant = variant;
-            Avalonia.Threading.Dispatcher.UIThread.RunJobs();
-            AvaloniaHeadlessPlatform.ForceRenderTimerTick();
-            WriteableBitmap? frame = window.CaptureRenderedFrame();
+            Application.Current!.RequestedThemeVariant = variant;
+            ShellTestSupport.Settle();
+            WriteableBitmap? frame = dialog.CaptureRenderedFrame();
             frame.Should().NotBeNull();
             string path = Path.Combine(directory, $"credential-prompt-{name}.png");
             frame!.Save(path);
             TestContext.AddTestAttachment(path);
         }
 
-        TextBox input = window.FindControl<CredentialPromptView>("CredentialOverlay")!.FindControl<TextBox>("InputBox")!;
-        input.PasswordChar.Should().Be('●');
+        dialog.Find<TextBox>("InputBox").PasswordChar.Should().Be('●');
+        Application.Current!.RequestedThemeVariant = ThemeVariant.Default;
 
         viewModel.Credentials.CancelCommand.Execute(null);
         (await request).Reply.Should().BeNull();
+        ShellTestSupport.Settle();
+        DialogWindow.Open.Should().BeEmpty();
+        window.Close();
+    }
+
+    [AvaloniaTest]
+    public async Task Credential_dialog_answers_with_enter_and_cancels_when_closed()
+    {
+        MainWindowViewModel viewModel = new(GitEnvironment.Initialize(), new NoFolderPicker());
+        MainWindow window = new() { DataContext = viewModel, Width = 900, Height = 600 };
+        window.Show();
+
+        // Enter in the focused password box confirms.
+        Task<AskPassResponse> first = viewModel.Credentials.RequestAsync(AskPassPromptClassifier.Classify("Password for 'https://octocat@github.com': "), CancellationToken.None);
+        await WaitUntilAsync(() => DialogWindow.Open.Count == 1);
+        ShellTestSupport.Settle();
+        DialogWindow dialog = DialogWindow.Open.Single();
+        dialog.Find<TextBox>("InputBox").IsFocused.Should().BeTrue();
+        dialog.Find<TextBox>("InputBox").Text = "s3cret";
+        dialog.KeyPress(Avalonia.Input.Key.Enter, Avalonia.Input.RawInputModifiers.None, Avalonia.Input.PhysicalKey.Enter, "\r");
+        ShellTestSupport.Settle();
+        (await first).Reply.Should().Be("s3cret");
+        DialogWindow.Open.Should().BeEmpty();
+        viewModel.Credentials.InputText.Should().BeEmpty("the secret is cleared when the prompt closes");
+
+        // Closing the window (title bar) answers "cancel" so git does not wait for ever.
+        Task<AskPassResponse> second = viewModel.Credentials.RequestAsync(AskPassPromptClassifier.Classify("Password for 'https://octocat@github.com': "), CancellationToken.None);
+        await WaitUntilAsync(() => DialogWindow.Open.Count == 1);
+        DialogWindow.Open.Single().Close();
+        ShellTestSupport.Settle();
+        (await second).Reply.Should().BeNull();
+        viewModel.Credentials.IsOpen.Should().BeFalse();
+
+        // A prompt arriving while another dialog is open opens on top of it.
+        await viewModel.Settings.OpenAsync();
+        ShellTestSupport.Settle();
+        DialogWindow.Open.Should().ContainSingle();
+        Task<AskPassResponse> third = viewModel.Credentials.RequestAsync(AskPassPromptClassifier.Classify("Password for 'https://octocat@github.com': "), CancellationToken.None);
+        await WaitUntilAsync(() => DialogWindow.Open.Count == 2);
+        DialogWindow.Open[^1].Title.Should().Be("Authentication required");
+        viewModel.Credentials.CancelCommand.Execute(null);
+        (await third).Reply.Should().BeNull();
+        ShellTestSupport.Settle();
+        DialogWindow.Open.Should().ContainSingle().Which.Title.Should().Be("Settings");
         window.Close();
     }
 

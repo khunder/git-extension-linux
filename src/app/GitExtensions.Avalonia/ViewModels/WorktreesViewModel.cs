@@ -19,7 +19,7 @@ public enum WorktreePromptKind
 ///  Worktrees of the open repository: add (new or existing branch), open, remove and prune. Removing asks for an inline confirmation;
 ///  a worktree with uncommitted changes needs a second, explicit "force" confirmation that names what is lost.
 /// </summary>
-public sealed partial class WorktreesViewModel : ObservableObject
+public sealed partial class WorktreesViewModel : ToolDialogViewModel
 {
     private readonly ToolsContext _context;
     private int _loadVersion;

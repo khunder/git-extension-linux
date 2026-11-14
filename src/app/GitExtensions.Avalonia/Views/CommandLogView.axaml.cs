@@ -12,7 +12,12 @@ public sealed partial class CommandLogView : UserControl
     private CommandLogService? _service;
 
     public CommandLogView()
-        => InitializeComponent();
+    {
+        InitializeComponent();
+
+        // Show the newest entries when the view appears (the dialog opens on an existing log).
+        AttachedToVisualTree += (_, _) => Dispatcher.UIThread.Post(() => LogScroll.ScrollToEnd(), DispatcherPriority.Background);
+    }
 
     protected override void OnDataContextChanged(EventArgs e)
     {

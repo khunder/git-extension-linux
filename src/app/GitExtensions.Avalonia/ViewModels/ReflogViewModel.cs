@@ -19,7 +19,7 @@ public enum ReflogPromptKind
 ///  The reflog of HEAD or of a local branch. An entry can be checked out, turned into a branch or the current branch can be reset to it
 ///  (the way to recover commits that are no longer on any branch). A hard reset asks for an inline confirmation first.
 /// </summary>
-public sealed partial class ReflogViewModel : ObservableObject
+public sealed partial class ReflogViewModel : ToolDialogViewModel
 {
     private const int MaxEntries = 500;
     private readonly ToolsContext _context;

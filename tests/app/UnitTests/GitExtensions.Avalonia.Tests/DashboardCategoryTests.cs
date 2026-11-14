@@ -237,9 +237,10 @@ public class DashboardCategoryTests
         {
             await viewModel.ShowRepositoryListsCommand.ExecuteAsync(null);
             ShellTestSupport.Settle();
-            window.Find<RepositoryListsView>("RepositoryListsOverlay").IsVisible.Should().BeTrue();
-            window.Find<ListBox>("RecentList").ItemCount.Should().Be(2);
-            window.Find<ListBox>("FavoriteList").ItemCount.Should().Be(1);
+            DialogWindow dialog = DialogWindow.Open.Should().ContainSingle().Which;
+            dialog.Title.Should().Be("Favorite repositories");
+            dialog.Find<ListBox>("RecentList").ItemCount.Should().Be(2);
+            dialog.Find<ListBox>("FavoriteList").ItemCount.Should().Be(1);
 
             foreach ((ThemeVariant variant, string suffix) in new[] { (ThemeVariant.Light, "light"), (ThemeVariant.Dark, "dark") })
             {
@@ -247,7 +248,7 @@ public class DashboardCategoryTests
                 ShellTestSupport.Settle();
                 string directory = Path.Combine(AppContext.BaseDirectory, "screenshots");
                 Directory.CreateDirectory(directory);
-                window.CaptureRenderedFrame()!.Save(Path.Combine(directory, $"repository-lists-{suffix}.png"));
+                dialog.CaptureRenderedFrame()!.Save(Path.Combine(directory, $"repository-lists-{suffix}.png"));
             }
 
             viewModel.RepositoryLists.CancelCommand.Execute(null);

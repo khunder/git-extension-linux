@@ -369,30 +369,57 @@ public class RevisionOperationsTests
             window.Show();
             await viewModel.OpenAsync(repository.Path);
 
-            RevisionOperationPromptView view = window.GetVisualDescendants().OfType<RevisionOperationPromptView>().Single();
-            view.IsVisible.Should().BeFalse();
+            DialogWindow.Open.Should().BeEmpty();
 
             viewModel.ShowCherryPickCommand.Execute(null);
-            view.IsVisible.Should().BeTrue();
-            Capture(window, "cherry-pick");
+            ShellTestSupport.Settle();
+            DialogWindow dialog = DialogWindow.Open.Should().ContainSingle().Which;
+            dialog.Title.Should().Be("Cherry pick commit");
+            dialog.View.Should().BeOfType<RevisionOperationPromptView>();
+            dialog.Find<Button>("RevOpsUseSelected").Content.Should().Be("Selected commit");
+            Capture(dialog, "cherry-pick");
+
+            viewModel.ShowCheckoutRevisionCommand.Execute(null);
+            ShellTestSupport.Settle();
+            dialog = DialogWindow.Open.Should().ContainSingle().Which;
+            dialog.Title.Should().Be("Checkout revision");
+            Capture(dialog, "checkout");
 
             viewModel.ShowResetCommand.Execute(null);
             viewModel.RevisionOps.IsHardReset = true;
-            Capture(window, "reset");
+            ShellTestSupport.Settle();
+            dialog = DialogWindow.Open.Should().ContainSingle().Which;
+            dialog.Title.Should().Be("Reset current branch");
+            Capture(dialog, "reset");
+
+            viewModel.ShowArchiveCommand.Execute(null);
+            ShellTestSupport.Settle();
+            dialog = DialogWindow.Open.Should().ContainSingle().Which;
+            dialog.Title.Should().Be("Archive revision");
+            Capture(dialog, "archive");
 
             await viewModel.ShowDeleteBranchCommand.ExecuteAsync(null);
-            Capture(window, "delete-branch");
+            ShellTestSupport.Settle();
+            dialog = DialogWindow.Open.Should().ContainSingle().Which;
+            dialog.Title.Should().Be("Delete branches");
+            Capture(dialog, "delete-branch");
 
             viewModel.ShowCleanCommand.Execute(null);
-            Capture(window, "clean");
+            ShellTestSupport.Settle();
+            dialog = DialogWindow.Open.Should().ContainSingle().Which;
+            dialog.Title.Should().Be("Clean working directory");
+            Capture(dialog, "clean");
 
-            viewModel.RevisionOps.CancelCommand.Execute(null);
-            view.IsVisible.Should().BeFalse();
+            // The dialog's own Cancel button closes the window.
+            dialog.Find<Button>("RevOpsCancel").Command!.Execute(null);
+            ShellTestSupport.Settle();
+            DialogWindow.Open.Should().BeEmpty();
+            viewModel.RevisionOps.IsOpen.Should().BeFalse();
             window.Close();
         }
     }
 
-    private static void Capture(MainWindow window, string name)
+    private static void Capture(Window window, string name)
     {
         foreach (ThemeVariant variant in new[] { ThemeVariant.Light, ThemeVariant.Dark })
         {

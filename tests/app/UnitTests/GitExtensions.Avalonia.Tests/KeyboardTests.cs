@@ -64,14 +64,21 @@ public class KeyboardTests
         Dispatcher.UIThread.RunJobs();
     }
 
-    private static void Press(MainWindow window, Key key, KeyModifiers modifiers = KeyModifiers.None)
+    private static void Press(Window window, Key key, KeyModifiers modifiers = KeyModifiers.None)
     {
         window.KeyPress(key, (RawInputModifiers)(int)modifiers, PhysicalKey.None, null);
         window.KeyRelease(key, (RawInputModifiers)(int)modifiers, PhysicalKey.None, null);
         Pump();
     }
 
-    private static void Press(MainWindow window, CommandGesture gesture) => Press(window, gesture.Key, gesture.Modifiers);
+    // A key that closes the dialog disposes its window: there is no release to send.
+    private static void PressInDialog(Window dialog, Key key)
+    {
+        dialog.KeyPress(key, RawInputModifiers.None, PhysicalKey.None, null);
+        Pump();
+    }
+
+    private static void Press(Window window, CommandGesture gesture) => Press(window, gesture.Key, gesture.Modifiers);
 
     // Commands such as refresh and fetch reload the repository in the background.
     private static async Task WaitIdleAsync(MainWindowViewModel viewModel)
@@ -416,11 +423,13 @@ public class KeyboardTests
     {
         using TestRepository repository = new();
         (MainWindow window, MainWindowViewModel viewModel, _) = await OpenAsync(repository);
-        ShortcutsHelpView view = window.FindControl<ShortcutsHelpView>("ShortcutsOverlay")!;
 
         Press(window, Key.F1);
         viewModel.ShortcutsHelp.IsOpen.Should().BeTrue();
-        view.IsVisible.Should().BeTrue();
+        Pump();
+        DialogWindow dialog = DialogWindow.Open.Should().ContainSingle().Which;
+        dialog.Title.Should().Be("Keyboard shortcuts");
+        ShortcutsHelpView view = (ShortcutsHelpView)dialog.View;
 
         List<ShortcutEntry> entries = viewModel.ShortcutsHelp.Groups.SelectMany(g => g.Entries).ToList();
         entries.Should().HaveCount(viewModel.Commands.Count);
@@ -435,15 +444,18 @@ public class KeyboardTests
         string[] texts = view.GetVisualDescendants().OfType<TextBlock>().Select(t => t.Text ?? string.Empty).ToArray();
         texts.Should().Contain("Ctrl+Shift+P, Ctrl+P").And.Contain("F1, ?");
 
-        Press(window, Key.Escape);
+        PressInDialog(dialog, Key.Escape);
         viewModel.ShortcutsHelp.IsOpen.Should().BeFalse();
+        DialogWindow.Open.Should().BeEmpty();
 
-        // The "?" key opens it too, and opening the palette replaces it.
+        // The "?" key opens it too.
         Press(window, Key.OemQuestion, KeyModifiers.Shift);
         viewModel.ShortcutsHelp.IsOpen.Should().BeTrue();
-        Press(window, Key.P, KeyModifiers.Control);
-        viewModel.Palette.IsOpen.Should().BeTrue();
+        Pump();
+        PressInDialog(DialogWindow.Open.Should().ContainSingle().Which, Key.Escape);
         viewModel.ShortcutsHelp.IsOpen.Should().BeFalse();
+        Pump();
+        DialogWindow.Open.Should().BeEmpty();
         window.Close();
     }
 
@@ -457,24 +469,30 @@ public class KeyboardTests
         await viewModel.Settings.OpenAsync();
         Pump();
         viewModel.Settings.IsOpen.Should().BeTrue();
+        DialogWindow settings = DialogWindow.Open.Should().ContainSingle().Which;
 
         // Help on top of the settings: Esc closes the help only.
-        Press(window, Key.F1);
-        viewModel.ShortcutsHelp.IsOpen.Should().BeTrue();
-        Press(window, Key.Escape);
+        viewModel.ShortcutsHelp.Open();
+        Pump();
+        DialogWindow.Open.Should().HaveCount(2);
+        PressInDialog(DialogWindow.Open[^1], Key.Escape);
         viewModel.ShortcutsHelp.IsOpen.Should().BeFalse();
         viewModel.Settings.IsOpen.Should().BeTrue();
+        DialogWindow.Open.Should().ContainSingle().Which.Should().BeSameAs(settings);
 
-        // Palette on top of the settings.
+        // Palette on top of the settings (an overlay of the main window).
         Press(window, Key.P, KeyModifiers.Control);
         viewModel.Palette.IsOpen.Should().BeTrue();
         Press(window, Key.Escape);
         viewModel.Palette.IsOpen.Should().BeFalse();
         viewModel.Settings.IsOpen.Should().BeTrue();
 
-        Press(window, Key.Escape);
+        PressInDialog(settings, Key.Escape);
         viewModel.Settings.IsOpen.Should().BeFalse();
-        window.FocusManager!.GetFocusedElement().Should().BeSameAs(list, "the settings gave the focus back");
+        DialogWindow.Open.Should().BeEmpty();
+        window.Activate();
+        list.Focus();
+        Pump();
 
         // File history: opened from the keyboard, closed by Esc, focus returns to the list.
         viewModel.SelectedChangedFile = viewModel.ChangedFiles.First();
@@ -482,7 +500,7 @@ public class KeyboardTests
         Pump();
         Press(window, Key.Escape);
         viewModel.FileHistory.IsOpen.Should().BeFalse();
-        window.FocusManager.GetFocusedElement().Should().BeSameAs(list);
+        window.FocusManager!.GetFocusedElement().Should().BeSameAs(list);
 
         // The palette gives the focus back too.
         Press(window, Key.P, KeyModifiers.Control);
@@ -502,14 +520,16 @@ public class KeyboardTests
             CancellationToken.None);
         Pump();
         viewModel.Credentials.IsOpen.Should().BeTrue();
+        DialogWindow dialog = DialogWindow.Open.Should().ContainSingle().Which;
 
         Press(window, Key.F5);
         Press(window, Key.OemComma, KeyModifiers.Control);
         invoked.Should().BeEmpty();
         viewModel.Settings.IsOpen.Should().BeFalse();
 
-        Press(window, Key.Escape);
+        PressInDialog(dialog, Key.Escape);
         viewModel.Credentials.IsOpen.Should().BeFalse();
+        DialogWindow.Open.Should().BeEmpty();
         (await pending).Reply.Should().BeNull();
         window.Close();
     }
@@ -535,7 +555,7 @@ public class KeyboardTests
 
         offenders.Should().BeEmpty();
 
-        foreach (string name in new[] { "RepoPathButton", "BranchButton", "PullButton", "PushButton", "CommitButton", "RefreshButton", "SettingsButton", "CommitList", "FilterBox", "RefsTree", "SettingsOverlay", "FileHistoryOverlay", "CredentialOverlay", "PaletteOverlay", "ShortcutsOverlay" })
+        foreach (string name in new[] { "RepoPathButton", "BranchButton", "PullButton", "PushButton", "CommitButton", "RefreshButton", "SettingsButton", "CommitList", "FilterBox", "RefsTree", "FileHistoryOverlay", "PaletteOverlay" })
         {
             Control? control = window.GetVisualDescendants().OfType<Control>().FirstOrDefault(c => c.Name == name);
             control.Should().NotBeNull(name);

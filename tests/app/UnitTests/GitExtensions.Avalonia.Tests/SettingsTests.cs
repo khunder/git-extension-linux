@@ -393,17 +393,23 @@ public class SettingsTests
         window.Show();
         await viewModel.OpenAsync(repository.Path);
 
-        SettingsView overlay = window.FindControl<SettingsView>("SettingsOverlay")!;
-        overlay.IsVisible.Should().BeFalse();
+        DialogWindow.Open.Should().BeEmpty();
 
         await viewModel.Settings.OpenAsync();
-        Avalonia.Threading.Dispatcher.UIThread.RunJobs();
-        overlay.IsVisible.Should().BeTrue();
+        ShellTestSupport.Settle();
+        DialogWindow dialog = DialogWindow.Open.Should().ContainSingle().Which;
+        dialog.Title.Should().Be("Settings");
+        dialog.CanResize.Should().BeTrue();
+        dialog.Width.Should().Be(980);
+        dialog.Height.Should().Be(720);
+        dialog.Find<Button>("OkButton").IsDefault.Should().BeTrue();
+        dialog.Find<Button>("CancelButton").Should().NotBeNull();
+        dialog.Find<Button>("ApplyButton").Should().NotBeNull();
 
-        window.KeyPress(Key.Escape, RawInputModifiers.None, PhysicalKey.Escape, null);
-        Avalonia.Threading.Dispatcher.UIThread.RunJobs();
+        dialog.KeyPress(Key.Escape, RawInputModifiers.None, PhysicalKey.Escape, null);
+        ShellTestSupport.Settle();
         viewModel.Settings.IsOpen.Should().BeFalse();
-        overlay.IsVisible.Should().BeFalse();
+        DialogWindow.Open.Should().BeEmpty();
         window.Close();
     }
 
@@ -455,7 +461,7 @@ public class SettingsTests
                     string directory = Path.Combine(AppContext.BaseDirectory, "screenshots");
                     Directory.CreateDirectory(directory);
                     string file = Path.Combine(directory, $"settings-{page}-{name}.png");
-                    window.CaptureRenderedFrame()!.Save(file);
+                    DialogWindow.Open.Should().ContainSingle().Which.CaptureRenderedFrame()!.Save(file);
                     TestContext.AddTestAttachment(file);
                 }
             }

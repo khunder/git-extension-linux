@@ -25,6 +25,8 @@ public enum RefPromptKind
 public sealed partial class RefsTreeViewModel
 {
     private string _promptTarget = string.Empty;
+    private bool _confirming;
+    private bool _closeAfterConfirm;
 
     [ObservableProperty]
     private RefPromptKind _promptKind;
@@ -76,6 +78,32 @@ public sealed partial class RefsTreeViewModel
 
     public bool IsPromptVisible => PromptKind != RefPromptKind.None;
 
+    /// <summary>Whether the prompt dialog is open; closing the dialog window sets it to false (cancels the prompt).</summary>
+    public bool IsOpen
+    {
+        get => IsPromptVisible;
+        set
+        {
+            if (!value)
+            {
+                CancelPrompt();
+            }
+        }
+    }
+
+    public string DialogTitle => PromptKind switch
+    {
+        RefPromptKind.RenameBranch => "Rename branch",
+        RefPromptKind.NewBranch => "Create branch",
+        RefPromptKind.ForceDeleteBranch => "Delete branch",
+        RefPromptKind.SetUpstream => "Set upstream branch",
+        RefPromptKind.DeleteRemoteBranch => "Delete remote branch",
+        RefPromptKind.NewTag => "Create tag",
+        RefPromptKind.DeleteTag => "Delete tag",
+        RefPromptKind.PushAllTags => "Push tags",
+        _ => string.Empty,
+    };
+
     public bool ShowName => PromptKind is RefPromptKind.RenameBranch or RefPromptKind.NewBranch or RefPromptKind.NewTag;
 
     public bool ShowStartPoint => PromptKind is RefPromptKind.NewBranch or RefPromptKind.NewTag;
@@ -112,6 +140,8 @@ public sealed partial class RefsTreeViewModel
     partial void OnPromptKindChanged(RefPromptKind value)
     {
         OnPropertyChanged(nameof(IsPromptVisible));
+        OnPropertyChanged(nameof(IsOpen));
+        OnPropertyChanged(nameof(DialogTitle));
         OnPropertyChanged(nameof(ShowName));
         OnPropertyChanged(nameof(ShowStartPoint));
         OnPropertyChanged(nameof(ShowMessage));
@@ -160,6 +190,13 @@ public sealed partial class RefsTreeViewModel
     [RelayCommand]
     private void CancelPrompt()
     {
+        if (_confirming)
+        {
+            // Keep the dialog open while git runs: a failure is shown in it, success closes it afterwards.
+            _closeAfterConfirm = true;
+            return;
+        }
+
         PromptKind = RefPromptKind.None;
         PromptDetail = string.Empty;
         ValidationError = null;
@@ -256,6 +293,30 @@ public sealed partial class RefsTreeViewModel
     [RelayCommand]
     public async Task ConfirmPromptAsync()
     {
+        if (_confirming)
+        {
+            return;
+        }
+
+        _confirming = true;
+        _closeAfterConfirm = false;
+        try
+        {
+            await ConfirmPromptCoreAsync();
+        }
+        finally
+        {
+            _confirming = false;
+        }
+
+        if (_closeAfterConfirm && !HasValidationError)
+        {
+            CancelPrompt();
+        }
+    }
+
+    private async Task ConfirmPromptCoreAsync()
+    {
         GitModule? module = _module;
         RefPromptKind kind = PromptKind;
         string target = _promptTarget;
@@ -317,7 +378,7 @@ public sealed partial class RefsTreeViewModel
 
             case RefPromptKind.DeleteRemoteBranch:
             {
-                CancelPrompt();
+                CloseDialogNow();
                 string remote = target[..target.IndexOf('/')];
                 await RunNetworkAsync($"Delete {target}", ["push", "--progress", remote, "--delete", target[(remote.Length + 1)..]], module);
                 return;
@@ -330,7 +391,7 @@ public sealed partial class RefsTreeViewModel
 
             case RefPromptKind.PushAllTags:
             {
-                CancelPrompt();
+                CloseDialogNow();
                 string? remote = await Task.Run(() => PickRemote(module));
                 if (remote is null)
                 {
@@ -342,6 +403,13 @@ public sealed partial class RefsTreeViewModel
                 return;
             }
         }
+    }
+
+    // Network commands may ask for credentials in the main window, which a modal dialog would block: close the dialog first.
+    private void CloseDialogNow()
+    {
+        _confirming = false;
+        CancelPrompt();
     }
 
     private string? ValidateNameAndStart(GitModule module, string name, bool isTag, string? start, string? renaming)
@@ -551,7 +619,17 @@ public sealed partial class RefsTreeViewModel
     private static ArgumentString Args(string command, params string[] arguments)
         => $"{command} {string.Join(' ', arguments.Select(a => a.Length > 0 && a.IndexOfAny([' ', '\t']) < 0 ? a : $"\"{a}\""))}";
 
-    private void Report(string message) => (ReportError ?? _reportStatus)(message);
+    // While the prompt dialog runs git, failures are shown inside it; otherwise in the banner.
+    private void Report(string message)
+    {
+        if (_confirming)
+        {
+            ValidationError = message;
+            return;
+        }
+
+        (ReportError ?? _reportStatus)(message);
+    }
 
     /// <summary>Runs a local git command off the UI thread; reports failures, reloads everything on success.</summary>
     private async Task<bool> RunGitAsync(string successMessage, string command, string[] arguments)

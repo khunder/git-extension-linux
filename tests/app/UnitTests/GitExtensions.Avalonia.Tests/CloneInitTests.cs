@@ -546,7 +546,7 @@ public class CloneInitTests
 
         Avalonia.Controls.Button cloneButton = window.Find<Avalonia.Controls.Button>("CloneButton");
         cloneButton.IsVisible.Should().BeTrue();
-        window.FindControl<CloneView>("CloneOverlay")!.IsVisible.Should().BeFalse();
+        DialogWindow.Open.Should().BeEmpty();
 
         try
         {
@@ -557,20 +557,24 @@ public class CloneInitTests
             viewModel.Clone.Branch = "main";
             viewModel.Clone.RecurseSubmodules = true;
             viewModel.Clone.CloneCommand.Execute(null);
-            Avalonia.Threading.Dispatcher.UIThread.RunJobs();
-            window.FindControl<CloneView>("CloneOverlay")!.IsVisible.Should().BeTrue();
-            Capture(window, "clone");
+            ShellTestSupport.Settle();
+            DialogWindow cloneDialog = DialogWindow.Open.Should().ContainSingle().Which;
+            cloneDialog.Title.Should().Be("Clone repository");
+            cloneDialog.Find<Avalonia.Controls.Button>("CloneButton").IsDefault.Should().BeTrue();
+            Capture(cloneDialog, "clone");
 
             viewModel.Clone.CancelCommand.Execute(null);
+            ShellTestSupport.Settle();
+            DialogWindow.Open.Should().BeEmpty();
             viewModel.ShowInitCommand.Execute(null);
             viewModel.Init.Folder = "/home/me/repos/new-project";
             viewModel.Init.InitialBranch = "main";
             viewModel.Init.CreateReadmeCommit = true;
             viewModel.Init.ErrorMessage = "git init failed: example error text";
-            Avalonia.Threading.Dispatcher.UIThread.RunJobs();
-            window.FindControl<InitView>("InitOverlay")!.IsVisible.Should().BeTrue();
-            window.FindControl<CloneView>("CloneOverlay")!.IsVisible.Should().BeFalse();
-            Capture(window, "init");
+            ShellTestSupport.Settle();
+            DialogWindow initDialog = DialogWindow.Open.Should().ContainSingle().Which;
+            initDialog.Title.Should().Be("Create new repository");
+            Capture(initDialog, "init");
         }
         finally
         {
@@ -579,13 +583,12 @@ public class CloneInitTests
         }
     }
 
-    private static void Capture(MainWindow window, string name)
+    private static void Capture(Window window, string name)
     {
         foreach ((ThemeVariant variant, string suffix) in new[] { (ThemeVariant.Light, "light"), (ThemeVariant.Dark, "dark") })
         {
             Application.Current!.RequestedThemeVariant = variant;
-            Avalonia.Threading.Dispatcher.UIThread.RunJobs();
-            AvaloniaHeadlessPlatform.ForceRenderTimerTick();
+            ShellTestSupport.Settle();
             string directory = Path.Combine(AppContext.BaseDirectory, "screenshots");
             Directory.CreateDirectory(directory);
             string file = Path.Combine(directory, $"{name}-{suffix}.png");

@@ -23,6 +23,9 @@ public sealed partial class StashViewModel : ObservableObject
     private int _loadVersion;
 
     [ObservableProperty]
+    private bool _isOpen;
+
+    [ObservableProperty]
     private StashItemViewModel? _selectedStash;
 
     [ObservableProperty]
@@ -246,6 +249,26 @@ public sealed partial class StashViewModel : ObservableObject
             throwOnErrorExit: false);
         return show.ExitedSuccessfully ? UnifiedDiffParser.FromNewFileContent(fileName, show.StandardOutput) : [];
     }
+
+    // ---- the "Manage stashes" dialog ----
+
+    partial void OnIsOpenChanged(bool value)
+    {
+        if (value)
+        {
+            StashMessage = string.Empty;
+            IncludeUntracked = false;
+            PendingDrop = null;
+            _ = LoadAsync();
+        }
+    }
+
+    /// <summary>Opens the "Manage stashes" dialog (list, stash changes, apply, pop, drop).</summary>
+    [RelayCommand]
+    public void Open() => IsOpen = true;
+
+    [RelayCommand]
+    public void Close() => IsOpen = false;
 
     // ---- commands ----
 

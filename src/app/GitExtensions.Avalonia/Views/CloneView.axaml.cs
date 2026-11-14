@@ -1,5 +1,4 @@
 using Avalonia.Controls;
-using GitExtensions.Desktop.ViewModels;
 
 namespace GitExtensions.Desktop.Views;
 
@@ -9,13 +8,9 @@ public sealed partial class CloneView : UserControl
     {
         InitializeComponent();
 
-        // Focus the URL field when the dialog opens.
-        PropertyChanged += (_, e) =>
-        {
-            if (e.Property == IsVisibleProperty && IsVisible && DataContext is CloneViewModel)
-            {
-                this.FindControl<TextBox>("UrlBox")?.Focus();
-            }
-        };
+        // Focus the UrlBox field when the dialog opens (after layout, so it can take the focus).
+        AttachedToVisualTree += (_, _) => Avalonia.Threading.Dispatcher.UIThread.Post(
+            () => this.FindControl<TextBox>("UrlBox")?.Focus(),
+            Avalonia.Threading.DispatcherPriority.Loaded);
     }
 }

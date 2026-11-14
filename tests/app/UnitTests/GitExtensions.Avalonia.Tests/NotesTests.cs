@@ -111,7 +111,9 @@ public class NotesTests
 
             viewModel.CommitDetails.EditNoteCommand.Execute(null);
             ShellTestSupport.Settle();
-            window.Find<TextBox>("NoteEditBox").IsVisible.Should().BeTrue();
+            DialogWindow dialog = DialogWindow.Open.Should().ContainSingle().Which;
+            dialog.Title.Should().Be("Commit notes");
+            dialog.Find<TextBox>("NoteEditBox").IsVisible.Should().BeTrue();
 
             foreach ((ThemeVariant variant, string suffix) in new[] { (ThemeVariant.Light, "light"), (ThemeVariant.Dark, "dark") })
             {
@@ -119,8 +121,12 @@ public class NotesTests
                 ShellTestSupport.Settle();
                 string directory = Path.Combine(AppContext.BaseDirectory, "screenshots");
                 Directory.CreateDirectory(directory);
-                window.CaptureRenderedFrame()!.Save(Path.Combine(directory, $"notes-{suffix}.png"));
+                dialog.CaptureRenderedFrame()!.Save(Path.Combine(directory, $"notes-{suffix}.png"));
             }
+
+            viewModel.CommitDetails.CancelNoteCommand.Execute(null);
+            ShellTestSupport.Settle();
+            DialogWindow.Open.Should().BeEmpty();
         }
         finally
         {

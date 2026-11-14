@@ -2,29 +2,35 @@
              xmlns:x="http://schemas.microsoft.com/winfx/2006/xaml"
              xmlns:vm="using:GitExtensions.Desktop.ViewModels"
              x:Class="GitExtensions.Desktop.Views.RefsPromptView"
-             x:DataType="vm:RefsTreeViewModel"
-             IsVisible="{Binding IsPromptVisible}">
-  <!-- Inline prompt above the refs tree: asks for names / a start point / an upstream, or confirms a destructive action. -->
-  <Panel>
-    <Border Background="{DynamicResource SystemAccentColor}" Opacity="0.15" />
-    <StackPanel Spacing="6" Margin="8,6">
-      <TextBlock x:Name="RefsPromptTitle" Text="{Binding PromptTitle}" TextWrapping="Wrap" FontWeight="SemiBold" />
-      <TextBlock x:Name="RefsPromptDetail" Text="{Binding PromptDetail}" IsVisible="{Binding HasDetail}" TextWrapping="Wrap" Foreground="{DynamicResource ErrorTextForeground}" />
-      <TextBox x:Name="RefsPromptName" Text="{Binding InputText}" IsVisible="{Binding ShowName}" Watermark="Name">
-        <TextBox.KeyBindings>
-          <KeyBinding Gesture="Enter" Command="{Binding ConfirmPromptCommand}" />
-          <KeyBinding Gesture="Escape" Command="{Binding CancelPromptCommand}" />
-        </TextBox.KeyBindings>
-      </TextBox>
-      <TextBox x:Name="RefsPromptStart" Text="{Binding StartPoint}" IsVisible="{Binding ShowStartPoint}" Watermark="Start point (HEAD, commit, branch or tag)" />
-      <TextBox x:Name="RefsPromptMessage" Text="{Binding MessageText}" IsVisible="{Binding ShowMessage}" Watermark="Tag message (optional: makes it annotated)" AcceptsReturn="True" MaxHeight="80" TextWrapping="Wrap" />
-      <CheckBox x:Name="RefsPromptCheckout" IsChecked="{Binding CheckoutAfterCreate}" IsVisible="{Binding ShowCheckout}" Content="Check out after creating" />
-      <ComboBox x:Name="RefsPromptUpstream" ItemsSource="{Binding UpstreamChoices}" SelectedItem="{Binding SelectedUpstream}" IsVisible="{Binding ShowUpstreamPicker}" HorizontalAlignment="Stretch" />
-      <TextBlock x:Name="RefsPromptError" Text="{Binding ValidationError}" IsVisible="{Binding HasValidationError}" TextWrapping="Wrap" Foreground="{DynamicResource ErrorTextForeground}" />
-      <WrapPanel Orientation="Horizontal">
-        <Button x:Name="RefsPromptConfirm" Margin="0,0,8,4" Content="{Binding ConfirmText}" Command="{Binding ConfirmPromptCommand}" />
-        <Button x:Name="RefsPromptCancel" Content="Cancel" Command="{Binding CancelPromptCommand}" Margin="0,0,0,4" />
-      </WrapPanel>
-    </StackPanel>
-  </Panel>
+             x:DataType="vm:RefsTreeViewModel">
+  <!-- Content of the modal dialogs of the refs tree: create/rename branch, create tag, set upstream, delete and push confirmations. -->
+  <Border Padding="12" Background="{DynamicResource DialogBackground}">
+    <DockPanel LastChildFill="True">
+      <StackPanel DockPanel.Dock="Bottom" Spacing="6" Margin="0,8,0,0">
+        <TextBlock x:Name="RefsPromptError" Text="{Binding ValidationError}" IsVisible="{Binding HasValidationError}" TextWrapping="Wrap" Foreground="{DynamicResource ErrorTextForeground}" />
+        <StackPanel Orientation="Horizontal" HorizontalAlignment="Right" Spacing="8">
+          <Button x:Name="RefsPromptConfirm" Classes="accent" MinWidth="90" Content="{Binding ConfirmText}" Command="{Binding ConfirmPromptCommand}" IsDefault="True" />
+          <Button x:Name="RefsPromptCancel" MinWidth="90" Content="Cancel" Command="{Binding CancelPromptCommand}" IsCancel="True" />
+        </StackPanel>
+      </StackPanel>
+      <StackPanel Spacing="8">
+        <TextBlock x:Name="RefsPromptTitle" Text="{Binding PromptTitle}" TextWrapping="Wrap" FontWeight="SemiBold" />
+        <TextBlock x:Name="RefsPromptDetail" Text="{Binding PromptDetail}" IsVisible="{Binding HasDetail}" TextWrapping="Wrap" Foreground="{DynamicResource ErrorTextForeground}" />
+        <Grid ColumnDefinitions="Auto,*" RowDefinitions="Auto,Auto,Auto" ColumnSpacing="8" RowSpacing="8">
+          <TextBlock Text="Name:" VerticalAlignment="Center" IsVisible="{Binding ShowName}" />
+          <TextBox x:Name="RefsPromptName" Grid.Column="1" Text="{Binding InputText}" IsVisible="{Binding ShowName}" Watermark="Name">
+            <TextBox.KeyBindings>
+              <KeyBinding Gesture="Enter" Command="{Binding ConfirmPromptCommand}" />
+            </TextBox.KeyBindings>
+          </TextBox>
+          <TextBlock Grid.Row="1" Text="Start point:" VerticalAlignment="Center" IsVisible="{Binding ShowStartPoint}" />
+          <TextBox x:Name="RefsPromptStart" Grid.Row="1" Grid.Column="1" Text="{Binding StartPoint}" IsVisible="{Binding ShowStartPoint}" Watermark="HEAD, commit, branch or tag" />
+          <TextBlock Grid.Row="2" Text="Message:" VerticalAlignment="Top" Margin="0,6,0,0" IsVisible="{Binding ShowMessage}" />
+          <TextBox x:Name="RefsPromptMessage" Grid.Row="2" Grid.Column="1" Text="{Binding MessageText}" IsVisible="{Binding ShowMessage}" Watermark="Tag message (optional: makes it annotated)" AcceptsReturn="True" MinHeight="60" MaxHeight="120" TextWrapping="Wrap" />
+        </Grid>
+        <CheckBox x:Name="RefsPromptCheckout" IsChecked="{Binding CheckoutAfterCreate}" IsVisible="{Binding ShowCheckout}" Content="Checkout after create" />
+        <ComboBox x:Name="RefsPromptUpstream" ItemsSource="{Binding UpstreamChoices}" SelectedItem="{Binding SelectedUpstream}" IsVisible="{Binding ShowUpstreamPicker}" HorizontalAlignment="Stretch" />
+      </StackPanel>
+    </DockPanel>
+  </Border>
 </UserControl>

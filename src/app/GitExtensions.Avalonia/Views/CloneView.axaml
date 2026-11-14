@@ -3,15 +3,12 @@
              xmlns:vm="using:GitExtensions.Desktop.ViewModels"
              x:Class="GitExtensions.Desktop.Views.CloneView"
              x:DataType="vm:CloneViewModel">
-  <!-- Scrim over the content area; the card is centered. -->
-  <Panel Background="{DynamicResource ScrimBrush}">
-    <Border x:Name="Card" MaxWidth="600" Margin="24" Padding="20" VerticalAlignment="Center" HorizontalAlignment="Stretch"
-            CornerRadius="8" BorderThickness="1"
-            Background="{DynamicResource DialogBackground}"
-            BorderBrush="{DynamicResource SubtleBorderBrush}">
-      <StackPanel Spacing="4">
-        <TextBlock Text="Clone repository" FontSize="18" FontWeight="SemiBold" Margin="0,0,0,8" />
-
+  <UserControl.Styles>
+    <Style Selector="TextBlock.mono">
+      <Setter Property="FontFamily" Value="Cascadia Mono, Consolas, DejaVu Sans Mono, monospace" />
+    </Style>
+  </UserControl.Styles>
+      <StackPanel Spacing="4" x:Name="Card" Margin="16">
         <TextBlock Text="Repository URL or path" />
         <TextBox x:Name="UrlBox" Text="{Binding Url}" Watermark="https://host/owner/repo.git, git@host:owner/repo.git or a folder">
           <TextBox.KeyBindings>
@@ -61,9 +58,7 @@
 
         <StackPanel Orientation="Horizontal" HorizontalAlignment="Right" Spacing="8" Margin="0,12,0,0">
           <Button x:Name="CancelButton" Content="Cancel" Command="{Binding CancelCommand}" />
-          <Button x:Name="CloneButton" Content="Clone" Classes="accent" Command="{Binding CloneCommand}" />
+          <Button x:Name="CloneButton" Content="Clone" Classes="accent" IsDefault="True" Command="{Binding CloneCommand}" />
         </StackPanel>
       </StackPanel>
-    </Border>
-  </Panel>
 </UserControl>

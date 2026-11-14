@@ -4,8 +4,7 @@
              xmlns:diff="using:GitExtensions.Desktop.Diff"
              xmlns:views="using:GitExtensions.Desktop.Views"
              x:Class="GitExtensions.Desktop.Views.StashView"
-             x:DataType="vm:StashViewModel"
-             Width="760" Height="440">
+             x:DataType="vm:StashViewModel">
 
   <UserControl.Styles>
     <Style Selector="Border.added"><Setter Property="Background" Value="{DynamicResource DiffAddedBackground}" /></Style>
@@ -13,40 +12,41 @@
     <Style Selector="Border.hunk"><Setter Property="Background" Value="{DynamicResource DiffHunkBackground}" /></Style>
   </UserControl.Styles>
 
-  <DockPanel>
-    <!-- Commands -->
-    <StackPanel DockPanel.Dock="Top" Orientation="Horizontal" Spacing="8" Margin="8">
-      <Button x:Name="StashButton" Content="Stash changes…" Command="{Binding RequestStashCommand}" />
-      <Button x:Name="ApplyButton" Content="Apply" Command="{Binding ApplyCommand}" IsEnabled="{Binding HasSelection}" ToolTip.Tip="Apply the selected stash and keep it" />
-      <Button x:Name="PopButton" Content="Pop" Command="{Binding PopCommand}" IsEnabled="{Binding HasSelection}" ToolTip.Tip="Apply the selected stash and remove it (kept when there are conflicts)" />
-      <Button x:Name="DropButton" Content="Drop…" Command="{Binding RequestDropCommand}" IsEnabled="{Binding HasSelection}" ToolTip.Tip="Delete the selected stash" />
+  <DockPanel x:Name="Card" Margin="12">
+    <!-- Buttons like the original dialog: stash form, then apply / pop / drop and close. -->
+    <StackPanel DockPanel.Dock="Bottom" Spacing="8" Margin="0,10,0,0">
+      <Border x:Name="StashForm" Padding="8" CornerRadius="4" BorderThickness="1" BorderBrush="{DynamicResource SubtleBorderBrush}">
+        <Grid ColumnDefinitions="Auto,*,Auto,Auto" ColumnSpacing="8">
+          <TextBlock Text="Stash message:" VerticalAlignment="Center" />
+          <TextBox x:Name="StashMessageBox" Grid.Column="1" Text="{Binding StashMessage}" Watermark="Message (optional)">
+            <TextBox.KeyBindings>
+              <KeyBinding Gesture="Enter" Command="{Binding ConfirmStashCommand}" />
+            </TextBox.KeyBindings>
+          </TextBox>
+          <CheckBox x:Name="UntrackedCheck" Grid.Column="2" Content="Include untracked files" IsChecked="{Binding IncludeUntracked}" />
+          <Button x:Name="StashConfirm" Grid.Column="3" Content="Stash changes" Classes="accent" Command="{Binding ConfirmStashCommand}" ToolTip.Tip="Stash the uncommitted changes of the working directory" />
+        </Grid>
+      </Border>
+
+      <!-- Drop confirmation -->
+      <Panel x:Name="DropPromptPanel" IsVisible="{Binding IsDropPending}">
+        <Border Background="{DynamicResource SystemAccentColor}" Opacity="0.15" />
+        <Grid ColumnDefinitions="*,Auto,Auto" ColumnSpacing="8" Margin="8,6">
+          <TextBlock x:Name="DropText" Text="{Binding DropPrompt}" TextWrapping="Wrap" VerticalAlignment="Center" />
+          <Button x:Name="DropConfirm" Grid.Column="1" Content="Drop stash" Command="{Binding ConfirmDropCommand}" />
+          <Button x:Name="DropCancel" Grid.Column="2" Content="Cancel" Command="{Binding CancelDropCommand}" />
+        </Grid>
+      </Panel>
+
+      <Grid ColumnDefinitions="Auto,*,Auto">
+        <StackPanel Orientation="Horizontal" Spacing="8">
+          <Button x:Name="ApplyButton" Content="Apply" Command="{Binding ApplyCommand}" IsEnabled="{Binding HasSelection}" ToolTip.Tip="Apply the selected stash and keep it" />
+          <Button x:Name="PopButton" Content="Pop" Command="{Binding PopCommand}" IsEnabled="{Binding HasSelection}" ToolTip.Tip="Apply the selected stash and remove it (kept when there are conflicts)" />
+          <Button x:Name="DropButton" Content="Drop…" Command="{Binding RequestDropCommand}" IsEnabled="{Binding HasSelection}" ToolTip.Tip="Delete the selected stash" />
+        </StackPanel>
+        <Button x:Name="CloseButton" Grid.Column="2" Content="Close" MinWidth="80" HorizontalContentAlignment="Center" Command="{Binding CloseCommand}" />
+      </Grid>
     </StackPanel>
-
-    <!-- Inline "stash changes" form -->
-    <Panel x:Name="StashForm" DockPanel.Dock="Top" IsVisible="{Binding IsStashFormVisible}">
-      <Border Background="{DynamicResource SystemAccentColor}" Opacity="0.15" />
-      <Grid ColumnDefinitions="*,Auto,Auto" RowDefinitions="Auto,Auto" ColumnSpacing="8" RowSpacing="6" Margin="8,6">
-        <TextBox x:Name="StashMessageBox" Grid.ColumnSpan="3" Text="{Binding StashMessage}" Watermark="Message (optional)">
-          <TextBox.KeyBindings>
-            <KeyBinding Gesture="Enter" Command="{Binding ConfirmStashCommand}" />
-            <KeyBinding Gesture="Escape" Command="{Binding CancelStashCommand}" />
-          </TextBox.KeyBindings>
-        </TextBox>
-        <CheckBox x:Name="UntrackedCheck" Grid.Row="1" Content="Include untracked files" IsChecked="{Binding IncludeUntracked}" />
-        <Button x:Name="StashConfirm" Grid.Row="1" Grid.Column="1" Content="Stash" Command="{Binding ConfirmStashCommand}" />
-        <Button x:Name="StashCancel" Grid.Row="1" Grid.Column="2" Content="Cancel" Command="{Binding CancelStashCommand}" />
-      </Grid>
-    </Panel>
-
-    <!-- Drop confirmation -->
-    <Panel x:Name="DropPromptPanel" DockPanel.Dock="Top" IsVisible="{Binding IsDropPending}">
-      <Border Background="{DynamicResource SystemAccentColor}" Opacity="0.15" />
-      <Grid ColumnDefinitions="*,Auto,Auto" ColumnSpacing="8" Margin="8,6">
-        <TextBlock x:Name="DropText" Text="{Binding DropPrompt}" TextWrapping="Wrap" VerticalAlignment="Center" />
-        <Button x:Name="DropConfirm" Grid.Column="1" Content="Drop stash" Command="{Binding ConfirmDropCommand}" />
-        <Button x:Name="DropCancel" Grid.Column="2" Content="Cancel" Command="{Binding CancelDropCommand}" />
-      </Grid>
-    </Panel>
 
     <Grid ColumnDefinitions="260,Auto,*">
       <ListBox x:Name="StashList" ItemsSource="{Binding Items}" SelectedItem="{Binding SelectedStash}">

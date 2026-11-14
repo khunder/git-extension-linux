@@ -235,11 +235,10 @@ public class StashTests
     }
 
     [AvaloniaTest]
-    public async Task Stash_flyout_renders_in_light_and_dark()
+    public async Task Stash_button_keeps_a_quick_menu_and_manage_stashes_opens_the_dialog()
     {
         using TestRepository repository = new();
         repository.AddSeveralStashes();
-        File.WriteAllText(Path.Combine(repository.Path, "a.txt"), "dirty again");
         MainWindowViewModel viewModel = new(GitEnvironment.Initialize(), new NoFolderPicker());
         MainWindow window = new() { DataContext = viewModel, Width = 1000, Height = 640 };
         window.Show();
@@ -248,24 +247,73 @@ public class StashTests
 
         StashMenuButton button = (StashMenuButton)window.GetVisualDescendants().First(c => c is StashMenuButton);
         button.Content.Should().Be("Stash (3) ▾");
-        viewModel.Stash.SelectedStash = viewModel.Stash.Items[0];
+        button.Flyout.Should().BeOfType<MenuFlyout>();
+        button.Flyout!.ShowAt(button);
+        ShellTestSupport.Settle();
+        string[] headers = button.Menu.Items.OfType<MenuItem>().Select(i => (string)i.Header!).ToArray();
+        headers.Should().Contain("_Stash changes").And.Contain("_Manage stashes…");
+        headers.Should().Contain(h => h.StartsWith("_Pop latest stash (stash@{0})", StringComparison.Ordinal));
+        DialogWindow.Open.Should().BeEmpty("the quick menu is not the manager");
+        button.Flyout.Hide();
+
+        // "Manage stashes…" (menu, Ctrl+Shift+T) opens the dialog.
+        viewModel.ManageStashesCommand.Execute(null);
+        ShellTestSupport.Settle();
+        DialogWindow dialog = DialogWindow.Open.Should().ContainSingle().Which;
+        dialog.Title.Should().Be("Manage stashes");
+        viewModel.Stash.CloseCommand.Execute(null);
+        ShellTestSupport.Settle();
+        DialogWindow.Open.Should().BeEmpty();
+
+        window.KeyPress(Avalonia.Input.Key.T, Avalonia.Input.RawInputModifiers.Control | Avalonia.Input.RawInputModifiers.Shift, Avalonia.Input.PhysicalKey.None, null);
+        ShellTestSupport.Settle();
+        DialogWindow.Open.Should().ContainSingle();
+        viewModel.Stash.IsOpen.Should().BeTrue();
+        window.Close();
+    }
+
+    [AvaloniaTest]
+    public async Task Stash_dialog_stashes_with_a_message_and_renders_in_light_and_dark()
+    {
+        using TestRepository repository = new();
+        repository.AddSeveralStashes();
+        File.WriteAllText(Path.Combine(repository.Path, "a.txt"), "dirty again");
+        File.WriteAllText(Path.Combine(repository.Path, "new-untracked.txt"), "untracked");
+        MainWindowViewModel viewModel = new(GitEnvironment.Initialize(), new NoFolderPicker());
+        MainWindow window = new() { DataContext = viewModel, Width = 1000, Height = 640 };
+        window.Show();
+        await viewModel.OpenAsync(repository.Path);
+        await WaitAsync(() => viewModel.Stash.Items.Count == 3);
+
+        viewModel.Stash.Open();
+        ShellTestSupport.Settle();
+        DialogWindow dialog = DialogWindow.Open.Should().ContainSingle().Which;
+        dialog.Find<ListBox>("StashList").ItemCount.Should().Be(3);
+
+        // Stash with a message and untracked files, through the controls of the dialog.
+        dialog.Find<TextBox>("StashMessageBox").Text = "from the dialog";
+        dialog.Find<CheckBox>("UntrackedCheck").IsChecked = true;
+        viewModel.Stash.StashMessage.Should().Be("from the dialog");
+        viewModel.Stash.IncludeUntracked.Should().BeTrue();
+        dialog.Find<Button>("StashConfirm").Command!.Execute(null);
+        await WaitAsync(() => viewModel.Stash.Items.Count == 4);
+        viewModel.Stash.Items[0].Message.Should().Contain("from the dialog");
+        File.Exists(Path.Combine(repository.Path, "new-untracked.txt")).Should().BeFalse("untracked files were stashed too");
+
+        viewModel.Stash.SelectedStash = viewModel.Stash.Items[1];
         await WaitAsync(() => viewModel.Stash.Files.Count == 1);
         viewModel.Stash.SelectedFile = viewModel.Stash.Files[0];
         await WaitAsync(() => viewModel.Stash.DiffLines.Count > 0);
-        viewModel.Stash.RequestDropCommand.Execute(viewModel.Stash.Items[1]);
+        viewModel.Stash.RequestDropCommand.Execute(viewModel.Stash.Items[2]);
 
-        button.Flyout!.ShowAt(button);
         foreach (ThemeVariant variant in new[] { ThemeVariant.Light, ThemeVariant.Dark })
         {
-            window.RequestedThemeVariant = variant;
-            Avalonia.Threading.Dispatcher.UIThread.RunJobs();
-            AvaloniaHeadlessPlatform.ForceRenderTimerTick();
+            Avalonia.Application.Current!.RequestedThemeVariant = variant;
+            ShellTestSupport.Settle();
+            dialog.Find<ListBox>("StashList").ItemCount.Should().Be(4);
+            dialog.Find<Panel>("DropPromptPanel").IsVisible.Should().BeTrue();
 
-            StashView view = button.View;
-            view.FindControl<ListBox>("StashList")!.ItemCount.Should().Be(3);
-            view.FindControl<Panel>("DropPromptPanel")!.IsVisible.Should().BeTrue();
-
-            WriteableBitmap? frame = window.CaptureRenderedFrame();
+            WriteableBitmap? frame = dialog.CaptureRenderedFrame();
             frame.Should().NotBeNull();
             string directory = Path.Combine(AppContext.BaseDirectory, "screenshots");
             Directory.CreateDirectory(directory);
@@ -274,6 +322,7 @@ public class StashTests
             TestContext.AddTestAttachment(file);
         }
 
+        Avalonia.Application.Current!.RequestedThemeVariant = ThemeVariant.Default;
         window.Close();
     }
 

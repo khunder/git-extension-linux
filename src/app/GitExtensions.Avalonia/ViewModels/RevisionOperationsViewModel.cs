@@ -63,7 +63,7 @@ public sealed partial class BranchChoice : ObservableObject
 
 /// <summary>
 ///  Cherry pick, checkout revision, delete branch, archive, reset and clean working directory.
-///  The dialog is an inline panel above the history: the user picks the options, then confirms.
+///  The dialog is a modal window: the user picks the options, then confirms.
 ///  Git runs on a background thread; failures are reported through <c>reportError</c> (the banner).
 /// </summary>
 public sealed partial class RevisionOperationsViewModel : ObservableObject
@@ -77,7 +77,7 @@ public sealed partial class RevisionOperationsViewModel : ObservableObject
     private bool _hardConfirmed;
 
     [ObservableProperty]
-    [NotifyPropertyChangedFor(nameof(IsOpen), nameof(Title), nameof(ConfirmText), nameof(ShowRevision), nameof(IsCherryPick), nameof(IsCheckout), nameof(IsDeleteBranch), nameof(IsArchive), nameof(IsReset), nameof(IsClean))]
+    [NotifyPropertyChangedFor(nameof(IsOpen), nameof(DialogTitle), nameof(Title), nameof(ConfirmText), nameof(ShowRevision), nameof(IsCherryPick), nameof(IsCheckout), nameof(IsDeleteBranch), nameof(IsArchive), nameof(IsReset), nameof(IsClean))]
     private RevisionOperation _operation;
 
     [ObservableProperty]
@@ -163,7 +163,30 @@ public sealed partial class RevisionOperationsViewModel : ObservableObject
 
     public IReadOnlyList<int> MainlineChoices { get; } = [0, 1, 2];
 
-    public bool IsOpen => Operation != RevisionOperation.None;
+    /// <summary>Whether the operation dialog is open; closing the dialog window sets it to false (cancels the operation).</summary>
+    public bool IsOpen
+    {
+        get => Operation != RevisionOperation.None;
+        set
+        {
+            if (!value && IsOpen)
+            {
+                Cancel();
+            }
+        }
+    }
+
+    /// <summary>The window title of the dialog, as in the original Git Extensions.</summary>
+    public string DialogTitle => Operation switch
+    {
+        RevisionOperation.CherryPick => "Cherry pick commit",
+        RevisionOperation.CheckoutRevision => "Checkout revision",
+        RevisionOperation.DeleteBranch => "Delete branches",
+        RevisionOperation.Archive => "Archive revision",
+        RevisionOperation.Reset => "Reset current branch",
+        RevisionOperation.Clean => "Clean working directory",
+        _ => string.Empty,
+    };
 
     public bool IsCherryPick => Operation == RevisionOperation.CherryPick;
 

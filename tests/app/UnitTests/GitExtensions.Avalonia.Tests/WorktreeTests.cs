@@ -243,7 +243,7 @@ public class WorktreeTests
         });
         await tools.Worktrees.AddAsync(Wt("w"), "w-branch", true);
         tools.SelectedTabIndex = RepositoryToolsViewModel.WorktreesTab;
-        tools.IsOpen = true;
+        tools.Open(RepositoryToolsViewModel.WorktreesTab);
         await ReflogTests.WaitAsync(() => tools.Worktrees.Items.Count == 2);
 
         await tools.OpenFromToolsAsync(Wt("w"));
