@@ -37,11 +37,11 @@ public class ViewOptionsTests
 
     private static MainWindowViewModel NewViewModel() => new(GitEnvironment.Initialize(), new NoFolderPicker());
 
-    [Test]
+    [AvaloniaTest]
     public void The_branch_filter_defaults_to_all_branches()
         => MainWindowViewModel.DefaultBranchChoice.Should().Be(MainWindowViewModel.AllBranchesChoice);
 
-    [Test]
+    [AvaloniaTest]
     public void Defaults_show_all_tabs_but_the_build_report()
     {
         _store.Load().Should().Be(new ViewOptionsSettings());

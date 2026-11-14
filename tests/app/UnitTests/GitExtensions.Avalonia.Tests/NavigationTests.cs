@@ -44,7 +44,7 @@ public class NavigationTests
 
     // ---- pure ----
 
-    [Test]
+    [AvaloniaTest]
     public void History_moves_back_and_forward_and_drops_the_forward_part_on_a_new_selection()
     {
         NavigationHistory history = new();
@@ -69,7 +69,7 @@ public class NavigationTests
         history.Back().Should().Be(b);
     }
 
-    [Test]
+    [AvaloniaTest]
     public void History_keeps_at_most_its_capacity()
     {
         NavigationHistory history = new();
@@ -82,7 +82,7 @@ public class NavigationTests
         history.Current.Should().Be(Id((NavigationHistory.Capacity + 19).ToString("x40")));
     }
 
-    [Test]
+    [AvaloniaTest]
     public void Bisect_refs_are_parsed_into_marks()
     {
         string bad = new('a', 40);
@@ -102,7 +102,7 @@ public class NavigationTests
         BisectStateParser.ParseFirstBad($"{good} is the first 'bad' commit\n").Should().Be(Id(good), "git quotes the term in newer versions");
     }
 
-    [Test]
+    [AvaloniaTest]
     public void Fsck_lines_are_parsed()
     {
         string commit = new('a', 40);

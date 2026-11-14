@@ -25,7 +25,7 @@ public class PerformanceGuardTests
 
     private static MainWindowViewModel CreateViewModel() => new(GitEnvironment.Initialize(), new NoFolderPicker());
 
-    [Test]
+    [AvaloniaTest]
     public void AddRange_and_ReplaceAll_raise_one_event()
     {
         RangeObservableCollection<int> collection = [];
@@ -41,7 +41,7 @@ public class PerformanceGuardTests
         collection.Should().BeEmpty();
     }
 
-    [Test]
+    [AvaloniaTest]
     public void ToDisplayText_truncates_long_lines_and_replaces_control_characters()
     {
         DiffLimits.ToDisplayText("plain\ttext").Should().Be("plain\ttext");
@@ -53,7 +53,7 @@ public class PerformanceGuardTests
         shown.Should().EndWith("…");
     }
 
-    [Test]
+    [AvaloniaTest]
     public void Truncate_limits_the_number_of_diff_lines_and_adds_a_notice()
     {
         IReadOnlyList<DiffLine> lines = [.. Enumerable.Range(0, DiffLimits.MaxDisplayedLines + 10).Select(i => new DiffLine(DiffLineKind.Context, " " + i, i, i))];
@@ -68,7 +68,7 @@ public class PerformanceGuardTests
         DiffLimits.Truncate(ref small).Should().BeFalse();
     }
 
-    [Test]
+    [AvaloniaTest]
     public void Graph_builder_keeps_one_pass_segment_for_collapsed_lanes()
     {
         // 40 open branch tips, then one commit that every lane passes by.

@@ -47,7 +47,7 @@ public class ThemeTests
         TestContext.Out.WriteLine(file);
     }
 
-    [Test]
+    [AvaloniaTest]
     public void ThemeStore_round_trips_every_choice()
     {
         ThemeStore store = new(TempFile("roundtrip.json"));
@@ -71,7 +71,7 @@ public class ThemeTests
         new ThemeStore(file).Load().Should().Be(ThemeChoice.System);
     }
 
-    [Test]
+    [AvaloniaTest]
     public void ThemeStore_defaults_next_to_the_window_state_file()
         => Path.GetDirectoryName(new ThemeStore().FilePath).Should().Be(Path.GetDirectoryName(new WindowStateStore().FilePath));
 

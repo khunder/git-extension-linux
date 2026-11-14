@@ -15,7 +15,7 @@ public class RemotesTests
     private static RemotesViewModel Create(TestRepository repo, List<string>? status = null)
         => new(() => repo.Path, message => status?.Add(message));
 
-    [Test]
+    [AvaloniaTest]
     public void Parses_remotes_with_fetch_and_push_urls()
     {
         IReadOnlyList<RemoteItem> remotes = RemotesViewModel.ParseRemotes(
@@ -27,7 +27,7 @@ public class RemotesTests
             new RemoteItem("my.fork", "/srv/my fork.git", string.Empty));
     }
 
-    [Test]
+    [AvaloniaTest]
     public void Pairs_remote_branches_with_tracking_local_branches()
     {
         IReadOnlyList<RemoteBranchRow> rows = RemotesViewModel.ParseBranches(

@@ -65,7 +65,7 @@ public class RevisionGridTests
         RelativeDateFormatter.Format(now.AddSeconds(-ageSeconds), now).Should().Be(expected);
     }
 
-    [Test]
+    [AvaloniaTest]
     public void Badges_put_the_current_branch_first_then_local_remote_and_tags()
     {
         IReadOnlyList<RefBadge> badges = RefBadgeBuilder.Arrange(
@@ -81,7 +81,7 @@ public class RevisionGridTests
         badges.Should().NotContain(b => b.IsOverflow);
     }
 
-    [Test]
+    [AvaloniaTest]
     public void Many_badges_collapse_into_an_overflow_chip_listing_everything()
     {
         RefBadge[] all = Enumerable.Range(1, 6).Select(i => new RefBadge(RefBadgeKind.LocalBranch, "b" + i, false)).ToArray();
@@ -92,7 +92,7 @@ public class RevisionGridTests
         badges[3].ToolTip.Should().Contain("b1").And.Contain("b6");
     }
 
-    [Test]
+    [AvaloniaTest]
     public void Avatar_initials_and_colour_derive_from_the_name()
     {
         AvatarStyle.Initials("Philippe Miossec").Should().Be("PM");
@@ -103,7 +103,7 @@ public class RevisionGridTests
         AvatarStyle.ColorIndex("Alice").Should().BeInRange(0, AvatarStyle.ColorCount - 1);
     }
 
-    [Test]
+    [AvaloniaTest]
     public void Filter_maps_to_git_arguments()
     {
         RevisionFilterArgs.Build(new RevisionFilter(), 100).Should().Be("--topo-order --max-count=100 --branches --remotes --tags HEAD");
@@ -129,7 +129,7 @@ public class RevisionGridTests
         new RevisionFilter { Branches = BranchFilterMode.SpecificBranch, Branch = "x" }.IsFiltering.Should().BeTrue();
     }
 
-    [Test]
+    [AvaloniaTest]
     public void Column_store_round_trips_clamps_and_survives_bad_files()
     {
         GridColumnStore store = new(Path.Combine(_directory, "sub", "cols.json"));
@@ -148,7 +148,7 @@ public class RevisionGridTests
         new GridColumnStore(Path.Combine(_directory, "missing.json")).Load().Should().Be(new GridColumnSettings());
     }
 
-    [Test]
+    [AvaloniaTest]
     public void Resizing_a_column_clamps_the_width()
     {
         RevisionGridColumns columns = new();

@@ -172,7 +172,7 @@ public class AskPassTests
         result.Text.Should().Be(prompt.Trim());
     }
 
-    [Test]
+    [AvaloniaTest]
     public async Task Server_round_trip_with_the_helper_returns_the_reply()
     {
         AskPassService.LocateHelper().Should().NotBeNull("the helper is deployed next to the app");
@@ -195,7 +195,7 @@ public class AskPassTests
         operation.Environment.Should().ContainKey("GIT_ASKPASS").And.ContainKey("SSH_ASKPASS").And.ContainKey("SSH_ASKPASS_REQUIRE");
     }
 
-    [Test]
+    [AvaloniaTest]
     public async Task Server_cancelled_response_makes_the_helper_exit_with_failure()
     {
         using AskPassServer server = new((_, _) => Task.FromResult(AskPassResponse.Cancelled), AskPassService.LocateHelper()!);
@@ -208,7 +208,7 @@ public class AskPassTests
         operation.UserCancelled.Should().BeTrue();
     }
 
-    [Test]
+    [AvaloniaTest]
     public async Task Server_refuses_wrong_unknown_and_disposed_tokens()
     {
         int handled = 0;
@@ -245,7 +245,7 @@ public class AskPassTests
         }
     }
 
-    [Test]
+    [AvaloniaTest]
     public void Server_removes_its_private_directory_on_dispose()
     {
         if (OperatingSystem.IsWindows())

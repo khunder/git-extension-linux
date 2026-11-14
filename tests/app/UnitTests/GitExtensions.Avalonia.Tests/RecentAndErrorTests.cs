@@ -121,7 +121,7 @@ public class RecentAndErrorTests
         viewModel.ErrorMessage.Should().Be("background failure");
     }
 
-    [Test]
+    [AvaloniaTest]
     public void WindowStateStore_round_trips()
     {
         string file = Path.Combine(IsolatedConfig.Directory!, "store", "window.json");
@@ -134,7 +134,7 @@ public class RecentAndErrorTests
         new WindowStateStore(file).Load().Should().Be(placement);
     }
 
-    [Test]
+    [AvaloniaTest]
     public void WindowStateStore_ignores_a_corrupt_file()
     {
         string file = Path.Combine(IsolatedConfig.Directory!, "corrupt.json");
@@ -142,7 +142,7 @@ public class RecentAndErrorTests
         new WindowStateStore(file).Load().Should().BeNull();
     }
 
-    [Test]
+    [AvaloniaTest]
     public void WindowStateStore_defaults_to_the_app_data_folder()
         => new WindowStateStore().FilePath.Should().StartWith(Environment.GetFolderPath(Environment.SpecialFolder.ApplicationData));
 

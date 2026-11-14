@@ -71,7 +71,7 @@ public class SettingsTests
         return repository.GitOutput("config", "--global", key).Trim();
     }
 
-    [Test]
+    [AvaloniaTest]
     public async Task Open_loads_the_persisted_values()
     {
         AppSettings.GitCommandValue = string.Empty;
@@ -87,7 +87,7 @@ public class SettingsTests
         vm.HasLocalIdentityOverride.Should().BeFalse();
     }
 
-    [Test]
+    [AvaloniaTest]
     public async Task Save_persists_identity_and_behavior()
     {
         SettingsViewModel vm = Create();
@@ -112,7 +112,7 @@ public class SettingsTests
         AppSettings.ShowStashes.Should().Be(expectedStashes);
     }
 
-    [Test]
+    [AvaloniaTest]
     public async Task Clearing_the_identity_unsets_it()
     {
         SettingsViewModel vm = Create();
@@ -125,7 +125,7 @@ public class SettingsTests
         ReadGlobal("user.name").Should().Be("Global Person");
     }
 
-    [Test]
+    [AvaloniaTest]
     public async Task Cancel_discards_staged_edits()
     {
         SettingsViewModel vm = Create();
@@ -144,7 +144,7 @@ public class SettingsTests
         vm.HistoryLimitText.Should().Be("2000");
     }
 
-    [Test]
+    [AvaloniaTest]
     public async Task A_bad_git_path_is_reported_and_nothing_is_saved()
     {
         string before = AppSettings.GitCommandValue;
@@ -161,7 +161,7 @@ public class SettingsTests
         ReadGlobal("user.name").Should().Be("Global Person");
     }
 
-    [Test]
+    [AvaloniaTest]
     public async Task A_program_that_is_not_git_is_rejected()
     {
         SettingsViewModel vm = Create();
@@ -173,7 +173,7 @@ public class SettingsTests
         vm.GitTestResult.Should().NotBeNullOrEmpty();
     }
 
-    [Test]
+    [AvaloniaTest]
     public async Task Test_button_reports_the_git_version_and_browse_fills_the_path()
     {
         SettingsViewModel vm = Create();
@@ -204,7 +204,7 @@ public class SettingsTests
         BehaviorSettings.Current.HistoryLimit.Should().Be(2000);
     }
 
-    [Test]
+    [AvaloniaTest]
     public async Task A_repository_override_is_shown_when_it_differs()
     {
         using TestRepository repository = new();

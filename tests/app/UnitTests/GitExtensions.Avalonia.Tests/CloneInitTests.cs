@@ -67,7 +67,7 @@ public class CloneInitTests
     public void Target_name_is_derived_from_the_url(string url, string expected)
         => CloneTargetNameParser.Parse(url).Should().Be(expected);
 
-    [Test]
+    [AvaloniaTest]
     public void Validator_reports_each_problem_inline()
     {
         string existing = Path.Combine(_root, "full");

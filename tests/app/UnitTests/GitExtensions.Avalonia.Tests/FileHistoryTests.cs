@@ -42,7 +42,7 @@ public class FileHistoryTests
         return new FileHistoryViewModel(() => module, selectCommit);
     }
 
-    [Test]
+    [AvaloniaTest]
     public void BlameParser_reads_porcelain_output()
     {
         const string A = "aaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaa";
@@ -62,7 +62,7 @@ public class FileHistoryTests
         BlameParser.Parse(string.Empty).Should().BeEmpty();
     }
 
-    [Test]
+    [AvaloniaTest]
     public void FileLogParser_reads_records_and_the_path_at_each_commit()
     {
         string output = "\u0001h1\u001fAlice\u001f2024-01-02T03:04:05+01:00\u001fSubject: with colon\n\nnew.txt\n\u0001h2\u001fBob\u001f2024-01-01T00:00:00+00:00\u001fOld\n\nold.txt\n";
@@ -73,7 +73,7 @@ public class FileHistoryTests
         FileLogParser.Parse(null).Should().BeEmpty();
     }
 
-    [Test]
+    [AvaloniaTest]
     public void BlameViewModel_groups_consecutive_lines_of_one_commit()
     {
         DateTimeOffset date = new(2024, 1, 1, 0, 0, 0, TimeSpan.Zero);

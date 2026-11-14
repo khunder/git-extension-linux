@@ -1,0 +1,14 @@
+{
+  "profiles": {
+    "Git Extensions (Avalonia)": {
+      "commandName": "Project",
+      "commandLineArgs": "",
+      "workingDirectory": "$(ProjectDir)"
+    },
+    "Git Extensions (open this repository)": {
+      "commandName": "Project",
+      "commandLineArgs": "../../..",
+      "workingDirectory": "$(ProjectDir)"
+    }
+  }
+}

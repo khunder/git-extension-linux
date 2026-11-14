@@ -53,7 +53,7 @@ public class HunkOperationTests
 
     private static DiffLine Line(FileDiffViewModel diff, string text) => diff.Lines.Single(l => l.Text == text);
 
-    [Test]
+    [AvaloniaTest]
     public void Patch_builder_numbers_hunks_in_the_parser()
     {
         IReadOnlyList<DiffLine> lines = UnifiedDiffParser.Parse("diff --git a/x b/x\n--- a/x\n+++ b/x\n@@ -1,2 +1,2 @@\n-a\n+b\n c\n@@ -9 +9 @@\n-x\n+y\n");

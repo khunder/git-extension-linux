@@ -42,7 +42,7 @@ public class RemoteOperationsTests
         return (viewModel, statuses, messages, refreshes);
     }
 
-    [Test]
+    [AvaloniaTest]
     public void Accumulator_splits_lines_and_collapses_progress()
     {
         OutputAccumulator output = new();
@@ -57,7 +57,7 @@ public class RemoteOperationsTests
         output.Lines.Should().Equal("first", "Receiving 100%, done.", "last", "next");
     }
 
-    [Test]
+    [AvaloniaTest]
     public void Accumulator_caps_the_number_of_lines_and_can_be_cleared()
     {
         OutputAccumulator output = new(maxLines: 3);

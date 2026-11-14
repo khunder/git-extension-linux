@@ -25,7 +25,7 @@ public class LayoutTests
     [TearDown]
     public void DeleteDirectory() => Directory.Delete(_directory, recursive: true);
 
-    [Test]
+    [AvaloniaTest]
     public void Store_round_trips()
     {
         LayoutStore store = new(Path.Combine(_directory, "sub", "layout.json"));
@@ -34,7 +34,7 @@ public class LayoutTests
         store.Load().Should().Be(settings);
     }
 
-    [Test]
+    [AvaloniaTest]
     public void Store_returns_defaults_for_missing_or_corrupt_files()
     {
         LayoutStore store = new(Path.Combine(_directory, "layout.json"));
@@ -50,7 +50,7 @@ public class LayoutTests
         store.Load().Should().Be(new LayoutSettings());
     }
 
-    [Test]
+    [AvaloniaTest]
     public void Store_ignores_the_fields_of_the_old_layout_file()
     {
         LayoutStore store = new(Path.Combine(_directory, "layout.json"));
@@ -61,7 +61,7 @@ public class LayoutTests
         loaded.GridHeight.Should().Be(new LayoutSettings().GridHeight);
     }
 
-    [Test]
+    [AvaloniaTest]
     public void Store_clamps_absurd_values_and_fills_missing_ones()
     {
         LayoutStore store = new(Path.Combine(_directory, "layout.json"));

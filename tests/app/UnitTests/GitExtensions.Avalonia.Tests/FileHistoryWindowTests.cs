@@ -94,7 +94,7 @@ public class FileHistoryWindowTests
         return (new WindowService(main, owner), owner, main, statePath);
     }
 
-    [Test]
+    [AvaloniaTest]
     public async Task History_lists_the_commits_newest_first_and_follows_renames()
     {
         using FileHistoryRepository repository = new();
@@ -113,7 +113,7 @@ public class FileHistoryWindowTests
         viewModel.Columns.AuthorWidth.Should().BeGreaterThan(0);
     }
 
-    [Test]
+    [AvaloniaTest]
     public async Task Following_renames_can_be_switched_off()
     {
         using FileHistoryRepository repository = new();
@@ -127,7 +127,7 @@ public class FileHistoryWindowTests
         viewModel.Rows.Select(r => r.Subject).Should().Equal("Edit first line", "Rename story to tale");
     }
 
-    [Test]
+    [AvaloniaTest]
     public async Task Filter_matches_message_author_and_hash_and_honours_the_options()
     {
         using FileHistoryRepository repository = new();
@@ -157,7 +157,7 @@ public class FileHistoryWindowTests
         await viewModel.WhenIdleAsync();
     }
 
-    [Test]
+    [AvaloniaTest]
     public async Task Branch_combo_switches_between_the_current_and_all_branches()
     {
         using FileHistoryRepository repository = new();
@@ -186,7 +186,7 @@ public class FileHistoryWindowTests
         viewModel.Rows[0].Subject.Should().Be("Side edit");
     }
 
-    [Test]
+    [AvaloniaTest]
     public async Task A_revision_that_is_not_on_the_current_branch_falls_back_to_all_branches()
     {
         using FileHistoryRepository repository = new();
@@ -205,7 +205,7 @@ public class FileHistoryWindowTests
         viewModel.Blame.Lines.Last().Text.Should().Be("side line");
     }
 
-    [Test]
+    [AvaloniaTest]
     public async Task Diff_and_View_show_the_file_as_of_the_selected_revision()
     {
         using FileHistoryRepository repository = new();
@@ -233,7 +233,7 @@ public class FileHistoryWindowTests
         viewModel.DiffLines.Should().Contain(l => l.Kind == DiffLineKind.Removed && l.Text.Contains("line 1", StringComparison.Ordinal));
     }
 
-    [Test]
+    [AvaloniaTest]
     public async Task Rename_commit_diff_names_both_paths_and_binary_or_empty_files_are_guarded()
     {
         using FileHistoryRepository repository = new();
@@ -259,7 +259,7 @@ public class FileHistoryWindowTests
         untracked.Message.Should().Contain("No commits");
     }
 
-    [Test]
+    [AvaloniaTest]
     public async Task Commit_tab_shows_the_selected_commit()
     {
         using FileHistoryRepository repository = new();
@@ -276,7 +276,7 @@ public class FileHistoryWindowTests
         viewModel.CommitDetails.Author.Should().Contain("Alice");
     }
 
-    [Test]
+    [AvaloniaTest]
     public async Task Blame_groups_lines_into_blocks_and_clicking_a_block_selects_its_commit_without_reloading()
     {
         using FileHistoryRepository repository = new();
@@ -307,7 +307,7 @@ public class FileHistoryWindowTests
         viewModel.Blame.Lines.Select(l => l.Entry.Author).Distinct().Should().Equal("Alice");
     }
 
-    [Test]
+    [AvaloniaTest]
     public async Task Blame_starts_at_the_requested_revision()
     {
         using FileHistoryRepository repository = new();
@@ -320,7 +320,7 @@ public class FileHistoryWindowTests
         viewModel.Blame.Lines[0].Entry.Author.Should().Be("Alice");
     }
 
-    [Test]
+    [AvaloniaTest]
     public async Task Tab_selection_follows_the_open_request()
     {
         using FileHistoryRepository repository = new();
@@ -339,7 +339,7 @@ public class FileHistoryWindowTests
         diff.ViewLines.Should().HaveCount(5);
     }
 
-    [Test]
+    [AvaloniaTest]
     public void Relative_dates_and_ref_decorations_are_formatted_like_the_original_grid()
     {
         DateTimeOffset now = new(2024, 6, 1, 12, 0, 0, TimeSpan.Zero);
@@ -362,7 +362,7 @@ public class FileHistoryWindowTests
         FileHistoryRef.Parse(string.Empty).Should().BeEmpty();
     }
 
-    [Test]
+    [AvaloniaTest]
     public void Opening_a_file_from_the_main_window_uses_the_window_service_when_there_is_one()
     {
         MainWindowViewModel main = new(GitEnvironment.Initialize(), new NoFolderPicker());

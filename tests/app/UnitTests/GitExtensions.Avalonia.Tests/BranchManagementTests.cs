@@ -59,7 +59,7 @@ public class BranchManagementTests
     public void UpstreamTrackParser_parses_the_track_text(string text, int ahead, int behind, bool gone)
         => UpstreamTrackParser.Parse(text).Should().Be((ahead, behind, gone));
 
-    [Test]
+    [AvaloniaTest]
     public void UpstreamTrackParser_parses_for_each_ref_lines()
     {
         Dictionary<string, UpstreamTrack> tracks = UpstreamTrackParser.ParseAll(
