@@ -30,13 +30,13 @@
           <TextBlock Text="Dashboard" Opacity="0.65" />
         </StackPanel>
         <StackPanel DockPanel.Dock="Top" Margin="4,0">
-          <Button x:Name="CreateButton" Classes="link" Command="{Binding CreateNewCommand}">
+          <Button x:Name="CreateButton" Classes="link" AutomationProperties.Name="Create new repository" Command="{Binding CreateNewCommand}">
             <StackPanel Orientation="Horizontal" Spacing="6"><views:AppIcon IconName="RepoCreate" /><TextBlock Text="Create new repository…" VerticalAlignment="Center" /></StackPanel>
           </Button>
-          <Button x:Name="OpenButton" Classes="link" Command="{Binding BrowseCommand}">
+          <Button x:Name="OpenButton" Classes="link" AutomationProperties.Name="Open repository" Command="{Binding BrowseCommand}">
             <StackPanel Orientation="Horizontal" Spacing="6"><views:AppIcon IconName="RepoOpen" /><TextBlock Text="Open repository…" VerticalAlignment="Center" /></StackPanel>
           </Button>
-          <Button x:Name="CloneButton" Classes="link" Command="{Binding CloneRepositoryCommand}">
+          <Button x:Name="CloneButton" Classes="link" AutomationProperties.Name="Clone repository" Command="{Binding CloneRepositoryCommand}">
             <StackPanel Orientation="Horizontal" Spacing="6"><views:AppIcon IconName="CloneRepoGit" /><TextBlock Text="Clone repository…" VerticalAlignment="Center" /></StackPanel>
           </Button>
         </StackPanel>
