@@ -1,12 +1,14 @@
 <UserControl xmlns="https://github.com/avaloniaui"
              xmlns:x="http://schemas.microsoft.com/winfx/2006/xaml"
              xmlns:vm="using:GitExtensions.Desktop.ViewModels"
+             xmlns:local="using:GitExtensions.Desktop.Views"
              x:Class="GitExtensions.Desktop.Views.RefsPromptView"
              x:DataType="vm:RefsTreeViewModel">
   <!-- Content of the modal dialogs of the refs tree: create/rename branch, create tag, set upstream, delete and push confirmations. -->
   <Border Padding="12" Background="{DynamicResource DialogBackground}">
     <DockPanel LastChildFill="True">
       <StackPanel DockPanel.Dock="Bottom" Spacing="6" Margin="0,8,0,0">
+        <TextBlock x:Name="RefsPromptProgress" Text="{Binding ProgressNote}" IsVisible="{Binding HasProgressNote}" TextWrapping="Wrap" Opacity="0.8" />
         <TextBlock x:Name="RefsPromptError" Text="{Binding ValidationError}" IsVisible="{Binding HasValidationError}" TextWrapping="Wrap" Foreground="{DynamicResource ErrorTextForeground}" />
         <StackPanel Orientation="Horizontal" HorizontalAlignment="Right" Spacing="8">
           <Button x:Name="RefsPromptConfirm" Classes="accent" MinWidth="90" Content="{Binding ConfirmText}" Command="{Binding ConfirmPromptCommand}" IsDefault="True" />
@@ -28,7 +30,8 @@
           <TextBlock Grid.Row="2" Text="Message:" VerticalAlignment="Top" Margin="0,6,0,0" IsVisible="{Binding ShowMessage}" />
           <TextBox x:Name="RefsPromptMessage" Grid.Row="2" Grid.Column="1" Text="{Binding MessageText}" IsVisible="{Binding ShowMessage}" Watermark="Tag message (optional: makes it annotated)" AcceptsReturn="True" MinHeight="60" MaxHeight="120" TextWrapping="Wrap" />
         </Grid>
-        <CheckBox x:Name="RefsPromptCheckout" IsChecked="{Binding CheckoutAfterCreate}" IsVisible="{Binding ShowCheckout}" Content="Checkout after create" />
+        <StackPanel IsVisible="{Binding ShowCheckout}"><local:CreateBranchOptionsView x:Name="RefsPromptBranchOptions" DataContext="{Binding BranchOptions}" /></StackPanel>
+        <StackPanel IsVisible="{Binding ShowMessage}"><local:CreateTagOptionsView x:Name="RefsPromptTagOptions" DataContext="{Binding TagOptions}" /></StackPanel>
         <ComboBox x:Name="RefsPromptUpstream" ItemsSource="{Binding UpstreamChoices}" SelectedItem="{Binding SelectedUpstream}" IsVisible="{Binding ShowUpstreamPicker}" HorizontalAlignment="Stretch" />
       </StackPanel>
     </DockPanel>

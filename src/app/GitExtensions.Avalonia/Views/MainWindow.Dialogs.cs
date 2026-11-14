@@ -24,5 +24,6 @@ public sealed partial class MainWindow
         BindToolDialogs(viewModel);
         BindPullPushDialogs(viewModel);
         BindBranchDialogs(viewModel);
+        BindHistoryEditDialogs(viewModel);
     }
 }

@@ -29,6 +29,8 @@ public sealed partial class RevisionDiffView : UserControl
             Revision = revision,
             OpenHistory = (path, blame) => _ = main?.RevisionTabs.OpenFileHistoryAsync(path, blame, revision),
             Clipboard = new TopLevelClipboardService(TopLevel.GetTopLevel(this)),
+            Owner = TopLevel.GetTopLevel(this) as Window,
+            Changed = revision is null && main is not null ? main.RefreshChangesAsync : null,
         };
     }
 }

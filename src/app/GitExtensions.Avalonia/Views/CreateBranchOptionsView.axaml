@@ -1,0 +1,19 @@
+<UserControl xmlns="https://github.com/avaloniaui"
+             xmlns:x="http://schemas.microsoft.com/winfx/2006/xaml"
+             xmlns:vm="using:GitExtensions.Desktop.ViewModels"
+             x:Class="GitExtensions.Desktop.Views.CreateBranchOptionsView"
+             x:DataType="vm:CreateBranchOptions">
+  <!-- The options of the Create branch dialogs: checkout after create with the choice for local changes, and orphan. -->
+  <StackPanel Spacing="4">
+    <CheckBox x:Name="BranchCheckout" IsChecked="{Binding CheckoutAfterCreate}" IsEnabled="{Binding CanChooseCheckout}" Content="Checkout after create" />
+    <StackPanel x:Name="BranchLocalChanges" Margin="22,0,0,0" Spacing="2" IsVisible="{Binding ShowLocalChanges}">
+      <TextBlock Text="Local changes:" Opacity="0.7" />
+      <RadioButton x:Name="BranchKeep" GroupName="BranchLocalChanges" IsChecked="{Binding IsKeep}" Content="Don't change (git refuses if they are in the way)" />
+      <RadioButton x:Name="BranchMerge" GroupName="BranchLocalChanges" IsChecked="{Binding IsMerge}" Content="Merge them into the new branch" />
+      <RadioButton x:Name="BranchStash" GroupName="BranchLocalChanges" IsChecked="{Binding IsStash}" Content="Stash them and re-apply on the new branch" />
+      <RadioButton x:Name="BranchReset" GroupName="BranchLocalChanges" IsChecked="{Binding IsReset}" Content="Reset (discard them)" />
+    </StackPanel>
+    <CheckBox x:Name="BranchOrphan" IsChecked="{Binding Orphan}" Content="Orphan: start a branch without history" ToolTip.Tip="The new branch has no parent commit; the first commit on it becomes its root." />
+    <CheckBox x:Name="BranchClearOrphan" Margin="22,0,0,0" IsChecked="{Binding ClearOrphan}" IsVisible="{Binding Orphan}" Content="Remove all files from the index and working tree" />
+  </StackPanel>
+</UserControl>

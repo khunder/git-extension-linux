@@ -45,6 +45,8 @@ public sealed partial class CommitWindow
             Stage = staged ? null : () => viewModel?.StageSelectedCommand.Execute(null),
             Unstage = staged ? () => viewModel?.UnstageSelectedCommand.Execute(null) : null,
             Reset = () => viewModel?.ResetSelectedCommand.Execute(null),
+            Owner = this,
+            Changed = viewModel is null ? null : viewModel.RefreshAsync,
             AddToGitIgnore = !staged && viewModel?.CanAddSelectionToGitIgnore == true ? () => viewModel.AddToGitIgnoreCommand.Execute(null) : null,
         };
     }

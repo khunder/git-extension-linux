@@ -31,6 +31,12 @@ public sealed class FileMenuContext
     public Action? AddToGitIgnore { get; init; }
 
     public bool IsFolder { get; init; }
+
+    /// <summary>The window that owns the dialogs of the menu's commands (defaults to the topmost dialog or the main window).</summary>
+    public Window? Owner { get; init; }
+
+    /// <summary>Refreshes the list after a command changed the working directory or the index; null when the list shows no working directory files.</summary>
+    public Func<Task>? Changed { get; init; }
 }
 
 /// <summary>
@@ -54,8 +60,19 @@ public static class FileListContextMenu
             () => ShellLauncher.Open(full),
             enabled: single && exists,
             disabledTip: single ? "The file does not exist in the working directory" : "Select a single file"));
-        items.Add(MenuKit.Stub("Open with…", "FolderOpen"));
-        items.Add(MenuKit.Stub("Edit file", "EditFile"));
+        items.Add(MenuKit.Item(
+            "Open with…",
+            "FolderOpen",
+            () => OpenWith(context, full),
+            enabled: single && exists,
+            disabledTip: single ? "The file does not exist in the working directory" : "Select a single file"));
+        items.Add(MenuKit.Item(
+            "Edit file",
+            "EditFile",
+            () => ReportFailure(context, "Edit file", FileCommands.Edit(context.WorkingDir, full)),
+            enabled: single && exists,
+            disabledTip: single ? "The file does not exist in the working directory" : "Select a single file",
+            tip: "Opens the file in the editor configured for git (or the desktop's default editor)"));
         items.Add(MenuKit.Item(
             "Show in folder",
             "BrowseFileExplorer",
@@ -118,8 +135,80 @@ public static class FileListContextMenu
             items.Add(MenuKit.Stub("Add to .gitignore", "AddToGitIgnore"));
         }
 
-        items.Add(MenuKit.Stub("Stop tracking the file", "StopTrackingFile"));
-        items.Add(MenuKit.Stub("Delete…", "DeleteFile"));
+        bool working = context.Changed is not null && context.Revision is null;
+        items.Add(MenuKit.Item(
+            "Stop tracking the file",
+            "StopTrackingFile",
+            () => _ = StopTrackingAsync(context),
+            enabled: working,
+            disabledTip: "Only files of the working directory can be removed from the index",
+            tip: "git rm --cached: the file stays on disk but is no longer tracked"));
+        items.Add(MenuKit.Item(
+            "Delete…",
+            "DeleteFile",
+            () => ConfirmDelete(context),
+            enabled: working,
+            disabledTip: "Only files of the working directory can be deleted"));
         return MenuKit.Tidy(items);
+    }
+
+    private static void OpenWith(FileMenuContext context, string full)
+    {
+        if (FileCommands.OwnerOf(context) is not { } owner)
+        {
+            return;
+        }
+
+        QuickDialog.Ask(
+            owner,
+            "Open with",
+            $"Program (and arguments) to open '{Path.GetFileName(full)}' with:",
+            "Open",
+            program =>
+            {
+                FileCommands.LastOpenWith = program.Trim();
+                ReportFailure(context, "Open with", FileCommands.StartWith(program, full));
+            },
+            FileCommands.LastOpenWith,
+            watermark: "e.g. code, gedit, kate");
+    }
+
+    private static void ConfirmDelete(FileMenuContext context)
+    {
+        if (FileCommands.OwnerOf(context) is not { } owner)
+        {
+            return;
+        }
+
+        string what = context.Paths.Count == 1 ? $"'{context.Paths[0]}'" : $"{context.Paths.Count} files";
+        QuickDialog.Ask(
+            owner,
+            "Delete",
+            $"Delete {what} from the working directory? This cannot be undone (tracked files can be restored with a reset).",
+            "Delete",
+            unused =>
+            {
+                ReportFailure(context, "Delete", FileCommands.Delete(context.WorkingDir, context.Paths));
+                _ = context.Changed?.Invoke();
+            },
+            destructive: true);
+    }
+
+    private static async Task StopTrackingAsync(FileMenuContext context)
+    {
+        string? error = await FileCommands.StopTrackingAsync(context.WorkingDir, context.Paths);
+        ReportFailure(context, "Stop tracking", error);
+        if (context.Changed is { } changed)
+        {
+            await changed();
+        }
+    }
+
+    private static void ReportFailure(FileMenuContext context, string title, string? error)
+    {
+        if (!string.IsNullOrEmpty(error) && FileCommands.OwnerOf(context) is { } owner)
+        {
+            QuickDialog.Notice(owner, title, error);
+        }
     }
 }

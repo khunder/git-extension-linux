@@ -1,12 +1,14 @@
 <UserControl xmlns="https://github.com/avaloniaui"
              xmlns:x="http://schemas.microsoft.com/winfx/2006/xaml"
              xmlns:vm="using:GitExtensions.Desktop.ViewModels"
+             xmlns:local="using:GitExtensions.Desktop.Views"
              x:Class="GitExtensions.Desktop.Views.CommitActionPromptView"
              x:DataType="vm:CommitActionsViewModel">
   <!-- Content of the modal dialogs of the commit context menu: create branch, create tag, reset current branch, revert commit. -->
   <Border Padding="12" Background="{DynamicResource DialogBackground}">
     <DockPanel LastChildFill="True">
       <StackPanel DockPanel.Dock="Bottom" Spacing="6" Margin="0,8,0,0">
+        <TextBlock x:Name="PromptProgress" Text="{Binding ProgressNote}" IsVisible="{Binding HasProgressNote}" TextWrapping="Wrap" Opacity="0.8" />
         <TextBlock x:Name="PromptError" Text="{Binding DialogError}" IsVisible="{Binding HasDialogError}" TextWrapping="Wrap" Foreground="{DynamicResource ErrorTextForeground}" />
         <StackPanel Orientation="Horizontal" HorizontalAlignment="Right" Spacing="8">
           <Button x:Name="PromptConfirm" Classes="accent" MinWidth="90" Content="{Binding ConfirmText}" Command="{Binding ConfirmPromptCommand}" IsDefault="True" />
@@ -23,6 +25,12 @@
             </TextBox.KeyBindings>
           </TextBox>
         </Grid>
+        <Grid ColumnDefinitions="Auto,*" ColumnSpacing="8" IsVisible="{Binding ShowTagOptions}">
+          <TextBlock Text="Message:" VerticalAlignment="Top" Margin="0,6,0,0" />
+          <TextBox x:Name="PromptTagMessage" Grid.Column="1" Text="{Binding TagOptions.Message}" Watermark="Optional: a message makes the tag annotated" AcceptsReturn="True" MinHeight="60" MaxHeight="120" TextWrapping="Wrap" />
+        </Grid>
+        <StackPanel IsVisible="{Binding ShowBranchOptions}"><local:CreateBranchOptionsView x:Name="PromptBranchOptions" DataContext="{Binding BranchOptions}" /></StackPanel>
+        <StackPanel IsVisible="{Binding ShowTagOptions}"><local:CreateTagOptionsView x:Name="PromptTagOptions" DataContext="{Binding TagOptions}" /></StackPanel>
         <StackPanel x:Name="PromptResetModes" Spacing="2" IsVisible="{Binding ShowResetModes}">
           <RadioButton GroupName="CommitResetMode" IsChecked="{Binding IsSoftResetMode}" Content="Soft: keep the index and the working tree" />
           <RadioButton GroupName="CommitResetMode" IsChecked="{Binding IsMixedResetMode}" Content="Mixed: reset the index, keep the working tree" />

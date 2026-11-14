@@ -31,17 +31,17 @@ public sealed partial class MainWindow
         CommitActionsViewModel actions = viewModel.Actions;
         DialogHost.Bind(this, actions, () => new CommitActionPromptView { DataContext = actions }, "Commit", 460, 190, canResize: false, describe: () => (
             actions.DialogTitle,
-            actions.PromptKind == CommitPromptKind.ConfirmHardReset ? 540 : 460,
-            actions.PromptKind switch { CommitPromptKind.ConfirmHardReset => 250, CommitPromptKind.Revert => 160, _ => 170 }));
+            actions.PromptKind is CommitPromptKind.ConfirmHardReset or CommitPromptKind.CreateBranch or CommitPromptKind.CreateTag ? 540 : 460,
+            actions.PromptKind switch { CommitPromptKind.ConfirmHardReset => 250, CommitPromptKind.Revert => 160, CommitPromptKind.CreateBranch => 380, CommitPromptKind.CreateTag => 330, _ => 170 }));
 
         RefsTreeViewModel refs = viewModel.Refs;
         DialogHost.Bind(this, refs, () => new RefsPromptView { DataContext = refs }, "Branches and tags", 480, 220, canResize: false, describe: () => (
             refs.DialogTitle,
-            refs.PromptKind == RefPromptKind.NewTag ? 520 : 480,
+            refs.PromptKind is RefPromptKind.NewTag or RefPromptKind.NewBranch ? 540 : 480,
             refs.PromptKind switch
             {
-                RefPromptKind.NewTag => 300,
-                RefPromptKind.NewBranch => 240,
+                RefPromptKind.NewTag => 430,
+                RefPromptKind.NewBranch => 450,
                 RefPromptKind.SetUpstream => 190,
                 RefPromptKind.RenameBranch => 170,
                 _ => 190,

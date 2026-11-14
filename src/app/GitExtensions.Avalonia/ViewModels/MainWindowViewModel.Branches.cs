@@ -8,5 +8,8 @@ public sealed partial class MainWindowViewModel
         Refs.ReportError = message => ErrorMessage = message;
         Refs.SelectedCommitProvider = () => SelectedCommit?.ObjectId;
         Refs.RunRemote = (title, arguments) => Remote.RunGitAsync(title, arguments);
+        Refs.RemoteResult = () => (Remote.LastRunSucceeded, Remote.LastRunSummary);
+        Actions.RunRemote = (title, arguments) => Remote.RunGitAsync(title, arguments);
+        Actions.RemoteResult = () => (Remote.LastRunSucceeded, Remote.LastRunSummary);
     }
 }

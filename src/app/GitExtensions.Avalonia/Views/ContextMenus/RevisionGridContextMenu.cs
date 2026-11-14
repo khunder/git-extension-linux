@@ -82,7 +82,7 @@ public static class RevisionGridContextMenu
             locals.Select(r => MenuKit.Item(r.Name, "BranchLocal", () => WithNode(vm, RefNodeKind.LocalBranch, r.Name, node => vm.Refs.PushBranchCommand.Execute(node), null))),
             locals.Count > 0,
             "No local branch points at this commit"));
-        items.Add(MenuKit.Stub("Reset another branch here…", "ResetAnotherBranchToHere"));
+        items.Add(MenuKit.Item("Reset another branch here…", "ResetAnotherBranchToHere", () => _ = vm.OpenHistoryEditAsync(HistoryEditKind.ResetBranch, commit)));
         items.Add(MenuKit.Sep());
 
         // ---- tags ----
@@ -101,10 +101,10 @@ public static class RevisionGridContextMenu
         items.Add(MenuKit.Item("Cherry pick this commit…", "CherryPick", () => On(vm.RevisionOps.OpenCherryPick)));
         items.Add(MenuKit.Item("Archive this commit…", "ArchiveRevision", () => On(vm.RevisionOps.OpenArchive)));
         items.Add(MenuKit.Item("Format patch…", "PatchFormat", () => vm.ShowFormatPatchForCommand.Execute(commit)));
-        items.Add(MenuKit.Sub("Advanced", "Advanced", Advanced()));
+        items.Add(MenuKit.Sub("Advanced", "Advanced", Advanced(vm, commit)));
         items.Add(MenuKit.Sep());
 
-        items.Add(MenuKit.Sub("Compare", "Diff", Compare()));
+        items.Add(MenuKit.Sub("Compare", "Diff", Compare(vm, commit)));
         items.Add(MenuKit.Sep());
         items.Add(MenuKit.Sub("Navigate", "GotoCommit", Navigate(vm, commit)));
         items.Add(MenuKit.Item(
@@ -201,31 +201,47 @@ public static class RevisionGridContextMenu
 
     private static string Shorten(string text, int length) => text.Length <= length ? text : text[..(length - 1)] + "…";
 
-    private static List<Control> Advanced()
-        =>
+    private static List<Control> Advanced(MainWindowViewModel vm, CommitItemViewModel commit)
+    {
+        bool bare = vm.RepositoryPath.Length == 0;
+        void Open(HistoryEditKind kind) => _ = vm.OpenHistoryEditAsync(kind, commit);
+        bool hasParent = commit.Revision.HasParent;
+        return
         [
-            MenuKit.Stub("Edit commit"),
-            MenuKit.Stub("Edit commit by creating a fixup commit and squash-rebase…"),
-            MenuKit.Stub("Reword commit"),
-            MenuKit.Stub("Create a fixup commit…"),
-            MenuKit.Stub("Create a squash commit…"),
-            MenuKit.Stub("Create an amend commit…"),
+            MenuKit.Item("Edit commit", "EditFile", () => Open(HistoryEditKind.Edit), enabled: !bare, tip: "Rebase the current branch and stop at this commit so it can be changed"),
+            MenuKit.Item("Edit commit by creating a fixup commit and squash-rebase…", "EditFile", () => Open(HistoryEditKind.FixupAndRebase), enabled: !bare && hasParent, disabledTip: "The commit has no parent", tip: "Commit the staged changes as a fixup of this commit and fold it in with an autosquash rebase"),
+            MenuKit.Item("Reword commit", "Message", () => Open(HistoryEditKind.Reword), enabled: !bare, tip: "Change the message of this commit by rebasing"),
+            MenuKit.Item("Create a fixup commit…", "Message", () => Open(HistoryEditKind.Fixup), enabled: !bare, tip: "git commit --fixup of the staged changes"),
+            MenuKit.Item("Create a squash commit…", "Message", () => Open(HistoryEditKind.Squash), enabled: !bare, tip: "git commit --squash of the staged changes"),
+            MenuKit.Item("Create an amend commit…", "Message", () => Open(HistoryEditKind.Amend), enabled: !bare, tip: "git commit --fixup=amend: to change the message of this commit later"),
+            MenuKit.Sep(),
+            MenuKit.Item("Autosquash fixup commits into this commit's parent…", "Rebase", () => Open(HistoryEditKind.Autosquash), enabled: !bare, tip: "git rebase -i --autosquash without opening the todo list"),
+            MenuKit.Item("Interactive rebase editor…", "Rebase", enabled: false, disabledTip: "Needs the interactive rebase editor"),
             MenuKit.Sep(),
             MenuKit.Item("Get help on how to use these features", "GotoManual", () => ShellLauncher.OpenUrl(ModifyHistoryHelp)),
         ];
+    }
 
-    private static List<Control> Compare()
-        =>
+    private static List<Control> Compare(MainWindowViewModel vm, CommitItemViewModel commit)
+    {
+        CommitItemViewModel? baseCommit = vm.CompareBase;
+        return
         [
-            MenuKit.Stub("Open selected commits with difftool"),
+            MenuKit.Item("Open selected commits with difftool", "Diff", () => _ = vm.OpenDifftoolAsync(commit), tip: "git difftool of this commit against its parent"),
             MenuKit.Sep(),
-            MenuKit.Stub("Compare to branch…"),
-            MenuKit.Stub("Compare with current branch"),
-            MenuKit.Stub("Select as BASE to compare"),
-            MenuKit.Stub("Compare to BASE"),
-            MenuKit.Stub("Compare to working directory"),
-            MenuKit.Stub("Compare selected commits"),
+            MenuKit.Item("Compare to branch…", "Diff", () => _ = vm.OpenHistoryEditAsync(HistoryEditKind.CompareWithRevision, commit)),
+            MenuKit.Item("Compare with current branch", "Diff", () => _ = vm.CompareWithCurrentBranchAsync(commit), enabled: vm.Branch is not null, disabledTip: "HEAD is detached: there is no current branch"),
+            MenuKit.Item("Select as BASE to compare", "Diff", () => vm.CompareBase = commit),
+            MenuKit.Item(
+                baseCommit is null ? "Compare to BASE" : $"Compare to BASE ({baseCommit.ShortHash})",
+                "Diff",
+                () => vm.CompareToBase(commit),
+                enabled: baseCommit is not null && !ReferenceEquals(baseCommit, commit),
+                disabledTip: baseCommit is null ? "Select a commit as BASE first" : "This commit is the BASE"),
+            MenuKit.Item("Compare to working directory", "Diff", () => vm.CompareWithWorkingDirectory(commit)),
+            MenuKit.Item("Compare selected commits", "Diff", enabled: false, disabledTip: "The grid selects one commit at a time: use 'Select as BASE to compare' on the first and 'Compare to BASE' on the second"),
         ];
+    }
 
     private static List<Control> Navigate(MainWindowViewModel vm, CommitItemViewModel commit)
     {
@@ -251,7 +267,7 @@ public static class RevisionGridContextMenu
                 },
                 enabled: commit.IsMerge,
                 disabledTip: "This commit is not a merge"),
-            MenuKit.Stub("Go to common ancestor (merge base)", "GoToMergeBaseCommit"),
+            MenuKit.Item("Go to common ancestor (merge base)", "GoToMergeBaseCommit", () => _ = vm.GoToMergeBaseAsync(commit), tip: "The common ancestor of this commit and the current commit"),
             MenuKit.Sep(),
             MenuKit.Item("Navigate backward", "NavigateBackward", () => vm.NavigateBackCommand.Execute(null), "Alt+Left"),
             MenuKit.Item("Navigate forward", "NavigateForward", () => vm.NavigateForwardCommand.Execute(null), "Alt+Right"),

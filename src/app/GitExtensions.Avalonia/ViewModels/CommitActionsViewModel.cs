@@ -38,7 +38,7 @@ public sealed partial class CommitActionsViewModel : ObservableObject
     private CommitItemViewModel? _promptCommit;
 
     [ObservableProperty]
-    [NotifyPropertyChangedFor(nameof(IsPromptVisible), nameof(IsOpen), nameof(NeedsInput), nameof(PromptTitle), nameof(ConfirmText), nameof(DialogTitle), nameof(ShowResetModes))]
+    [NotifyPropertyChangedFor(nameof(IsPromptVisible), nameof(IsOpen), nameof(NeedsInput), nameof(PromptTitle), nameof(ConfirmText), nameof(DialogTitle), nameof(ShowResetModes), nameof(ShowBranchOptions), nameof(ShowTagOptions))]
     private CommitPromptKind _promptKind;
 
     [ObservableProperty]
@@ -49,6 +49,11 @@ public sealed partial class CommitActionsViewModel : ObservableObject
     private string? _dialogError;
 
     private bool _confirming;
+    private string? _pendingPushTag;
+
+    [ObservableProperty]
+    [NotifyPropertyChangedFor(nameof(HasProgressNote))]
+    private string _progressNote = string.Empty;
 
     [ObservableProperty]
     private string _inputText = string.Empty;
@@ -64,6 +69,24 @@ public sealed partial class CommitActionsViewModel : ObservableObject
 
     /// <summary>The view attaches the window clipboard once it is in the visual tree.</summary>
     public IClipboardService? Clipboard { get; set; }
+
+    /// <summary>The options of the Create branch dialog (checkout, local changes, orphan).</summary>
+    public CreateBranchOptions BranchOptions { get; } = new();
+
+    /// <summary>The options of the Create tag dialog (message, signing, push).</summary>
+    public CreateTagOptions TagOptions { get; } = new();
+
+    /// <summary>Runs a network git command (push) with output log and credential prompts; set by the main view-model.</summary>
+    public Func<string, IReadOnlyList<string>, Task>? RunRemote { get; set; }
+
+    /// <summary>The outcome of the last command run through <see cref="RunRemote"/>.</summary>
+    public Func<(bool Succeeded, string Summary)>? RemoteResult { get; set; }
+
+    public bool HasProgressNote => ProgressNote.Length > 0;
+
+    public bool ShowBranchOptions => PromptKind == CommitPromptKind.CreateBranch;
+
+    public bool ShowTagOptions => PromptKind == CommitPromptKind.CreateTag;
 
     public bool IsPromptVisible => PromptKind != CommitPromptKind.None;
 
@@ -187,8 +210,8 @@ public sealed partial class CommitActionsViewModel : ObservableObject
         {
             succeeded = kind switch
             {
-                CommitPromptKind.CreateBranch => await CreateBranchAsync(commit, name),
-                CommitPromptKind.CreateTag => await CreateTagAsync(commit, name),
+                CommitPromptKind.CreateBranch => await CreateBranchWithOptionsAsync(commit, name),
+                CommitPromptKind.CreateTag => await CreateTagWithOptionsAsync(commit, name),
                 CommitPromptKind.Revert => await RevertAsync(commit),
                 _ => await ResetAsync(commit, PromptResetMode, confirmed: true),
             };
@@ -244,6 +267,10 @@ public sealed partial class CommitActionsViewModel : ObservableObject
         InputText = string.Empty;
         DialogError = null;
         PromptResetMode = CommitResetMode.Hard;
+        ProgressNote = string.Empty;
+        _pendingPushTag = null;
+        BranchOptions.Reset();
+        TagOptions.Reset(_getModule() is { } module ? RemoteNames(module) : []);
         PromptKind = kind;
         OnPropertyChanged(nameof(PromptTitle));
     }
@@ -261,6 +288,116 @@ public sealed partial class CommitActionsViewModel : ObservableObject
     public Task<bool> CreateBranchAsync(CommitItemViewModel commit, string name)
         => IsValidName(name) ? RunAsync($"Created branch {name}", new GitArgumentBuilder("branch") { name.Quote(), commit.ObjectId.ToString() })
             : InvalidAsync(name);
+
+    // The dialog's create branch: checkout after create, the local changes choice and orphan; failures stay in the dialog.
+    private async Task<bool> CreateBranchWithOptionsAsync(CommitItemViewModel commit, string name)
+    {
+        GitModule? module = _getModule();
+        if (module is null)
+        {
+            return false;
+        }
+
+        if (!IsValidName(name))
+        {
+            return await InvalidAsync(name);
+        }
+
+        CreateBranchOptions options = BranchOptions;
+        ProgressNote = options.CheckoutAfterCreate || options.Orphan ? "Creating the branch and switching to it…" : "Creating the branch…";
+        string start = commit.ObjectId.ToString();
+        string? failure = await Task.Run(() => options.Create(module, name, start));
+        ProgressNote = string.Empty;
+        if (failure is not null)
+        {
+            Report(failure);
+            await _refresh();
+            return false;
+        }
+
+        _reportStatus($"Created branch {name}");
+        await _refresh();
+        return true;
+    }
+
+    // The dialog's create tag: optional message/signature, then optionally the push with its result shown in the dialog.
+    private async Task<bool> CreateTagWithOptionsAsync(CommitItemViewModel commit, string name)
+    {
+        GitModule? module = _getModule();
+        if (module is null)
+        {
+            return false;
+        }
+
+        CreateTagOptions options = TagOptions;
+        string? remote = options.PushTarget;
+        if (_pendingPushTag is null)
+        {
+            if (!IsValidName(name))
+            {
+                return await InvalidAsync(name);
+            }
+
+            string start = commit.ObjectId.ToString();
+            string? failure = await Task.Run(() => options.Create(module, name, start));
+            if (failure is not null)
+            {
+                Report(failure);
+                return false;
+            }
+
+            _reportStatus($"Created tag {name}");
+            await _refresh();
+        }
+        else
+        {
+            name = _pendingPushTag;
+        }
+
+        if (remote is null)
+        {
+            return true;
+        }
+
+        _pendingPushTag = name;
+        ProgressNote = $"Pushing tag '{name}' to {remote}…";
+        string[] arguments = ["push", "--progress", remote, $"refs/tags/{name}"];
+        bool succeeded;
+        string summary;
+        if (RunRemote is not null)
+        {
+            await RunRemote($"Push tag {name}", arguments);
+            (succeeded, summary) = RemoteResult?.Invoke() ?? (true, string.Empty);
+        }
+        else
+        {
+            ExecutionResult result = await Task.Run(() => module.GitExecutable.Execute(new GitArgumentBuilder("push") { "--progress", remote.Quote(), $"refs/tags/{name}" }, throwOnErrorExit: false));
+            (succeeded, summary) = (result.ExitedSuccessfully, (string.IsNullOrWhiteSpace(result.StandardError) ? result.StandardOutput : result.StandardError).Trim());
+        }
+
+        ProgressNote = string.Empty;
+        if (succeeded)
+        {
+            _pendingPushTag = null;
+            _reportStatus($"Pushed tag {name} to {remote}");
+            return true;
+        }
+
+        Report($"The tag '{name}' was created, but pushing it to {remote} failed: {summary}. Confirm again to retry the push.");
+        return false;
+    }
+
+    private static IReadOnlyList<string> RemoteNames(GitModule module)
+    {
+        try
+        {
+            return module.GetRemoteNames();
+        }
+        catch (Exception)
+        {
+            return [];
+        }
+    }
 
     public Task<bool> CreateTagAsync(CommitItemViewModel commit, string name)
         => IsValidName(name) ? RunAsync($"Created tag {name}", new GitArgumentBuilder("tag") { name.Quote(), commit.ObjectId.ToString() })

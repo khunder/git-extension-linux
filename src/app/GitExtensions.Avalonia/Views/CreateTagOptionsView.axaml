@@ -1,0 +1,15 @@
+<UserControl xmlns="https://github.com/avaloniaui"
+             xmlns:x="http://schemas.microsoft.com/winfx/2006/xaml"
+             xmlns:vm="using:GitExtensions.Desktop.ViewModels"
+             x:Class="GitExtensions.Desktop.Views.CreateTagOptionsView"
+             x:DataType="vm:CreateTagOptions">
+  <!-- The options of the Create tag dialogs: signing and pushing the new tag. The message is part of the dialog's own fields. -->
+  <StackPanel Spacing="4">
+    <CheckBox x:Name="TagSign" IsChecked="{Binding Sign}" Content="Sign the tag with your GPG key (needs a message)" />
+    <StackPanel Orientation="Horizontal" Spacing="8">
+      <CheckBox x:Name="TagPush" IsChecked="{Binding PushAfterCreate}" IsEnabled="{Binding HasRemotes}" Content="Push tag to remote after creation:" VerticalAlignment="Center" />
+      <ComboBox x:Name="TagRemote" ItemsSource="{Binding Remotes}" SelectedItem="{Binding SelectedRemote}" IsEnabled="{Binding PushAfterCreate}" MinWidth="140" />
+    </StackPanel>
+    <TextBlock x:Name="TagRemotesNote" Margin="22,0,0,0" Text="{Binding RemotesNote}" Opacity="0.7" TextWrapping="Wrap" IsVisible="{Binding !HasRemotes}" />
+  </StackPanel>
+</UserControl>

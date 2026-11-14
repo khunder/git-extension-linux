@@ -167,7 +167,10 @@ public class ContextMenuTests
         Find(menu, "Create new tag here…").InputGesture!.ToString().Should().Be("Ctrl+T");
         Texts(Find(menu, "Advanced")).Should().Equal(
             "Edit commit", "Edit commit by creating a fixup commit and squash-rebase…", "Reword commit", "Create a fixup commit…",
-            "Create a squash commit…", "Create an amend commit…", "-", "Get help on how to use these features");
+            "Create a squash commit…", "Create an amend commit…", "-", "Autosquash fixup commits into this commit's parent…", "Interactive rebase editor…", "-",
+            "Get help on how to use these features");
+        Find(Find(menu, "Advanced").Items.OfType<Control>(), "Interactive rebase editor…").IsEnabled.Should().BeFalse();
+        ToolTip.GetTip(Find(Find(menu, "Advanced").Items.OfType<Control>(), "Interactive rebase editor…")).Should().Be("Needs the interactive rebase editor");
         Texts(Find(menu, "Compare")).Should().Contain(["Compare to branch…", "Compare with current branch", "Compare to working directory", "Compare selected commits"]);
         Texts(Find(menu, "Navigate")).Should().Contain(["Go to current revision", "Go to child commit", "Go to parent commit", "Navigate backward", "Navigate forward"]);
         window.Close();
@@ -206,7 +209,7 @@ public class ContextMenuTests
         }
 
         AllItems(menu).Count(i => ToolTip.GetTip(i) is "Not available yet").Should().BeGreaterThan(10);
-        Find(menu, "Reset another branch here…").IsEnabled.Should().BeFalse();
+        Find(menu, "Reset another branch here…").IsEnabled.Should().BeTrue();
         window.Close();
     }
 
@@ -533,8 +536,10 @@ public class ContextMenuTests
         Outline(menu).Should().Be(
             "Open|Open with…|Edit file|Show in folder|-|File history|Blame|-|Stage|Reset file or directory changes…|-|Copy path|-|Add to .gitignore|Stop tracking the file|Delete…");
         Find(menu, "Open").IsEnabled.Should().BeTrue();
-        Find(menu, "Open with…").IsEnabled.Should().BeFalse();
-        ToolTip.GetTip(Find(menu, "Delete…")).Should().Be("Not available yet");
+        Find(menu, "Open with…").IsEnabled.Should().BeTrue();
+        Find(menu, "Edit file").IsEnabled.Should().BeTrue();
+        Find(menu, "Delete…").IsEnabled.Should().BeFalse("the list cannot refresh itself after a deletion");
+        ToolTip.GetTip(Find(menu, "Delete…")).Should().Be("Only files of the working directory can be deleted");
         Find(menu, "Stage").InputGesture!.ToString().Should().Be("S");
 
         Click(Find(menu, "File history"));

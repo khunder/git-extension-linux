@@ -27,6 +27,7 @@ public sealed partial class RefsTreeViewModel
     private string _promptTarget = string.Empty;
     private bool _confirming;
     private bool _closeAfterConfirm;
+    private string? _pendingPushTag;
 
     [ObservableProperty]
     private RefPromptKind _promptKind;
@@ -44,10 +45,31 @@ public sealed partial class RefsTreeViewModel
     private string _startPoint = "HEAD";
 
     [ObservableProperty]
-    private string _messageText = string.Empty;
+    [NotifyPropertyChangedFor(nameof(HasProgressNote))]
+    private string _progressNote = string.Empty;
 
-    [ObservableProperty]
-    private bool _checkoutAfterCreate = true;
+    /// <summary>The options of the Create branch dialog (checkout, local changes, orphan).</summary>
+    public CreateBranchOptions BranchOptions { get; } = new();
+
+    /// <summary>The options of the Create tag dialog (message, signing, push).</summary>
+    public CreateTagOptions TagOptions { get; } = new();
+
+    public string MessageText
+    {
+        get => TagOptions.Message;
+        set => TagOptions.Message = value;
+    }
+
+    public bool CheckoutAfterCreate
+    {
+        get => BranchOptions.CheckoutAfterCreate;
+        set => BranchOptions.CheckoutAfterCreate = value;
+    }
+
+    public bool HasProgressNote => ProgressNote.Length > 0;
+
+    /// <summary>The outcome of the last network command run through <see cref="RunRemote"/> (success, summary line); set by the main view-model.</summary>
+    public Func<(bool Succeeded, string Summary)>? RemoteResult { get; set; }
 
     [ObservableProperty]
     [NotifyPropertyChangedFor(nameof(HasValidationError))]
@@ -182,7 +204,10 @@ public sealed partial class RefsTreeViewModel
         PromptTitle = title;
         PromptDetail = detail;
         InputText = input;
-        MessageText = string.Empty;
+        BranchOptions.Reset();
+        TagOptions.Reset(_module is { } module ? SafeRemoteNames(module) : []);
+        ProgressNote = string.Empty;
+        _pendingPushTag = null;
         ValidationError = null;
         PromptKind = kind;
     }
@@ -219,7 +244,6 @@ public sealed partial class RefsTreeViewModel
     {
         OpenPrompt(RefPromptKind.NewBranch, string.Empty, "New branch:");
         StartPoint = node is { IsLeaf: true } ? node.FullName : DefaultStartPoint();
-        CheckoutAfterCreate = true;
     }
 
     [RelayCommand]
@@ -333,28 +357,59 @@ public sealed partial class RefsTreeViewModel
             case RefPromptKind.NewTag:
             {
                 string start = StartPoint.Trim();
-                string message = MessageText.Trim();
-                bool checkout = CheckoutAfterCreate;
                 bool isTag = kind == RefPromptKind.NewTag;
-                string? error = await Task.Run(() => ValidateNameAndStart(module, name, isTag, kind == RefPromptKind.RenameBranch ? null : start, kind == RefPromptKind.RenameBranch ? target : null));
+                if (isTag && _pendingPushTag is { } created)
+                {
+                    // The tag exists already (an earlier push failed): only the push is retried.
+                    await PushCreatedTagAsync(module, created, TagOptions.PushTarget);
+                    return;
+                }
+
+                bool orphan = kind == RefPromptKind.NewBranch && BranchOptions.Orphan;
+                string? error = await Task.Run(() => ValidateNameAndStart(module, name, isTag, kind == RefPromptKind.RenameBranch ? null : orphan && start.Length == 0 ? null : start, kind == RefPromptKind.RenameBranch ? target : null));
                 if (error is not null)
                 {
                     ValidationError = error;
                     return;
                 }
 
-                CancelPrompt();
                 if (kind == RefPromptKind.RenameBranch)
                 {
+                    CancelPrompt();
                     await RunGitAsync($"Renamed branch {target} to {name}", "branch", ["-m", target, name]);
                 }
                 else if (kind == RefPromptKind.NewBranch)
                 {
-                    await RunGitAsync($"Created branch {name}", checkout ? "checkout" : "branch", checkout ? ["-b", name, start] : [name, start]);
+                    // Runs inside the dialog: a refusal (local changes in the way, ...) is shown there.
+                    ProgressNote = BranchOptions.CheckoutAfterCreate || orphan ? "Creating the branch and switching to it…" : "Creating the branch…";
+                    CreateBranchOptions options = BranchOptions;
+                    string? failure = await Task.Run(() => options.Create(module, name, start));
+                    ProgressNote = string.Empty;
+                    if (failure is not null)
+                    {
+                        Report(failure);
+                        await _refreshAll();
+                        return;
+                    }
+
+                    _reportStatus($"Created branch {name}");
+                    CloseDialogNow();
+                    await _refreshAll();
                 }
                 else
                 {
-                    await CreateTagAsync(module, name, start, message);
+                    CreateTagOptions options = TagOptions;
+                    string? remote = options.PushTarget;
+                    string? failure = await Task.Run(() => options.Create(module, name, start));
+                    if (failure is not null)
+                    {
+                        ValidationError = failure;
+                        return;
+                    }
+
+                    _reportStatus($"Created tag {name}");
+                    await _refreshAll();
+                    await PushCreatedTagAsync(module, name, remote);
                 }
 
                 return;
@@ -441,31 +496,52 @@ public sealed partial class RefsTreeViewModel
         return null;
     }
 
-    private async Task CreateTagAsync(GitModule module, string name, string start, string message)
+    // Pushes the new tag through the remote machinery (output log, credential prompts) while the dialog shows the progress;
+    // the dialog closes when it worked and keeps the failure otherwise.
+    private async Task PushCreatedTagAsync(GitModule module, string tag, string? remote)
     {
-        if (message.Length == 0)
+        if (remote is null)
         {
-            await RunGitAsync($"Created tag {name}", "tag", [name, start]);
+            CloseDialogNow();
             return;
         }
 
-        // The message goes through a file: no quoting problems with quotes or line breaks.
-        string file = Path.GetTempFileName();
+        _pendingPushTag = tag;
+        ProgressNote = $"Pushing tag '{tag}' to {remote}…";
+        string[] arguments = ["push", "--progress", remote, $"refs/tags/{tag}"];
+        (bool succeeded, string summary) = (false, string.Empty);
+        if (RunRemote is not null)
+        {
+            await RunRemote($"Push tag {tag}", arguments);
+            (succeeded, summary) = RemoteResult?.Invoke() ?? (true, string.Empty);
+        }
+        else
+        {
+            ExecutionResult result = await Task.Run(() => module.GitExecutable.Execute(Args("push", arguments[1..]), throwOnErrorExit: false));
+            (succeeded, summary) = (result.ExitedSuccessfully, ErrorOf(result));
+        }
+
+        ProgressNote = string.Empty;
+        if (succeeded)
+        {
+            _pendingPushTag = null;
+            _reportStatus($"Pushed tag {tag} to {remote}");
+            CloseDialogNow();
+            return;
+        }
+
+        ValidationError = $"The tag '{tag}' was created, but pushing it to {remote} failed: {summary}. Confirm again to retry the push.";
+    }
+
+    private static IReadOnlyList<string> SafeRemoteNames(GitModule module)
+    {
         try
         {
-            await File.WriteAllTextAsync(file, message + "\n");
-            await RunGitAsync($"Created annotated tag {name}", "tag", ["-a", name, "-F", file, start]);
+            return module.GetRemoteNames();
         }
-        finally
+        catch (Exception)
         {
-            try
-            {
-                File.Delete(file);
-            }
-            catch (IOException)
-            {
-                // Best effort cleanup of a temp file.
-            }
+            return [];
         }
     }
 

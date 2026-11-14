@@ -17,7 +17,7 @@ public static class RefsContextMenu
             RefNodeKind.RemoteBranch => RemoteBranch(refs, main, node),
             RefNodeKind.Tag => Tag(refs, node),
             RefNodeKind.Stash => Stash(main, node),
-            RefNodeKind.Submodule => Submodule(main),
+            RefNodeKind.Submodule => Submodule(main, node),
             RefNodeKind.Folder when node.IsRemoteRoot => Remote(refs, main, node),
             RefNodeKind.Group => Group(refs, main, node),
             _ => [],
@@ -87,8 +87,8 @@ public static class RefsContextMenu
         =>
         [
             MenuKit.Item("Fetch this remote", "PullFetch", () => refs.FetchRemoteCommand.Execute(node), enabled: node.CanFetchRemote),
-            MenuKit.Stub("Fetch and prune this remote", "PullFetchPrune"),
-            MenuKit.Stub("Enable or disable this remote", "RemoteEnableAndFetch"),
+            MenuKit.Item("Fetch and prune this remote", "PullFetchPrune", () => refs.FetchAndPruneRemoteCommand.Execute(node), enabled: node.CanFetchRemote),
+            MenuKit.Item("Enable or disable this remote", "RemoteEnableAndFetch", enabled: false, disabledTip: "Git itself cannot disable a remote; Git Extensions keeps that flag in its own settings, which this version does not use"),
             MenuKit.Sep(),
             MenuKit.Item("Manage remote repositories…", "Remotes", () => main?.ShowRemotesCommand.Execute(null), enabled: main is not null),
         ];
@@ -115,10 +115,10 @@ public static class RefsContextMenu
         ];
     }
 
-    private static List<Control> Submodule(MainWindowViewModel? main)
+    private static List<Control> Submodule(MainWindowViewModel? main, RefNodeViewModel? node)
         =>
         [
-            MenuKit.Stub("Open this submodule", "FolderSubmodule"),
+            MenuKit.Item("Open this submodule", "FolderSubmodule", () => _ = main?.OpenSubmoduleAsync(node!.FullName.Length > 0 ? node.FullName : node.Name), enabled: main is not null && node is { Kind: RefNodeKind.Submodule }, disabledTip: "Select a submodule"),
             MenuKit.Sep(),
             MenuKit.Item("Manage submodules…", "SubmodulesManage", () => main?.ShowSubmodulesCommand.Execute(null), enabled: main is not null),
             MenuKit.Item("Update all submodules", "SubmodulesUpdate", () => main?.UpdateAllSubmodulesCommand.Execute(null), enabled: main is not null),
@@ -143,7 +143,7 @@ public static class RefsContextMenu
                 MenuKit.Item("Create tag…", "TagCreate", () => refs.RequestNewTagCommand.Execute(null)),
                 MenuKit.Item("Push all tags…", "Push", () => refs.RequestPushAllTagsCommand.Execute(null)),
             ],
-            "Submodules" => Submodule(main),
+            "Submodules" => Submodule(main, null),
             "Stashes" => [MenuKit.Item("Manage stashes…", "Stash", () => main?.ManageStashesCommand.Execute(null), "Ctrl+Shift+T", enabled: main is not null)],
             _ => [],
         };

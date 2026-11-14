@@ -1,0 +1,32 @@
+<UserControl xmlns="https://github.com/avaloniaui"
+             xmlns:x="http://schemas.microsoft.com/winfx/2006/xaml"
+             xmlns:vm="using:GitExtensions.Desktop.ViewModels"
+             x:Class="GitExtensions.Desktop.Views.HistoryEditView"
+             x:DataType="vm:HistoryEditViewModel">
+  <!-- Content of the dialog behind the grid's Advanced and Compare commands: fixup/squash/amend, edit, reword, autosquash, reset another branch, compare. -->
+  <Border Padding="12" Background="{DynamicResource DialogBackground}">
+    <DockPanel LastChildFill="True">
+      <StackPanel DockPanel.Dock="Bottom" Spacing="6" Margin="0,8,0,0">
+        <ProgressBar IsIndeterminate="True" IsVisible="{Binding IsBusy}" />
+        <TextBlock x:Name="HistoryEditError" Text="{Binding Error}" IsVisible="{Binding HasError}" TextWrapping="Wrap" Foreground="{DynamicResource ErrorTextForeground}" />
+        <StackPanel Orientation="Horizontal" HorizontalAlignment="Right" Spacing="8">
+          <Button x:Name="HistoryEditConfirm" Classes="accent" MinWidth="110" Content="{Binding ConfirmText}" Command="{Binding ConfirmCommand}" IsDefault="True" />
+          <Button x:Name="HistoryEditCancel" MinWidth="90" Content="Cancel" Command="{Binding CloseCommand}" IsCancel="True" />
+        </StackPanel>
+      </StackPanel>
+      <StackPanel Spacing="8">
+        <TextBlock x:Name="HistoryEditDescription" Text="{Binding Description}" TextWrapping="Wrap" />
+        <Grid ColumnDefinitions="Auto,*" ColumnSpacing="8" IsVisible="{Binding ShowChoices}">
+          <TextBlock Text="{Binding ChoiceLabel}" VerticalAlignment="Center" />
+          <ComboBox x:Name="HistoryEditChoice" Grid.Column="1" HorizontalAlignment="Stretch" ItemsSource="{Binding Choices}" SelectedItem="{Binding SelectedChoice}"
+                    IsEditable="{Binding IsEditableChoice}" Text="{Binding SelectedChoice}" />
+        </Grid>
+        <TextBlock x:Name="HistoryEditNote" Text="{Binding Note}" IsVisible="{Binding HasNote}" TextWrapping="Wrap" Opacity="0.85" />
+        <StackPanel Spacing="4" IsVisible="{Binding ShowMessage}">
+          <TextBlock Text="Message:" />
+          <TextBox x:Name="HistoryEditMessage" Text="{Binding Message}" AcceptsReturn="True" MinHeight="110" TextWrapping="Wrap" />
+        </StackPanel>
+      </StackPanel>
+    </DockPanel>
+  </Border>
+</UserControl>
