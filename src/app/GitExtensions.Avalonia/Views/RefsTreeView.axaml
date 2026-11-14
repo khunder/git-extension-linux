@@ -1,0 +1,32 @@
+<UserControl xmlns="https://github.com/avaloniaui"
+             xmlns:x="http://schemas.microsoft.com/winfx/2006/xaml"
+             xmlns:vm="using:GitExtensions.Desktop.ViewModels"
+             x:Class="GitExtensions.Desktop.Views.RefsTreeView"
+             x:DataType="vm:RefsTreeViewModel">
+  <DockPanel>
+    <TextBox x:Name="FilterBox" DockPanel.Dock="Top" Margin="6" Text="{Binding Filter}" Watermark="Filter branches, tags…" />
+    <TreeView x:Name="RefsTree" ItemsSource="{Binding Roots}" SelectedItem="{Binding SelectedNode, Mode=TwoWay}">
+      <TreeView.Styles>
+        <Style Selector="TreeViewItem" x:DataType="vm:RefNodeViewModel">
+          <Setter Property="IsExpanded" Value="{Binding IsExpanded, Mode=TwoWay}" />
+        </Style>
+      </TreeView.Styles>
+      <TreeView.ItemTemplate>
+        <TreeDataTemplate ItemsSource="{Binding Children}" x:DataType="vm:RefNodeViewModel">
+          <StackPanel Orientation="Horizontal" Spacing="4" Background="Transparent">
+            <StackPanel.ContextMenu>
+              <ContextMenu>
+                <MenuItem Header="Checkout"
+                          IsEnabled="{Binding CanCheckout}"
+                          Command="{Binding $parent[UserControl].((vm:RefsTreeViewModel)DataContext).CheckoutCommand}"
+                          CommandParameter="{Binding}" />
+              </ContextMenu>
+            </StackPanel.ContextMenu>
+            <TextBlock Text="{Binding Marker}" Width="10" Foreground="{DynamicResource SystemAccentColor}" VerticalAlignment="Center" />
+            <TextBlock Text="{Binding Name}" FontWeight="{Binding FontWeight}" VerticalAlignment="Center" />
+          </StackPanel>
+        </TreeDataTemplate>
+      </TreeView.ItemTemplate>
+    </TreeView>
+  </DockPanel>
+</UserControl>

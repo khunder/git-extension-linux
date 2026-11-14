@@ -1,0 +1,60 @@
+<UserControl xmlns="https://github.com/avaloniaui"
+             xmlns:x="http://schemas.microsoft.com/winfx/2006/xaml"
+             xmlns:vm="using:GitExtensions.Desktop.ViewModels"
+             x:Class="GitExtensions.Desktop.Views.CommitDetailsView"
+             x:DataType="vm:CommitDetailsViewModel">
+
+  <Grid>
+    <!-- Empty state -->
+    <TextBlock x:Name="EmptyText" Text="Select a commit to see its details." IsVisible="{Binding IsEmpty}"
+               HorizontalAlignment="Center" VerticalAlignment="Center" Opacity="0.6" />
+
+    <!-- Loading state -->
+    <StackPanel x:Name="LoadingPanel" IsVisible="{Binding IsLoading}" HorizontalAlignment="Center" VerticalAlignment="Center" Spacing="8">
+      <TextBlock Text="Loading commit…" Opacity="0.7" HorizontalAlignment="Center" />
+      <ProgressBar Width="160" IsIndeterminate="True" />
+    </StackPanel>
+
+    <!-- Error state -->
+    <TextBlock x:Name="ErrorText" Text="{Binding Error}" IsVisible="{Binding Error, Converter={x:Static ObjectConverters.IsNotNull}}"
+               Foreground="Firebrick" Margin="8" TextWrapping="Wrap" VerticalAlignment="Top" />
+
+    <!-- Details -->
+    <Grid x:Name="DetailsPanel" IsVisible="{Binding HasCommit}" ColumnDefinitions="3*,Auto,2*">
+      <ScrollViewer Grid.Column="0" HorizontalScrollBarVisibility="Disabled">
+        <StackPanel Margin="8" Spacing="6">
+          <Grid ColumnDefinitions="Auto,*" RowDefinitions="Auto,Auto,Auto,Auto,Auto" ColumnSpacing="10" RowSpacing="2">
+            <TextBlock Grid.Row="0" Text="Commit" Opacity="0.65" />
+            <SelectableTextBlock Grid.Row="0" Grid.Column="1" x:Name="HashText" Text="{Binding Hash}" FontFamily="Cascadia Mono, Consolas, DejaVu Sans Mono, monospace" />
+            <TextBlock Grid.Row="1" Text="Author" Opacity="0.65" />
+            <SelectableTextBlock Grid.Row="1" Grid.Column="1" Text="{Binding Author}" />
+            <TextBlock Grid.Row="2" Text="Date" Opacity="0.65" />
+            <SelectableTextBlock Grid.Row="2" Grid.Column="1" Text="{Binding Date}" />
+            <TextBlock Grid.Row="3" Text="Parents" Opacity="0.65" />
+            <SelectableTextBlock Grid.Row="3" Grid.Column="1" Text="{Binding Parents}" FontFamily="Cascadia Mono, Consolas, DejaVu Sans Mono, monospace" />
+            <TextBlock Grid.Row="4" Text="Refs" Opacity="0.65" IsVisible="{Binding Refs.Length}" />
+            <SelectableTextBlock Grid.Row="4" Grid.Column="1" Text="{Binding Refs}" IsVisible="{Binding Refs.Length}" />
+          </Grid>
+          <Separator />
+          <SelectableTextBlock x:Name="MessageText" Text="{Binding Message}" TextWrapping="Wrap" />
+        </StackPanel>
+      </ScrollViewer>
+
+      <GridSplitter Grid.Column="1" Width="4" />
+
+      <DockPanel Grid.Column="2">
+        <TextBlock DockPanel.Dock="Top" Margin="8,6" FontWeight="SemiBold" Text="{Binding FilesHeader}" />
+        <ListBox x:Name="FileList" ItemsSource="{Binding Files}">
+          <ListBox.ItemTemplate>
+            <DataTemplate x:DataType="vm:ChangedFileViewModel">
+              <Grid ColumnDefinitions="22,*" ColumnSpacing="8">
+                <TextBlock Text="{Binding Status}" FontFamily="Cascadia Mono, Consolas, DejaVu Sans Mono, monospace" FontWeight="Bold" HorizontalAlignment="Center" />
+                <TextBlock Grid.Column="1" Text="{Binding Name}" TextTrimming="CharacterEllipsis" />
+              </Grid>
+            </DataTemplate>
+          </ListBox.ItemTemplate>
+        </ListBox>
+      </DockPanel>
+    </Grid>
+  </Grid>
+</UserControl>

@@ -1,0 +1,52 @@
+<UserControl xmlns="https://github.com/avaloniaui"
+             xmlns:x="http://schemas.microsoft.com/winfx/2006/xaml"
+             xmlns:vm="using:GitExtensions.Desktop.ViewModels"
+             xmlns:diff="using:GitExtensions.Desktop.Diff"
+             xmlns:views="using:GitExtensions.Desktop.Views"
+             x:Class="GitExtensions.Desktop.Views.DiffView"
+             x:DataType="vm:FileDiffViewModel">
+
+  <DockPanel>
+    <Border DockPanel.Dock="Top" Padding="8,4" BorderThickness="0,1,0,1" BorderBrush="{DynamicResource SystemControlForegroundBaseLowBrush}">
+      <Grid ColumnDefinitions="*,Auto" RowDefinitions="Auto,Auto" RowSpacing="4">
+        <TextBlock x:Name="FileNameText" Text="{Binding File.Name}" FontWeight="SemiBold" VerticalAlignment="Center" TextTrimming="CharacterEllipsis" />
+        <WrapPanel Grid.Row="1" Grid.ColumnSpan="2" Orientation="Horizontal">
+          <Button Content="Stage" Command="{Binding StageCommand}" Margin="0,0,6,0" />
+          <Button Content="Unstage" Command="{Binding UnstageCommand}" Margin="0,0,6,0" />
+          <Button Content="Stage all" Command="{Binding StageAllCommand}" Margin="0,0,6,0" />
+          <Button Content="Unstage all" Command="{Binding UnstageAllCommand}" />
+        </WrapPanel>
+      </Grid>
+    </Border>
+
+    <Panel>
+      <ItemsControl x:Name="DiffLines" ItemsSource="{Binding Lines}">
+        <ItemsControl.Template>
+          <ControlTemplate>
+            <ScrollViewer HorizontalScrollBarVisibility="Auto" VerticalScrollBarVisibility="Auto">
+              <ItemsPresenter />
+            </ScrollViewer>
+          </ControlTemplate>
+        </ItemsControl.Template>
+        <ItemsControl.ItemsPanel>
+          <ItemsPanelTemplate>
+            <VirtualizingStackPanel />
+          </ItemsPanelTemplate>
+        </ItemsControl.ItemsPanel>
+        <ItemsControl.ItemTemplate>
+          <DataTemplate x:DataType="diff:DiffLine">
+            <Border Background="{Binding Kind, Converter={x:Static views:DiffLineBrushes.Background}}">
+              <Grid ColumnDefinitions="44,44,*" Opacity="{Binding Kind, Converter={x:Static views:DiffLineBrushes.TextOpacity}}">
+                <TextBlock Text="{Binding OldNumber}" FontFamily="Cascadia Mono, Consolas, DejaVu Sans Mono, monospace" FontSize="12" Opacity="0.5" TextAlignment="Right" Margin="0,0,6,0" />
+                <TextBlock Grid.Column="1" Text="{Binding NewNumber}" FontFamily="Cascadia Mono, Consolas, DejaVu Sans Mono, monospace" FontSize="12" Opacity="0.5" TextAlignment="Right" Margin="0,0,6,0" />
+                <TextBlock Grid.Column="2" Text="{Binding Text}" FontFamily="Cascadia Mono, Consolas, DejaVu Sans Mono, monospace" FontSize="12" TextWrapping="NoWrap" />
+              </Grid>
+            </Border>
+          </DataTemplate>
+        </ItemsControl.ItemTemplate>
+      </ItemsControl>
+      <TextBlock x:Name="MessageText" Text="{Binding Message}" Opacity="0.6" Margin="12" HorizontalAlignment="Left" VerticalAlignment="Top"
+                 IsVisible="{Binding Message, Converter={x:Static StringConverters.IsNotNullOrEmpty}}" />
+    </Panel>
+  </DockPanel>
+</UserControl>

@@ -1,0 +1,32 @@
+<UserControl xmlns="https://github.com/avaloniaui"
+             xmlns:x="http://schemas.microsoft.com/winfx/2006/xaml"
+             xmlns:vm="using:GitExtensions.Desktop.ViewModels"
+             x:Class="GitExtensions.Desktop.Views.RecentRepositoriesView"
+             x:DataType="vm:RecentRepositoriesViewModel"
+             MinWidth="360">
+  <DockPanel Margin="16">
+    <TextBlock DockPanel.Dock="Top" Text="Recent repositories" FontSize="20" FontWeight="SemiBold" Margin="0,0,0,12" />
+
+    <Panel>
+    <ListBox x:Name="RecentList" ItemsSource="{Binding Items}" IsVisible="{Binding !IsEmpty}" Tapped="OnTapped">
+      <ListBox.KeyBindings>
+        <KeyBinding Gesture="Enter" Command="{Binding OpenCommand}" CommandParameter="{Binding #RecentList.SelectedItem}" />
+      </ListBox.KeyBindings>
+      <ListBox.ItemTemplate>
+        <DataTemplate x:DataType="vm:RecentRepositoryItem">
+          <StackPanel Margin="0,2">
+            <TextBlock Text="{Binding Name}" FontWeight="SemiBold" />
+            <TextBlock Text="{Binding Path}" Opacity="0.65" FontSize="12" TextTrimming="CharacterEllipsis" />
+          </StackPanel>
+        </DataTemplate>
+      </ListBox.ItemTemplate>
+    </ListBox>
+    <StackPanel IsVisible="{Binding IsEmpty}" Spacing="6" Margin="0,24" HorizontalAlignment="Center">
+      <TextBlock Text="No recent repositories yet" FontSize="16" HorizontalAlignment="Center" />
+      <TextBlock Text="Use Browse… or type a path above to open a repository. It will show up here next time."
+                 Opacity="0.65" TextWrapping="Wrap" MaxWidth="420" TextAlignment="Center" />
+    </StackPanel>
+
+    </Panel>
+  </DockPanel>
+</UserControl>

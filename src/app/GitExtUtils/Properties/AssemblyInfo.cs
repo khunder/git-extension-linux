@@ -10,3 +10,4 @@ using System.Runtime.CompilerServices;
 [assembly: InternalsVisibleTo("CommonTestUtils")]
 [assembly: InternalsVisibleTo("TranslationApp")]
 [assembly: InternalsVisibleTo("GitExtUtils.WinForms")]
+[assembly: InternalsVisibleTo("GitExtensions.Avalonia")]
