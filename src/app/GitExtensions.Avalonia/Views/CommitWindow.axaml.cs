@@ -2,6 +2,7 @@ using Avalonia.Controls;
 using Avalonia.Input;
 using Avalonia.Interactivity;
 using Avalonia.Threading;
+using Avalonia.VisualTree;
 using GitExtensions.Desktop.ViewModels;
 
 namespace GitExtensions.Desktop.Views;
@@ -84,6 +85,41 @@ public sealed partial class CommitWindow : Window
             viewModel.RefreshCommand.Execute(null);
             e.Handled = true;
         }
+        else if (e.KeyModifiers == KeyModifiers.None && (e.Key is Key.S or Key.U or Key.R) && FocusedList() is { } list)
+        {
+            // Like the original: S stages, U unstages and R resets the selected files of the focused pane.
+            if (e.Key == Key.S && list == UnstagedList)
+            {
+                viewModel.StageSelectedCommand.Execute(null);
+            }
+            else if (e.Key == Key.U && list == StagedList)
+            {
+                viewModel.UnstageSelectedCommand.Execute(null);
+            }
+            else if (e.Key == Key.R && list == UnstagedList)
+            {
+                viewModel.BeginReset(viewModel.UnstagedSelection);
+            }
+            else
+            {
+                return;
+            }
+
+            e.Handled = true;
+        }
+    }
+
+    // The file list that has the keyboard focus (none while a text box or other control has it).
+    private ListBox? FocusedList()
+    {
+        if (FocusManager?.GetFocusedElement() is not Avalonia.Visual focused)
+        {
+            return null;
+        }
+
+        return focused == UnstagedList || focused.GetVisualAncestors().Contains(UnstagedList) ? UnstagedList
+            : focused == StagedList || focused.GetVisualAncestors().Contains(StagedList) ? StagedList
+            : null;
     }
 
     private void OnUnstagedSelectionChanged(object? sender, SelectionChangedEventArgs e)

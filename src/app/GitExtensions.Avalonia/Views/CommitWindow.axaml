@@ -46,15 +46,26 @@
     <Border Grid.Row="0" Padding="6,4" BorderThickness="0,0,0,1" BorderBrush="{DynamicResource SubtleBorderBrush}">
       <DockPanel LastChildFill="True">
         <StackPanel Orientation="Horizontal" Spacing="4" DockPanel.Dock="Left">
-          <Button x:Name="RefreshButton" Classes="tool" Content="↻ Refresh" Command="{Binding RefreshCommand}" ToolTip.Tip="Refresh the list of changes (F5)" />
-          <ToggleButton x:Name="UntrackedToggle" Classes="tool" Content="Untracked files" IsChecked="{Binding ShowUntracked}" />
+          <Button x:Name="RefreshButton" Classes="tool" Command="{Binding RefreshCommand}" ToolTip.Tip="Refresh the list of changes (F5)">
+            <StackPanel Orientation="Horizontal" Spacing="4"><views:AppIcon IconName="ReloadRevisions" /><AccessText Text="Refresh" VerticalAlignment="Center" /></StackPanel>
+          </Button>
+          <ToggleButton x:Name="UntrackedToggle" Classes="tool" Content="Show untracked files" IsChecked="{Binding ShowUntracked}" />
           <Border Width="1" Margin="4,2" Background="{DynamicResource SubtleBorderBrush}" />
-          <Button x:Name="StageAllButton" Classes="tool" Content="Stage all" Command="{Binding StageAllCommand}" />
-          <Button x:Name="UnstageAllButton" Classes="tool" Content="Unstage all" Command="{Binding UnstageAllCommand}" />
+          <Button x:Name="EditGitIgnoreButton" Classes="tool" Content="Edit .gitignore" Command="{Binding EditGitIgnoreCommand}" ToolTip.Tip="Open the .gitignore of the repository in your editor" />
           <Border Width="1" Margin="4,2" Background="{DynamicResource SubtleBorderBrush}" />
-          <Button x:Name="ResetAllToolbarButton" Classes="tool" Content="Reset all changes…" Command="{Binding ResetAllCommand}" />
+          <Button x:Name="StageAllButton" Classes="tool" Command="{Binding StageAllCommand}">
+            <StackPanel Orientation="Horizontal" Spacing="4"><views:AppIcon IconName="StageAll" /><AccessText Text="Stage all" VerticalAlignment="Center" /></StackPanel>
+          </Button>
+          <Button x:Name="UnstageAllButton" Classes="tool" Command="{Binding UnstageAllCommand}">
+            <StackPanel Orientation="Horizontal" Spacing="4"><views:AppIcon IconName="UnstageAll" /><AccessText Text="Unstage all" VerticalAlignment="Center" /></StackPanel>
+          </Button>
+          <Border Width="1" Margin="4,2" Background="{DynamicResource SubtleBorderBrush}" />
+          <Button x:Name="ResetAllToolbarButton" Classes="tool" Command="{Binding ResetAllCommand}">
+            <StackPanel Orientation="Horizontal" Spacing="4"><views:AppIcon IconName="ResetWorkingDirChanges" /><AccessText Text="Reset all changes…" VerticalAlignment="Center" /></StackPanel>
+          </Button>
         </StackPanel>
-        <SplitButton x:Name="ToolbarCommitButton" DockPanel.Dock="Right" Content="Commit" Command="{Binding CommitNowCommand}" MinHeight="26" Padding="10,3">
+        <SplitButton x:Name="ToolbarCommitButton" DockPanel.Dock="Right" Command="{Binding CommitNowCommand}" MinHeight="26" Padding="10,3">
+          <StackPanel Orientation="Horizontal" Spacing="4"><views:AppIcon IconName="RepoStateClean" /><AccessText Text="Commit" VerticalAlignment="Center" /></StackPanel>
           <SplitButton.Flyout>
             <MenuFlyout Placement="BottomEdgeAlignedRight">
               <MenuItem x:Name="ToolbarCommitItem" Header="Commit" Command="{Binding CommitNowCommand}" InputGesture="Ctrl+Enter" />
@@ -93,8 +104,10 @@
           <Border DockPanel.Dock="Top" Classes="sectionHeader">
             <Grid ColumnDefinitions="*,Auto">
               <TextBlock x:Name="UnstagedHeader" Text="{Binding UnstagedHeader}" FontWeight="SemiBold" VerticalAlignment="Center" />
-              <Button x:Name="StageSelectedButton" Grid.Column="1" Classes="tool" Content="Stage ▾" MinHeight="22" Padding="6,1"
-                      Command="{Binding StageSelectedCommand}" ToolTip.Tip="Stage the selected files (double-click a file)" />
+              <Button x:Name="StageSelectedButton" Grid.Column="1" Classes="tool" MinHeight="22" Padding="6,1"
+                      Command="{Binding StageSelectedCommand}" ToolTip.Tip="Stage the selected files (double-click a file)">
+            <StackPanel Orientation="Horizontal" Spacing="4"><views:AppIcon IconName="Stage" /><AccessText Text="Stage ▾" VerticalAlignment="Center" /></StackPanel>
+          </Button>
             </Grid>
           </Border>
           <Panel>
@@ -105,8 +118,9 @@
                   <Grid ColumnDefinitions="20,Auto,*" ColumnSpacing="6" ToolTip.Tip="{Binding Description}">
                     <Grid.ContextMenu>
                       <ContextMenu>
-                        <MenuItem Header="Stage" Command="{Binding $parent[Window].((vm:CommitWindowViewModel)DataContext).StageSelectedCommand}" />
-                        <MenuItem Header="Reset…" Command="{Binding $parent[Window].((vm:CommitWindowViewModel)DataContext).ResetSelectedCommand}" />
+                        <MenuItem Header="Stage" InputGesture="S" Command="{Binding $parent[Window].((vm:CommitWindowViewModel)DataContext).StageSelectedCommand}" />
+                        <MenuItem Header="Reset file or directory changes…" InputGesture="R" Command="{Binding $parent[Window].((vm:CommitWindowViewModel)DataContext).ResetSelectedCommand}" />
+                        <MenuItem Header="Add to .gitignore" Command="{Binding $parent[Window].((vm:CommitWindowViewModel)DataContext).AddToGitIgnoreCommand}" />
                         <Separator />
                         <MenuItem Header="Open" Click="OnOpenFile" />
                         <MenuItem Header="File history" Command="{Binding $parent[Window].((vm:CommitWindowViewModel)DataContext).ShowFileHistoryCommand}" CommandParameter="{Binding}" />
@@ -131,8 +145,10 @@
           <Border DockPanel.Dock="Top" Classes="sectionHeader" BorderThickness="0,1,0,1">
             <Grid ColumnDefinitions="*,Auto">
               <TextBlock x:Name="StagedHeader" Text="{Binding StagedHeader}" FontWeight="SemiBold" VerticalAlignment="Center" />
-              <Button x:Name="UnstageSelectedButton" Grid.Column="1" Classes="tool" Content="Unstage ▴" MinHeight="22" Padding="6,1"
-                      Command="{Binding UnstageSelectedCommand}" ToolTip.Tip="Unstage the selected files (double-click a file)" />
+              <Button x:Name="UnstageSelectedButton" Grid.Column="1" Classes="tool" MinHeight="22" Padding="6,1"
+                      Command="{Binding UnstageSelectedCommand}" ToolTip.Tip="Unstage the selected files (double-click a file)">
+            <StackPanel Orientation="Horizontal" Spacing="4"><views:AppIcon IconName="Unstage" /><AccessText Text="Unstage ▴" VerticalAlignment="Center" /></StackPanel>
+          </Button>
             </Grid>
           </Border>
           <Panel>
@@ -143,7 +159,7 @@
                   <Grid ColumnDefinitions="20,Auto,*" ColumnSpacing="6" ToolTip.Tip="{Binding Description}">
                     <Grid.ContextMenu>
                       <ContextMenu>
-                        <MenuItem Header="Unstage" Command="{Binding $parent[Window].((vm:CommitWindowViewModel)DataContext).UnstageSelectedCommand}" />
+                        <MenuItem Header="Unstage" InputGesture="U" Command="{Binding $parent[Window].((vm:CommitWindowViewModel)DataContext).UnstageSelectedCommand}" />
                         <MenuItem Header="Reset…" Command="{Binding $parent[Window].((vm:CommitWindowViewModel)DataContext).ResetSelectedCommand}" />
                         <Separator />
                         <MenuItem Header="Open" Click="OnOpenFile" />
@@ -167,7 +183,12 @@
       </Grid>
       <GridSplitter Grid.Column="1" Width="5" Background="Transparent" VerticalAlignment="Stretch" ResizeDirection="Columns" />
       <Border Grid.Column="2" BorderThickness="1,0,0,0" BorderBrush="{DynamicResource SubtleBorderBrush}">
-        <views:DiffView x:Name="DiffPanel" DataContext="{Binding Diff}" />
+        <Panel>
+          <Border x:Name="DiffHost" IsVisible="{Binding !Resolver.IsActive}">
+            <views:DiffView x:Name="DiffPanel" DataContext="{Binding Diff}" />
+          </Border>
+          <views:ConflictResolverView x:Name="ConflictPanel" DataContext="{Binding Resolver}" IsVisible="{Binding IsActive}" />
+        </Panel>
       </Border>
     </Grid>
 
@@ -178,20 +199,32 @@
       <DockPanel>
         <Grid DockPanel.Dock="Top" ColumnDefinitions="Auto,*,Auto,Auto" Margin="0,0,0,4">
           <TextBlock Text="Commit message" FontWeight="SemiBold" VerticalAlignment="Center" />
-          <Button x:Name="TemplatesButton" Grid.Column="2" Classes="tool" Content="Templates ▾" Click="OnTemplatesClick" Margin="0,0,4,0" />
+          <Button x:Name="TemplatesButton" Grid.Column="2" Classes="tool" Click="OnTemplatesClick" Margin="0,0,4,0">
+            <StackPanel Orientation="Horizontal" Spacing="4"><views:AppIcon IconName="CommitTemplates" /><AccessText Text="Templates ▾" VerticalAlignment="Center" /></StackPanel>
+          </Button>
           <Button x:Name="RecentButton" Grid.Column="3" Classes="tool" Content="Recent messages ▾" Click="OnRecentClick" IsEnabled="{Binding HasRecentMessages}" />
         </Grid>
         <Grid DockPanel.Dock="Bottom" ColumnDefinitions="Auto,*" RowDefinitions="Auto,Auto" Margin="0,6,0,0">
           <WrapPanel Grid.ColumnSpan="2" Orientation="Horizontal" VerticalAlignment="Center">
             <CheckBox x:Name="AmendBox" Content="_Amend commit" IsChecked="{Binding Commit.Amend}" IsEnabled="{Binding Commit.HasHead}" Margin="0,0,12,0" />
+            <CheckBox x:Name="ResetAuthorBox" Content="Reset author" IsChecked="{Binding Commit.ResetAuthor}" IsVisible="{Binding Commit.Amend}" Margin="0,0,12,0"
+                      ToolTip.Tip="Also overwrite the author and the date of the amended commit" />
+            <CheckBox x:Name="ResetSoftBox" Content="Reset soft" IsChecked="{Binding Commit.ResetSoft}" IsVisible="{Binding Commit.Amend}" Margin="0,0,12,0"
+                      ToolTip.Tip="Soft reset to the previous commit (index and working tree untouched), then commit the staged changes as a new commit" />
             <CheckBox x:Name="SignOffBox" Content="Sign off" IsChecked="{Binding Commit.SignOff}" Margin="0,0,12,0" />
             <CheckBox x:Name="PushBox" Content="Push after commit" IsChecked="{Binding PushAfterCommit}" Margin="0,0,12,0" />
             <CheckBox x:Name="CloseBox" Content="Close after commit" IsChecked="{Binding CloseAfterCommit}" />
           </WrapPanel>
-          <Button x:Name="ResetAllButton" Grid.Row="1" Content="_Reset all changes…" Command="{Binding ResetAllCommand}" VerticalAlignment="Center" />
+          <Button x:Name="ResetAllButton" Grid.Row="1" Command="{Binding ResetAllCommand}" VerticalAlignment="Center">
+            <StackPanel Orientation="Horizontal" Spacing="4"><views:AppIcon IconName="ResetWorkingDirChanges" /><AccessText Text="_Reset all changes…" VerticalAlignment="Center" /></StackPanel>
+          </Button>
           <StackPanel Grid.Row="1" Grid.Column="1" Orientation="Horizontal" Spacing="6" HorizontalAlignment="Right">
-            <Button x:Name="CommitAndPushButton" Content="Commit &amp; _push" Command="{Binding CommitAndPushCommand}" />
-            <Button x:Name="CommitButton" Classes="accent" Content="_Commit" Command="{Binding CommitNowCommand}" ToolTip.Tip="Commit (Ctrl+Enter)" />
+            <Button x:Name="CommitAndPushButton" Command="{Binding CommitAndPushCommand}">
+            <StackPanel Orientation="Horizontal" Spacing="4"><views:AppIcon IconName="ArrowUp" /><AccessText Text="Commit &amp; _push" VerticalAlignment="Center" /></StackPanel>
+          </Button>
+            <Button x:Name="CommitButton" Classes="accent" Command="{Binding CommitNowCommand}" ToolTip.Tip="Commit (Ctrl+Enter)">
+            <StackPanel Orientation="Horizontal" Spacing="4"><views:AppIcon IconName="RepoStateClean" /><AccessText Text="_Commit" VerticalAlignment="Center" /></StackPanel>
+          </Button>
           </StackPanel>
         </Grid>
         <TextBlock x:Name="ErrorLabel" DockPanel.Dock="Bottom" Text="{Binding ErrorText}" IsVisible="{Binding HasError}"

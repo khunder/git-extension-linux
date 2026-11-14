@@ -35,14 +35,24 @@ public sealed partial class DashboardEntry : ObservableObject
     public bool IsFavorite { get; init; }
 
     public string FavoriteMenuText => IsFavorite ? "Remove from favorites" : "Add to favorites";
+
+    /// <summary>Set for an entry of the recent list that is pinned to its top.</summary>
+    public bool IsPinned { get; init; }
+
+    public string PinMenuText => IsPinned ? "Unpin from top" : "Pin to top";
 }
 
 /// <summary>
 ///  A titled list of repositories on the dashboard ("Favorites", a user category, "Recent repositories").
 /// </summary>
-public sealed class DashboardCategory(string title, IReadOnlyList<DashboardEntry> entries)
+public sealed class DashboardCategory(string title, IReadOnlyList<DashboardEntry> entries, string? favoriteKey = null)
 {
     public string Title { get; } = title;
+
+    /// <summary>The stored category name of a favorites list (can be renamed or deleted); <see langword="null"/> for the recent list.</summary>
+    public string? FavoriteKey { get; } = favoriteKey;
+
+    public bool IsFavoriteCategory => FavoriteKey is not null;
 
     public IReadOnlyList<DashboardEntry> Entries { get; } = entries;
 
@@ -227,10 +237,13 @@ public sealed partial class DashboardViewModel : ObservableObject
             .GroupBy(f => string.IsNullOrWhiteSpace(f.Category) ? DefaultFavoriteCategory : f.Category!.Trim(), StringComparer.OrdinalIgnoreCase)
             .OrderBy(g => g.Key, StringComparer.OrdinalIgnoreCase))
         {
-            AddCategory(categories, group.Key, group.Select(r => r.Path), group.Key, favoritePaths, text);
+            AddCategory(categories, group.Key, group.Select(r => r.Path), group.Key, favoritePaths, text, []);
         }
 
-        AddCategory(categories, RecentTitle, _recent.Select(r => r.Path), null, favoritePaths, text);
+        // Pinned repositories stay on top of the recent list (the sort is stable, so the recent order is kept otherwise).
+        IEnumerable<Repository> recent = _recent.OrderBy(r => r.Anchor == Repository.RepositoryAnchor.AnchoredInTop ? 0 : 1);
+        HashSet<string> pinned = new(_recent.Where(r => r.Anchor == Repository.RepositoryAnchor.AnchoredInTop).Select(r => Normalize(r.Path)), PathComparer);
+        AddCategory(categories, RecentTitle, recent.Select(r => r.Path), null, favoritePaths, text, pinned);
 
         Categories.Clear();
         foreach (DashboardCategory category in categories)
@@ -241,7 +254,7 @@ public sealed partial class DashboardViewModel : ObservableObject
         _ = LoadBranchesAsync([.. categories.SelectMany(c => c.Entries)]);
     }
 
-    private static void AddCategory(List<DashboardCategory> categories, string title, IEnumerable<string> paths, string? favoriteCategory, HashSet<string> favoritePaths, string filter)
+    private static void AddCategory(List<DashboardCategory> categories, string title, IEnumerable<string> paths, string? favoriteCategory, HashSet<string> favoritePaths, string filter, HashSet<string> pinned)
     {
         List<DashboardEntry> entries = [];
         foreach (string path in paths)
@@ -251,13 +264,13 @@ public sealed partial class DashboardViewModel : ObservableObject
                 continue;
             }
 
-            entries.Add(new DashboardEntry(path, favoriteCategory) { IsFavorite = favoritePaths.Contains(Normalize(path)) });
+            entries.Add(new DashboardEntry(path, favoriteCategory) { IsFavorite = favoritePaths.Contains(Normalize(path)), IsPinned = pinned.Contains(Normalize(path)) });
         }
 
         // An empty list stays out of the way (and "no match" shows the empty state), as in the original dashboard.
         if (entries.Count > 0)
         {
-            categories.Add(new DashboardCategory(title, entries));
+            categories.Add(new DashboardCategory(title, entries, favoriteCategory));
         }
     }
 

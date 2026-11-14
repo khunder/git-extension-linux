@@ -17,6 +17,7 @@ public sealed partial class RevisionFileTreeViewModel : ObservableObject
     private TreeEntry? _root;
     private GitModule? _module;
     private string? _pendingRevision;
+    private string? _openFilePath;
     private CancellationTokenSource? _treeCancellation;
     private CancellationTokenSource? _contentCancellation;
 
@@ -78,6 +79,7 @@ public sealed partial class RevisionFileTreeViewModel : ObservableObject
     public void Clear()
     {
         _pendingRevision = null;
+        _openFilePath = null;
         Revision = null;
         _module = null;
         CancelAll();
@@ -115,6 +117,7 @@ public sealed partial class RevisionFileTreeViewModel : ObservableObject
             Message = error ?? (truncated ? $"Showing the first {paths.Count:N0} files." : paths.Count == 0 ? "The tree is empty." : string.Empty);
             IsLoading = false;
             ApplyFilter();
+            ReopenFile();
         }
         catch (OperationCanceledException)
         {
@@ -133,7 +136,50 @@ public sealed partial class RevisionFileTreeViewModel : ObservableObject
 
     partial void OnFilterTextChanged(string value) => ApplyFilter();
 
-    partial void OnSelectedNodeChanged(FileTreeNode? value) => _ = ShowContentAsync(value);
+    partial void OnSelectedNodeChanged(FileTreeNode? value)
+    {
+        if (value is { IsFolder: false, IsPlaceholder: false })
+        {
+            _openFilePath = value.FullPath;
+        }
+
+        _ = ShowContentAsync(value);
+    }
+
+    /// <summary>After another commit was selected, opens the file that was open before so the two versions can be compared.</summary>
+    private void ReopenFile()
+    {
+        if (_openFilePath is null)
+        {
+            return;
+        }
+
+        IReadOnlyList<FileTreeNode> level = Roots;
+        FileTreeNode? found = null;
+        foreach (string segment in _openFilePath.Split('/'))
+        {
+            found = level.FirstOrDefault(node => !node.IsPlaceholder && node.Name == segment);
+            if (found is null)
+            {
+                break;
+            }
+
+            if (found.IsFolder)
+            {
+                found.IsExpanded = true;
+                level = found.Children;
+            }
+        }
+
+        if (found is { IsFolder: false })
+        {
+            SelectedNode = found;
+        }
+        else
+        {
+            ContentMessage = $"'{_openFilePath}' does not exist in this commit.";
+        }
+    }
 
     private void ApplyFilter()
     {

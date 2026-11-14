@@ -136,6 +136,19 @@
     <Style Selector="Border.badge.overflow > TextBlock">
       <Setter Property="Foreground" Value="{DynamicResource RefOverflowForeground}" />
     </Style>
+    <Style Selector="Border.badge.bisect">
+      <Setter Property="BorderThickness" Value="2" />
+      <Setter Property="Background" Value="Transparent" />
+    </Style>
+    <Style Selector="Border.badge.bisect.good">
+      <Setter Property="BorderBrush" Value="{DynamicResource BuildSuccessBrush}" />
+    </Style>
+    <Style Selector="Border.badge.bisect.bad">
+      <Setter Property="BorderBrush" Value="{DynamicResource BuildFailureBrush}" />
+    </Style>
+    <Style Selector="Border.badge.bisect.skip">
+      <Setter Property="BorderBrush" Value="{DynamicResource SubtleBorderBrush}" />
+    </Style>
     <Style Selector="Border.badge.current > TextBlock">
       <Setter Property="FontWeight" Value="Bold" />
     </Style>
@@ -180,7 +193,7 @@
   </UserControl.Styles>
 
   <DockPanel>
-    <views:RevisionFilterBarView x:Name="FilterBar" DockPanel.Dock="Top" />
+    <views:RevisionFilterBarView x:Name="FilterBar" DockPanel.Dock="Top" IsVisible="{Binding ViewOptions.ShowFilterBar}" />
 
     <!-- Header row: the same columns as the rows (widths come from the shared Columns object). -->
     <Border x:Name="HeaderRow" DockPanel.Dock="Top" Background="{DynamicResource GridHeaderBackground}"
@@ -254,6 +267,8 @@
                 <Separator />
                 <MenuItem Header="Revert commit" Command="{Binding Actions.RevertCommand}" CommandParameter="{Binding}" />
                 <MenuItem Header="Cherry-pick commit" Command="{Binding Actions.CherryPickCommand}" CommandParameter="{Binding}" />
+                <Separator />
+                <MenuItem Header="Format patch…" Command="{Binding $parent[Window].((vm:MainWindowViewModel)DataContext).ShowFormatPatchForCommand}" CommandParameter="{Binding}" />
               </ContextMenu>
             </Border.ContextMenu>
             <DockPanel>
@@ -287,6 +302,10 @@
               <DockPanel Classes="message" ClipToBounds="True">
                 <views:CommitGraphCell DockPanel.Dock="Left" Row="{Binding Graph}" IsMerge="{Binding IsMerge}" IsHead="{Binding IsCurrentHead}"
                                        LaneCount="{Binding $parent[ListBox].((vm:MainWindowViewModel)DataContext).GraphLaneCount}" />
+                <Border DockPanel.Dock="Left" Classes="badge bisect" Classes.good="{Binding IsBisectGood}" Classes.bad="{Binding IsBisectBad}" Classes.skip="{Binding IsBisectSkip}"
+                        IsVisible="{Binding HasBisectMark}" ToolTip.Tip="Bisect: marked as {Binding BisectText}">
+                  <TextBlock Text="{Binding BisectText}" />
+                </Border>
                 <ItemsControl DockPanel.Dock="Left" Classes="badges" ItemsSource="{Binding RefBadges}" IsVisible="{Binding HasRefBadges}" VerticalAlignment="Center">
                   <ItemsControl.ItemsPanel>
                     <ItemsPanelTemplate>

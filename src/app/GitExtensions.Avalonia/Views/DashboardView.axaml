@@ -45,13 +45,52 @@
         <TextBlock Text="Recent and favorite repositories" FontSize="16" FontWeight="SemiBold" VerticalAlignment="Center" />
         <TextBox x:Name="DashboardFilterBox" Grid.Column="1" Width="240" AutomationProperties.Name="Filter repositories" Text="{Binding Filter}" Watermark="Filter repositories…" />
       </Grid>
+      <Border x:Name="CategoryEditor" DockPanel.Dock="Top" IsVisible="{Binding IsEditorOpen}" Margin="16,0,16,8" Padding="12" CornerRadius="6" BorderThickness="1"
+              BorderBrush="{DynamicResource SubtleBorderBrush}" Background="{DynamicResource SystemControlBackgroundAltHighBrush}">
+        <StackPanel Spacing="6">
+          <TextBlock Text="{Binding EditorTitle}" FontWeight="SemiBold" />
+          <TextBlock IsVisible="{Binding IsDeleting}"
+                     Text="The repositories are removed from the favorites; this cannot be undone." TextWrapping="Wrap" />
+          <ItemsControl x:Name="ExistingCategoryList" ItemsSource="{Binding ExistingCategories}" IsVisible="{Binding IsAssigning}">
+            <ItemsControl.ItemsPanel><ItemsPanelTemplate><WrapPanel /></ItemsPanelTemplate></ItemsControl.ItemsPanel>
+            <ItemsControl.ItemTemplate>
+              <DataTemplate x:DataType="x:String">
+                <Button Content="{Binding}" Margin="0,0,6,4" Padding="8,2"
+                        Command="{Binding $parent[UserControl].((vm:DashboardViewModel)DataContext).PickCategoryCommand}" CommandParameter="{Binding}" />
+              </DataTemplate>
+            </ItemsControl.ItemTemplate>
+          </ItemsControl>
+          <TextBox x:Name="CategoryNameBox" Text="{Binding EditorText}" IsVisible="{Binding IsTextEditor}" Watermark="Category name" AutomationProperties.Name="Category name">
+            <TextBox.KeyBindings>
+              <KeyBinding Gesture="Enter" Command="{Binding ApplyEditorCommand}" />
+              <KeyBinding Gesture="Escape" Command="{Binding CancelEditorCommand}" />
+            </TextBox.KeyBindings>
+          </TextBox>
+          <TextBlock x:Name="CategoryErrorText" Text="{Binding EditorError}" IsVisible="{Binding HasEditorError}" Foreground="{DynamicResource ErrorTextForeground}" TextWrapping="Wrap" />
+          <StackPanel Orientation="Horizontal" Spacing="8">
+            <Button x:Name="CategoryApplyButton" Content="OK" Classes="accent" Command="{Binding ApplyEditorCommand}" />
+            <Button x:Name="CategoryCancelButton" Content="Cancel" Command="{Binding CancelEditorCommand}" />
+          </StackPanel>
+        </StackPanel>
+      </Border>
       <Panel>
         <ScrollViewer HorizontalScrollBarVisibility="Disabled" IsVisible="{Binding !IsEmpty}">
           <ItemsControl x:Name="CategoryList" ItemsSource="{Binding Categories}" Margin="8,0,8,16">
             <ItemsControl.ItemTemplate>
               <DataTemplate x:DataType="vm:DashboardCategory">
                 <StackPanel Margin="0,0,0,12">
-                  <TextBlock Classes="categoryTitle" Text="{Binding Header}" FontWeight="SemiBold" FontSize="14" Margin="12,6,12,4" />
+                  <Grid ColumnDefinitions="*,Auto">
+                    <TextBlock Classes="categoryTitle" Text="{Binding Header}" FontWeight="SemiBold" FontSize="14" Margin="12,6,12,4" />
+                    <Button Grid.Column="1" Classes="categoryActions" Content="Actions ▾" IsVisible="{Binding IsFavoriteCategory}" Padding="8,2" Background="Transparent" BorderThickness="0"
+                            AutomationProperties.Name="Category actions">
+                      <Button.Flyout>
+                        <MenuFlyout>
+                          <MenuItem Header="Rename category…" Command="{Binding $parent[UserControl].((vm:DashboardViewModel)DataContext).BeginRenameCategoryCommand}" CommandParameter="{Binding}" />
+                          <MenuItem Header="Delete category…" Command="{Binding $parent[UserControl].((vm:DashboardViewModel)DataContext).BeginDeleteCategoryCommand}" CommandParameter="{Binding}" />
+                        </MenuFlyout>
+                      </Button.Flyout>
+                    </Button>
+                  </Grid>
                   <ListBox Classes="repos" ItemsSource="{Binding Entries}" Background="Transparent" ScrollViewer.VerticalScrollBarVisibility="Disabled">
                     <ListBox.KeyBindings>
                       <KeyBinding Gesture="Enter" Command="{Binding $parent[UserControl].((vm:DashboardViewModel)DataContext).OpenCommand}" CommandParameter="{Binding $parent[ListBox].SelectedItem}" />
@@ -64,6 +103,8 @@
                               <MenuItem Header="Open" Command="{Binding $parent[UserControl].((vm:DashboardViewModel)DataContext).OpenCommand}" CommandParameter="{Binding}" />
                               <MenuItem Header="Open in file explorer" Command="{Binding $parent[UserControl].((vm:DashboardViewModel)DataContext).OpenInExplorerCommand}" CommandParameter="{Binding}" />
                               <Separator />
+                              <MenuItem Header="Category…" Command="{Binding $parent[UserControl].((vm:DashboardViewModel)DataContext).BeginAssignCategoryCommand}" CommandParameter="{Binding}" />
+                              <MenuItem Header="{Binding PinMenuText}" IsVisible="{Binding FavoriteCategory, Converter={x:Static ObjectConverters.IsNull}}" Command="{Binding $parent[UserControl].((vm:DashboardViewModel)DataContext).TogglePinCommand}" CommandParameter="{Binding}" />
                               <MenuItem Header="{Binding FavoriteMenuText}" Command="{Binding $parent[UserControl].((vm:DashboardViewModel)DataContext).ToggleFavoriteCommand}" CommandParameter="{Binding}" />
                               <MenuItem Header="Remove from list" Command="{Binding $parent[UserControl].((vm:DashboardViewModel)DataContext).RemoveFromListCommand}" CommandParameter="{Binding}" />
                               <Separator />
@@ -72,6 +113,7 @@
                           </Grid.ContextMenu>
                           <StackPanel Spacing="1">
                             <StackPanel Orientation="Horizontal" Spacing="6">
+                              <TextBlock Text="pinned" IsVisible="{Binding IsPinned}" FontSize="11" Opacity="0.7" VerticalAlignment="Center" />
                               <TextBlock Text="★" IsVisible="{Binding IsFavorite}" Foreground="{DynamicResource SystemAccentColor}" VerticalAlignment="Center" />
                               <TextBlock Text="{Binding Name}" FontWeight="Bold" FontSize="14" />
                             </StackPanel>

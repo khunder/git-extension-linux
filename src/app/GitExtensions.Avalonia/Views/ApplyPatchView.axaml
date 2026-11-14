@@ -1,0 +1,54 @@
+<UserControl xmlns="https://github.com/avaloniaui"
+             xmlns:x="http://schemas.microsoft.com/winfx/2006/xaml"
+             xmlns:vm="using:GitExtensions.Desktop.ViewModels"
+             x:Class="GitExtensions.Desktop.Views.ApplyPatchView"
+             x:DataType="vm:ApplyPatchViewModel">
+  <Panel Background="#80000000">
+    <Border x:Name="Card" MaxWidth="640" Margin="24" Padding="20" VerticalAlignment="Center" HorizontalAlignment="Stretch"
+            CornerRadius="8" BorderThickness="1"
+            Background="{DynamicResource SystemControlBackgroundAltHighBrush}"
+            BorderBrush="{DynamicResource SubtleBorderBrush}">
+      <StackPanel Spacing="4">
+        <TextBlock Text="Apply patch" FontSize="18" FontWeight="SemiBold" Margin="0,0,0,8" />
+
+        <StackPanel Orientation="Horizontal" Spacing="16">
+          <RadioButton x:Name="FileRadio" GroupName="PatchSource" Content="Patch file" IsChecked="True" />
+          <RadioButton x:Name="FolderRadio" GroupName="PatchSource" Content="All patches in a folder" IsChecked="{Binding IsFolder}" />
+        </StackPanel>
+        <Grid ColumnDefinitions="*,Auto" ColumnSpacing="8">
+          <TextBox x:Name="PathBox" Text="{Binding PatchPath}" Watermark="Path of the patch file or folder" IsEnabled="{Binding CanStart}">
+            <TextBox.KeyBindings>
+              <KeyBinding Gesture="Escape" Command="{Binding CloseCommand}" />
+            </TextBox.KeyBindings>
+          </TextBox>
+          <Button x:Name="BrowseButton" Grid.Column="1" Content="Browse…" Command="{Binding BrowseCommand}" IsEnabled="{Binding CanStart}" />
+        </Grid>
+
+        <StackPanel Margin="0,8,0,0" IsEnabled="{Binding CanStart}">
+          <RadioButton x:Name="AmRadio" GroupName="ApplyMode" Content="Create commits from the patches (git am)" IsChecked="{Binding Commit}" />
+          <RadioButton x:Name="ApplyRadio" GroupName="ApplyMode" Content="Change the working tree only (git apply)" />
+          <CheckBox x:Name="SignOffBox" Content="Sign off" IsChecked="{Binding SignOff}" IsEnabled="{Binding CanSignOff}" Margin="0,4,0,0" />
+          <CheckBox x:Name="ThreeWayBox" Content="Three-way merge when the patch does not apply cleanly" IsChecked="{Binding ThreeWay}" />
+          <CheckBox x:Name="WhitespaceBox" Content="Ignore whitespace differences" IsChecked="{Binding IgnoreWhitespace}" />
+        </StackPanel>
+
+        <ProgressBar IsIndeterminate="True" IsVisible="{Binding IsRunning}" Margin="0,8,0,0" />
+        <TextBlock x:Name="ErrorText" Text="{Binding ErrorMessage}" IsVisible="{Binding HasError}" TextWrapping="Wrap"
+                   Foreground="{DynamicResource ErrorTextForeground}" Margin="0,8,0,0" />
+        <TextBlock x:Name="ConflictText" Text="{Binding ConflictText}" IsVisible="{Binding HasConflicts}" TextWrapping="Wrap" FontWeight="SemiBold" />
+        <TextBlock x:Name="InProgressText" Text="A patch series is being applied. Continue, skip the current patch or abort." IsVisible="{Binding IsAmInProgress}" TextWrapping="Wrap" />
+        <TextBox x:Name="OutputBox" Text="{Binding Output}" IsReadOnly="True" AcceptsReturn="True" TextWrapping="NoWrap" MaxHeight="180" MinHeight="60"
+                 FontFamily="Cascadia Mono, Consolas, DejaVu Sans Mono, monospace" FontSize="12" Margin="0,8,0,0"
+                 IsVisible="{Binding Output, Converter={x:Static StringConverters.IsNotNullOrEmpty}}" />
+
+        <StackPanel Orientation="Horizontal" HorizontalAlignment="Right" Spacing="8" Margin="0,12,0,0">
+          <Button x:Name="AbortButton" Content="Abort" Command="{Binding AbortCommand}" IsVisible="{Binding IsAmInProgress}" />
+          <Button x:Name="SkipButton" Content="Skip" Command="{Binding SkipCommand}" IsVisible="{Binding IsAmInProgress}" />
+          <Button x:Name="ContinueButton" Content="Continue" Classes="accent" Command="{Binding ContinueCommand}" IsVisible="{Binding IsAmInProgress}" />
+          <Button x:Name="CloseButton" Content="Close" Command="{Binding CloseCommand}" />
+          <Button x:Name="ApplyButton" Content="Apply" Classes="accent" Command="{Binding ApplyCommand}" IsVisible="{Binding !IsAmInProgress}" />
+        </StackPanel>
+      </StackPanel>
+    </Border>
+  </Panel>
+</UserControl>

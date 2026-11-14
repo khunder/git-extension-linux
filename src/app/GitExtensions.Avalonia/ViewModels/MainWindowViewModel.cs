@@ -58,11 +58,13 @@ public sealed partial class MainWindowViewModel : ObservableObject
         Refs = new RefsTreeViewModel(message => Status = message, SelectCommit, () => OpenAsync(RepositoryPath));
         InitializeHistoryExtras();
         InitializeGrid();
+        InitializeViewOptions();
         InitializeOperations();
         InitializeCloneInit();
         InitializeBranchManagement();
         InitializeMenu();
         InitializeDashboard();
+        InitializeNavigation();
     }
 
     public RecentRepositoriesViewModel Recent { get; }
@@ -329,7 +331,7 @@ public sealed partial class MainWindowViewModel : ObservableObject
             });
         });
 
-        reader.GetLog(observer, RevisionFilterArgs.Build(filter, BehaviorSettings.Current.HistoryLimit), pathFilter: string.Empty, hasNotes: false, autostashLabel: "autostash", cancellationToken);
+        reader.GetLog(observer, RevisionFilterArgs.Build(filter, EffectiveHistoryLimit), pathFilter: string.Empty, hasNotes: false, autostashLabel: "autostash", cancellationToken);
     }
 
     private sealed class BatchObserver(Action<IReadOnlyList<GitRevision>> onNext) : IObserver<IReadOnlyList<GitRevision>>

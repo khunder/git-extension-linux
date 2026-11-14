@@ -35,7 +35,7 @@ public sealed partial class MainWindowViewModel
     public IReadOnlyList<AppCommand> Commands => _commandList ??= BuildCommands();
 
     /// <summary>True while a modal overlay (settings, file history, palette, help, credentials) has the window's input.</summary>
-    public bool IsOverlayOpen => Settings.IsOpen || FileHistory.IsOpen || Palette.IsOpen || ShortcutsHelp.IsOpen || Credentials.IsOpen;
+    public bool IsOverlayOpen => Settings.IsOpen || FileHistory.IsOpen || Palette.IsOpen || ShortcutsHelp.IsOpen || Credentials.IsOpen || Dialogs.IsOpen;
 
     /// <summary>Raised just before a registry command runs from a shortcut or the palette.</summary>
     public event Action<AppCommand>? CommandInvoked;
@@ -144,6 +144,10 @@ public sealed partial class MainWindowViewModel
             // History
             Make("history.next", "Select next commit", "History", SelectNextCommit, () => Commits.Count > 0, Keys(CommandGesture.Of(Key.J))),
             Make("history.previous", "Select previous commit", "History", SelectPreviousCommit, () => Commits.Count > 0, Keys(CommandGesture.Of(Key.K))),
+
+            Make("history.goToCommit", "Go to commit…", "History", () => ShowGoToCommitCommand.Execute(null), HasRepo, Keys(CommandGesture.Of(Key.G, CtrlShift))),
+            FromCommand("history.back", "Navigate backward", "History", () => NavigateBackCommand, HasRepo, Keys(CommandGesture.Of(Key.Left, KeyModifiers.Alt))),
+            FromCommand("history.forward", "Navigate forward", "History", () => NavigateForwardCommand, HasRepo, Keys(CommandGesture.Of(Key.Right, KeyModifiers.Alt))),
 
             // View
             Make("view.sidebar", "Toggle branches sidebar", "View", () => UiRequested?.Invoke(UiTarget.ToggleSidebar), HasRepo, Keys(CommandGesture.Of(Key.B, Ctrl))),

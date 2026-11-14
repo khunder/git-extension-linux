@@ -376,7 +376,7 @@ public class DashboardTests
         menu.Open(row);
         ShellTestSupport.Settle();
         MenuItem[] items = [.. menu.Items.OfType<MenuItem>()];
-        items.Select(i => i.Header).Should().Equal("Open", "Open in file explorer", "Add to favorites", "Remove from list", "Copy path");
+        items.Select(i => i.Header).Should().Equal("Open", "Open in file explorer", "Category…", "Pin to top", "Add to favorites", "Remove from list", "Copy path");
         items.Should().OnlyContain(i => i.Command != null && i.Command.CanExecute(i.CommandParameter));
         menu.Close();
 

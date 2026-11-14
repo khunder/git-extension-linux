@@ -1,0 +1,28 @@
+<UserControl xmlns="https://github.com/avaloniaui"
+             xmlns:x="http://schemas.microsoft.com/winfx/2006/xaml"
+             xmlns:vm="using:GitExtensions.Desktop.ViewModels"
+             x:Class="GitExtensions.Desktop.Views.GoToCommitView"
+             x:DataType="vm:GoToCommitViewModel">
+  <StackPanel Spacing="8" Width="440" AutomationProperties.Name="Go to commit">
+    <TextBlock Text="Go to commit" FontSize="18" FontWeight="SemiBold" />
+    <TextBlock Text="Revision expression" />
+    <TextBox x:Name="ExpressionBox" Text="{Binding Expression}" Watermark="hash, branch, tag, HEAD~3, v1.0^{}…" AutomationProperties.Name="Revision expression">
+      <TextBox.KeyBindings>
+        <KeyBinding Gesture="Enter" Command="{Binding GoCommand}" />
+      </TextBox.KeyBindings>
+    </TextBox>
+    <Grid ColumnDefinitions="Auto,*" RowDefinitions="Auto,Auto" ColumnSpacing="8" RowSpacing="6">
+      <TextBlock Text="Branch" VerticalAlignment="Center" />
+      <ComboBox x:Name="BranchCombo" Grid.Column="1" HorizontalAlignment="Stretch" ItemsSource="{Binding Branches}" SelectedItem="{Binding SelectedBranch}"
+                PlaceholderText="Pick a branch" AutomationProperties.Name="Branch" />
+      <TextBlock Grid.Row="1" Text="Tag" VerticalAlignment="Center" />
+      <ComboBox x:Name="TagCombo" Grid.Row="1" Grid.Column="1" HorizontalAlignment="Stretch" ItemsSource="{Binding Tags}" SelectedItem="{Binding SelectedTag}"
+                PlaceholderText="Pick a tag" AutomationProperties.Name="Tag" />
+    </Grid>
+    <TextBlock x:Name="ErrorText" Text="{Binding Error}" IsVisible="{Binding HasError}" TextWrapping="Wrap" Foreground="{DynamicResource BuildFailureBrush}" />
+    <StackPanel Orientation="Horizontal" HorizontalAlignment="Right" Spacing="8">
+      <Button x:Name="CancelButton" Content="Cancel" Command="{Binding CancelCommand}" />
+      <Button x:Name="GoButton" Content="Go" Classes="accent" Command="{Binding GoCommand}" IsEnabled="{Binding !IsBusy}" />
+    </StackPanel>
+  </StackPanel>
+</UserControl>

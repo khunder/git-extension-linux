@@ -32,6 +32,7 @@ public class CommitWindowTests
     {
         MainWindowViewModel main = new(GitEnvironment.Initialize(), new NoFolderPicker());
         await main.OpenAsync(path);
+        await main.UseCurrentBranchAsync();
         CommitWindowViewModel window = main.CreateCommitWindowViewModel(store ?? new CommitWindowStore(NewStorePath()))!;
         await window.LoadAsync();
         return (main, window);
@@ -362,7 +363,7 @@ public class CommitWindowTests
         (WindowService service, Window owner, MainWindowViewModel main, CommitWindow window) = await ShowAsync(repository.Path);
 
         window.IsVisible.Should().BeTrue();
-        window.Title.Should().Be($"Commit - {Path.GetFileName(repository.Path)} (main)");
+        window.Title.Should().Be($"Commit to {Path.GetFileName(repository.Path)} (main)");
         window.FindControl<ListBox>("UnstagedList")!.ItemCount.Should().Be(1);
         window.FindControl<ListBox>("StagedList")!.ItemCount.Should().Be(1);
         window.FindControl<TextBlock>("StatusLine")!.Text.Should().Be("1 file unstaged, 1 staged");

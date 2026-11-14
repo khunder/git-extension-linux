@@ -153,7 +153,7 @@ public class MainMenuToolbarTests
         headers.Should().Contain(expected);
 
         // Features that do not exist yet are shown, disabled, with a tooltip.
-        string[] stubs = ["Archive revision…", "Bisect…", "Format patch…", "Apply patch…", "View patch file…", "Cherry pick…", "Remote repositories…", "Check for updates", "Reset changes…", "Generate or import key"];
+        string[] stubs = ["Check for updates", "Generate or import key"];
         foreach (string name in stubs)
         {
             MenuItem item = all.First(m => m.Header is string h && h.Replace("_", string.Empty, StringComparison.Ordinal) == name);
@@ -162,7 +162,7 @@ public class MainMenuToolbarTests
         }
 
         // Everything with a feature behind it is enabled with a repository open.
-        foreach (string name in new[] { "RefreshMenuItem", "FileExplorerMenuItem", "SubmodulesMenuItem", "WorktreesMenuItem", "CommitMenuItem", "PushMenuItem", "FetchMenuItem", "ReflogMenuItem", "CloseMenuItem", "GoToCurrentMenuItem", "OpenMenuItem", "CloneMenuItem", "InitMenuItem", "ShortcutsMenuItem", "AboutMenuItem" })
+        foreach (string name in new[] { "RefreshMenuItem", "FileExplorerMenuItem", "RemotesMenuItem", "FavoritesMenuItem", "SubmodulesMenuItem", "WorktreesMenuItem", "CommitMenuItem", "PushMenuItem", "FetchMenuItem", "ReflogMenuItem", "CloseMenuItem", "GoToCurrentMenuItem", "OpenMenuItem", "CloneMenuItem", "InitMenuItem", "ShortcutsMenuItem", "AboutMenuItem", "CherryPickMenuItem", "ArchiveMenuItem", "CheckoutRevisionMenuItem", "DeleteBranchMenuItem", "ResetChangesMenuItem", "CleanMenuItem" })
         {
             MenuItem item = Item(window, name);
             item.IsEnabled.Should().BeTrue(name);
@@ -421,6 +421,7 @@ public class MainMenuToolbarTests
         using TestRepository repository = new();
         MainWindow window = CreateWindow(out MainWindowViewModel viewModel);
         await viewModel.OpenAsync(repository.Path);
+        await viewModel.UseCurrentBranchAsync();
         string gitDirectory = Path.Combine(repository.Path, ".git");
         File.WriteAllText(Path.Combine(gitDirectory, "index.lock"), string.Empty);
         viewModel.DeleteIndexLockCommand.Execute(null);

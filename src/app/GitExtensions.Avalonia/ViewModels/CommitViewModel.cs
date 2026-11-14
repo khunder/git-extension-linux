@@ -31,6 +31,14 @@ public sealed partial class CommitViewModel : ObservableObject, IDisposable
     [ObservableProperty]
     private bool _signOff;
 
+    /// <summary>Amend only: also overwrite the author and the author date of the commit (git commit --reset-author).</summary>
+    [ObservableProperty]
+    private bool _resetAuthor;
+
+    /// <summary>Amend only: soft-reset to the previous commit (index and working tree untouched) and commit the staged changes as a new commit.</summary>
+    [ObservableProperty]
+    private bool _resetSoft;
+
     [ObservableProperty]
     private string? _errorText;
 
@@ -94,6 +102,8 @@ public sealed partial class CommitViewModel : ObservableObject, IDisposable
         }
         else
         {
+            ResetAuthor = false;
+            ResetSoft = false;
             Message = _draftMessage;
         }
     }
@@ -124,12 +134,14 @@ public sealed partial class CommitViewModel : ObservableObject, IDisposable
         string message = Message;
         bool amend = Amend;
         bool signOff = SignOff;
+        bool resetAuthor = amend && ResetAuthor;
+        bool resetSoft = amend && ResetSoft;
         ErrorText = null;
         IsCommitting = true;
         string? error;
         try
         {
-            error = await Task.Run(() => RunCommit(message, amend, signOff));
+            error = await Task.Run(() => RunCommit(message, amend, signOff, resetAuthor, resetSoft));
         }
         catch (Exception ex)
         {
@@ -172,8 +184,20 @@ public sealed partial class CommitViewModel : ObservableObject, IDisposable
         }
     }
 
-    private string? RunCommit(string message, bool amend, bool signOff)
+    private string? RunCommit(string message, bool amend, bool signOff, bool resetAuthor, bool resetSoft)
     {
+        if (amend && resetSoft)
+        {
+            ExecutionResult reset = _module.GitExecutable.Execute(new GitArgumentBuilder("reset") { "--soft", "HEAD~1" }, throwOnErrorExit: false);
+            if (!reset.ExitedSuccessfully)
+            {
+                string resetText = string.IsNullOrWhiteSpace(reset.StandardError) ? reset.StandardOutput : reset.StandardError;
+                return string.IsNullOrWhiteSpace(resetText) ? "git reset --soft failed." : resetText.Trim();
+            }
+
+            amend = false;
+        }
+
         string file = Path.Combine(_module.WorkingDirGitDir, "GE_COMMIT_EDITMSG");
         File.WriteAllText(file, message.TrimEnd() + "\n", new UTF8Encoding(false));
         try
@@ -182,6 +206,7 @@ public sealed partial class CommitViewModel : ObservableObject, IDisposable
             {
                 "--cleanup=strip",
                 { amend, "--amend" },
+                { amend && resetAuthor, "--reset-author" },
                 { signOff, "--signoff" },
                 "-F",
                 file.QuoteNE(),

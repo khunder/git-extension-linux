@@ -19,7 +19,7 @@ public sealed partial class MainWindowViewModel
 
     private RevisionTabsViewModel CreateRevisionTabs()
     {
-        RevisionTabsViewModel tabs = new((path, blame, revision) => FileHistory.OpenAsync(path, blame, revision));
+        RevisionTabsViewModel tabs = new((path, blame, revision) => FileHistory.OpenAsync(path, blame, revision), options: ViewOptions);
         _revisionTabs = tabs;
         PropertyChanged += (_, e) =>
         {

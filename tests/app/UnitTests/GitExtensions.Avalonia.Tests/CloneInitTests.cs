@@ -411,6 +411,7 @@ public class CloneInitTests
         viewModel.Clone.IsOpen.Should().BeFalse();
         viewModel.HasOpenedRepository.Should().BeTrue();
         viewModel.RepositoryPath.TrimEnd('/', '\\').Should().Be(Path.Combine(_root, "clones", "origin"));
+        await viewModel.UseCurrentBranchAsync();
         viewModel.Commits.Should().HaveCount(3);
         viewModel.Remote.OutputText.Should().Contain("git clone");
         await viewModel.Recent.LoadAsync();

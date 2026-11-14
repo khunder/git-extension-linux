@@ -24,11 +24,16 @@ public sealed partial class RevisionTabsViewModel : ObservableObject
     [ObservableProperty]
     private int _selectedTabIndex;
 
-    public RevisionTabsViewModel(Func<string, bool, string?, Task> openFileHistory, CommandLogService? commandLog = null)
+    public RevisionTabsViewModel(Func<string, bool, string?, Task> openFileHistory, CommandLogService? commandLog = null, ViewOptionsViewModel? options = null)
     {
         _openFileHistory = openFileHistory;
         Console = commandLog ?? new CommandLogService();
+        Options = options ?? new ViewOptionsViewModel(new ViewOptionsStore(Path.Combine(Path.GetTempPath(), "ge-no-view-options-" + Guid.NewGuid().ToString("N") + ".json")));
+        Options.PropertyChanged += (_, _) => OnOptionsChanged();
     }
+
+    /// <summary>The View menu options that decide which tabs and panes are shown.</summary>
+    public ViewOptionsViewModel Options { get; }
 
     public RevisionDiffViewModel Diff { get; } = new();
 
@@ -40,13 +45,28 @@ public sealed partial class RevisionTabsViewModel : ObservableObject
     public bool IsBusy => Diff.IsBusy || FileTree.IsBusy;
 
     /// <summary>Gets a value indicating whether the Build Report tab is shown: only with a configured build server (none is supported yet).</summary>
-    public bool ShowBuildReport => false;
+    public bool ShowBuildReport => Options.ShowBuildReportTab;
 
     /// <summary>Gets a value indicating whether the Commit tab applies (it does not for the uncommitted changes).</summary>
-    public bool ShowCommitTab => !_workingTree;
+    public bool ShowCommitTab => !_workingTree && Options.ShowCommitTab && Options.CommitInfoPosition == CommitInfoLayout.Below;
 
     /// <summary>Gets a value indicating whether the File tree tab applies (it does not for the uncommitted changes).</summary>
-    public bool ShowFileTreeTab => !_workingTree;
+    public bool ShowFileTreeTab => !_workingTree && Options.ShowFileTreeTab;
+
+    /// <summary>Gets a value indicating whether the Diff tab is shown (View > Show tabs).</summary>
+    public bool ShowDiffTab => Options.ShowDiffTab;
+
+    /// <summary>Gets a value indicating whether the Console tab is shown (View > Show tabs).</summary>
+    public bool ShowConsoleTab => Options.ShowConsoleTab;
+
+    /// <summary>Gets a value indicating whether the commit info is a separate pane left of the tabs.</summary>
+    public bool ShowCommitInfoLeft => !_workingTree && Options.ShowCommitTab && Options.CommitInfoPosition == CommitInfoLayout.Left;
+
+    /// <summary>Gets a value indicating whether the commit info is a separate pane right of the tabs.</summary>
+    public bool ShowCommitInfoRight => !_workingTree && Options.ShowCommitTab && Options.CommitInfoPosition == CommitInfoLayout.Right;
+
+    /// <summary>Gets a value indicating whether any tab is shown.</summary>
+    public bool HasVisibleTabs => ShowCommitTab || ShowDiffTab || ShowFileTreeTab || ShowConsoleTab || ShowBuildReport;
 
     /// <summary>Shows what <paramref name="revision"/> changed and its files.</summary>
     public void ShowCommit(GitModule module, GitRevision revision)
@@ -98,8 +118,33 @@ public sealed partial class RevisionTabsViewModel : ObservableObject
         _workingTree = workingTree;
         if (changed)
         {
-            OnPropertyChanged(nameof(ShowCommitTab));
-            OnPropertyChanged(nameof(ShowFileTreeTab));
+            NotifyTabVisibility();
         }
+    }
+
+    private void OnOptionsChanged()
+    {
+        NotifyTabVisibility();
+        bool[] visible = [ShowCommitTab, ShowDiffTab, ShowFileTreeTab, ShowConsoleTab, ShowBuildReport];
+        if (SelectedTabIndex is < 0 or > 4 || !visible[SelectedTabIndex])
+        {
+            int first = Array.IndexOf(visible, true);
+            if (first >= 0)
+            {
+                SelectedTabIndex = first;
+            }
+        }
+    }
+
+    private void NotifyTabVisibility()
+    {
+        OnPropertyChanged(nameof(ShowCommitTab));
+        OnPropertyChanged(nameof(ShowDiffTab));
+        OnPropertyChanged(nameof(ShowFileTreeTab));
+        OnPropertyChanged(nameof(ShowConsoleTab));
+        OnPropertyChanged(nameof(ShowBuildReport));
+        OnPropertyChanged(nameof(ShowCommitInfoLeft));
+        OnPropertyChanged(nameof(ShowCommitInfoRight));
+        OnPropertyChanged(nameof(HasVisibleTabs));
     }
 }

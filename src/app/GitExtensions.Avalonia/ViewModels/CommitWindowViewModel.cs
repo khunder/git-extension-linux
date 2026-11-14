@@ -82,13 +82,14 @@ public sealed partial class CommitWindowViewModel : ObservableObject, IDisposabl
         _store = store;
         _workingDir = module.WorkingDir;
         RepositoryName = new DirectoryInfo(module.WorkingDir.TrimEnd('/', '\\')).Name;
-        _title = $"Commit - {RepositoryName}";
+        _title = $"Commit to {RepositoryName}";
         _closeAfterCommit = store.CloseAfterCommit;
 
         Commit = new CommitViewModel(module, AllChanges, messages, () => Task.CompletedTask);
         Commit.Committed += store.AddRecent;
         Commit.Committed += _ => LoadRecent();
         Diff = new FileDiffViewModel(module, AfterIndexChangeAsync, ReportError);
+        Resolver = new ConflictResolverViewModel(() => _module, AfterIndexChangeAsync, ReportError);
         LoadRecent();
         BuildTemplates();
         UpdateStatus();
@@ -159,6 +160,7 @@ public sealed partial class CommitWindowViewModel : ObservableObject, IDisposabl
     public async Task LoadAsync()
     {
         await Commit.LoadAsync();
+        ApplyConfiguredTemplate();
         await RefreshAsync();
     }
 
@@ -189,7 +191,7 @@ public sealed partial class CommitWindowViewModel : ObservableObject, IDisposabl
             }
 
             Branch = branch;
-            Title = $"Commit - {RepositoryName} ({branch})";
+            Title = TitleFor(branch);
             if (error is not null)
             {
                 ReportError(error);
@@ -420,7 +422,12 @@ public sealed partial class CommitWindowViewModel : ObservableObject, IDisposabl
 
     partial void OnErrorTextChanged(string? value) => OnPropertyChanged(nameof(HasError));
 
-    private Task ShowSelectedAsync() => Diff.ShowAsync(SelectedUnstaged ?? SelectedStaged);
+    private async Task ShowSelectedAsync()
+    {
+        ChangedFileViewModel? file = SelectedUnstaged ?? SelectedStaged;
+        await Resolver.ShowAsync(file, AllChanges);
+        await Diff.ShowAsync(file);
+    }
 
     private void ReportError(string message)
     {
@@ -638,6 +645,7 @@ public sealed partial class CommitWindowViewModel : ObservableObject, IDisposabl
         OnPropertyChanged(nameof(StagedHeader));
         OnPropertyChanged(nameof(HasNoUnstaged));
         OnPropertyChanged(nameof(HasNoStaged));
+        OnPropertyChanged(nameof(HasConflicts));
     }
 
     private void LoadRecent()

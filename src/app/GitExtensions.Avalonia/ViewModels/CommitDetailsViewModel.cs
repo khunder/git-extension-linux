@@ -207,6 +207,7 @@ public sealed partial class CommitDetailsViewModel : ObservableObject
             FilesHeader = Files.Count == 1 ? "1 file changed" : $"{Files.Count} files changed";
             HasCommit = true;
             IsLoading = false;
+            _ = LoadNoteAsync(module.WorkingDir, revision.ObjectId);
             _ = LoadExtrasAsync(module, revision.ObjectId, Message, cancellationToken);
         }
         catch (OperationCanceledException)
@@ -328,5 +329,6 @@ public sealed partial class CommitDetailsViewModel : ObservableObject
         ParentLinks.Clear();
         ChildLinks.Clear();
         Files.Clear();
+        ResetNote();
     }
 }

@@ -1,0 +1,52 @@
+<UserControl xmlns="https://github.com/avaloniaui"
+             xmlns:x="http://schemas.microsoft.com/winfx/2006/xaml"
+             xmlns:vm="using:GitExtensions.Desktop.ViewModels"
+             x:Class="GitExtensions.Desktop.Views.BisectView"
+             x:DataType="vm:BisectViewModel">
+  <StackPanel Spacing="8" Width="520" AutomationProperties.Name="Bisect">
+    <TextBlock Text="Bisect" FontSize="18" FontWeight="SemiBold" />
+    <TextBlock x:Name="StateTextBlock" Text="{Binding StateText}" FontWeight="SemiBold" TextWrapping="Wrap" />
+    <TextBlock x:Name="FirstBadTextBlock" Text="{Binding FirstBadText}" IsVisible="{Binding HasFirstBad}" TextWrapping="Wrap" Foreground="{DynamicResource BuildFailureBrush}" FontWeight="SemiBold" />
+
+    <!-- Start -->
+    <Border BorderThickness="1" BorderBrush="{DynamicResource SubtleBorderBrush}" CornerRadius="4" Padding="8">
+      <Grid ColumnDefinitions="Auto,*,Auto" RowDefinitions="Auto,Auto,Auto" ColumnSpacing="8" RowSpacing="6">
+        <TextBlock Text="Bad" VerticalAlignment="Center" />
+        <TextBox x:Name="BadBox" Grid.Column="1" Text="{Binding BadRevision}" IsEnabled="{Binding CanStart}" Watermark="Optional: a revision known to be bad" />
+        <Button x:Name="UseBadButton" Grid.Column="2" Content="Use selected" Command="{Binding UseSelectedAsBadCommand}" IsEnabled="{Binding CanStart}" />
+        <TextBlock Grid.Row="1" Text="Good" VerticalAlignment="Center" />
+        <TextBox x:Name="GoodBox" Grid.Row="1" Grid.Column="1" Text="{Binding GoodRevision}" IsEnabled="{Binding CanStart}" Watermark="Optional: a revision known to be good" />
+        <Button x:Name="UseGoodButton" Grid.Row="1" Grid.Column="2" Content="Use selected" Command="{Binding UseSelectedAsGoodCommand}" IsEnabled="{Binding CanStart}" />
+        <Button x:Name="StartButton" Grid.Row="2" Grid.ColumnSpan="3" Content="Start bisect" Classes="accent" HorizontalAlignment="Left" Command="{Binding StartCommand}" IsEnabled="{Binding CanStart}" />
+      </Grid>
+    </Border>
+
+    <!-- Mark -->
+    <Border BorderThickness="1" BorderBrush="{DynamicResource SubtleBorderBrush}" CornerRadius="4" Padding="8">
+      <StackPanel Spacing="6">
+        <CheckBox x:Name="UseSelectedCheck" Content="Mark the selected commit (instead of the current checkout)" IsChecked="{Binding MarkSelectedCommit}" IsEnabled="{Binding CanMark}" />
+        <TextBlock x:Name="SelectedTextBlock" Text="{Binding SelectedText}" Opacity="0.7" FontSize="12" />
+        <StackPanel Orientation="Horizontal" Spacing="8">
+          <Button x:Name="GoodButton" Content="Good" Command="{Binding MarkGoodCommand}" IsEnabled="{Binding CanMark}" />
+          <Button x:Name="BadButton" Content="Bad" Command="{Binding MarkBadCommand}" IsEnabled="{Binding CanMark}" />
+          <Button x:Name="SkipButton" Content="Skip" Command="{Binding SkipCommand}" IsEnabled="{Binding CanMark}" />
+          <Button x:Name="ResetButton" Content="Reset…" Command="{Binding RequestResetCommand}" IsEnabled="{Binding CanMark}" ToolTip.Tip="End the bisect session and go back to where you started" />
+        </StackPanel>
+      </StackPanel>
+    </Border>
+
+    <Panel x:Name="ResetPanel" IsVisible="{Binding IsResetPromptVisible}">
+      <Border Background="{DynamicResource SystemAccentColor}" Opacity="0.15" />
+      <Grid ColumnDefinitions="*,Auto,Auto" ColumnSpacing="8" Margin="8,6">
+        <TextBlock Text="End the bisect session? The marks are forgotten and the branch you started from is checked out again." TextWrapping="Wrap" VerticalAlignment="Center" />
+        <Button x:Name="ResetConfirm" Grid.Column="1" Content="Reset bisect" Command="{Binding ConfirmResetCommand}" />
+        <Button x:Name="ResetCancel" Grid.Column="2" Content="Cancel" Command="{Binding CancelResetCommand}" />
+      </Grid>
+    </Panel>
+
+    <TextBox x:Name="OutputBox" Text="{Binding Output}" IsReadOnly="True" AcceptsReturn="True" TextWrapping="Wrap" Height="90" Classes="mono"
+             Watermark="What git says appears here" AutomationProperties.Name="Bisect output" />
+    <ProgressBar Height="3" IsIndeterminate="True" IsVisible="{Binding IsBusy}" />
+    <TextBlock Text="Esc closes this dialog. Marked commits are tagged good, bad or skip in the history list." Opacity="0.65" FontSize="12" TextWrapping="Wrap" />
+  </StackPanel>
+</UserControl>

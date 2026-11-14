@@ -52,6 +52,7 @@
               </ContextMenu>
             </StackPanel.ContextMenu>
             <TextBlock Text="{Binding Marker}" Width="10" Foreground="{DynamicResource SystemAccentColor}" VerticalAlignment="Center" />
+            <mgmt:AppIcon IconName="{Binding IconName}" />
             <TextBlock Text="{Binding Header}" FontWeight="{Binding FontWeight}" VerticalAlignment="Center" />
             <TextBlock Text="{Binding TrackText}" IsVisible="{Binding ShowTrack}" ToolTip.Tip="{Binding TrackToolTip}" FontSize="11" VerticalAlignment="Center"
                        Foreground="{DynamicResource SystemAccentColor}" />

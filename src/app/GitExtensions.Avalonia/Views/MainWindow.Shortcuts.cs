@@ -18,7 +18,7 @@ public sealed partial class MainWindow
     internal const double HistoryNarrowWidth = RevisionGridView.HistoryNarrowWidth;
     internal const double HistoryTinyWidth = RevisionGridView.HistoryTinyWidth;
 
-    private static readonly string[] OverlayNames = ["SettingsOverlay", "FileHistoryOverlay", "CredentialOverlay", "PaletteOverlay", "ShortcutsOverlay"];
+    private static readonly string[] OverlayNames = ["SettingsOverlay", "FileHistoryOverlay", "CredentialOverlay", "PaletteOverlay", "ShortcutsOverlay", "ToolDialogsOverlay"];
 
     // The commands that stay available while an overlay is open (so the palette and help can be toggled off again).
     private static readonly string[] OverlayCommandIds = ["palette.show", "help.shortcuts", "view.theme"];
@@ -67,7 +67,7 @@ public sealed partial class MainWindow
         }
 
         _shortcutViewModel.UiRequested += OnUiRequested;
-        foreach (INotifyPropertyChanged overlay in new INotifyPropertyChanged[] { _shortcutViewModel.Settings, _shortcutViewModel.FileHistory, _shortcutViewModel.Credentials, _shortcutViewModel.Palette, _shortcutViewModel.ShortcutsHelp })
+        foreach (INotifyPropertyChanged overlay in new INotifyPropertyChanged[] { _shortcutViewModel.Settings, _shortcutViewModel.FileHistory, _shortcutViewModel.Credentials, _shortcutViewModel.Palette, _shortcutViewModel.ShortcutsHelp, _shortcutViewModel.Dialogs })
         {
             overlay.PropertyChanged += OnOverlayPropertyChanged;
         }
@@ -147,6 +147,10 @@ public sealed partial class MainWindow
         else if (viewModel.ShortcutsHelp.IsOpen)
         {
             viewModel.ShortcutsHelp.Close();
+        }
+        else if (viewModel.Dialogs.IsOpen)
+        {
+            viewModel.Dialogs.Close();
         }
         else if (viewModel.FileHistory.IsOpen)
         {
@@ -244,6 +248,7 @@ public sealed partial class MainWindow
         Name(this.FindControl<Control>("SettingsOverlay"), "Settings");
         Name(this.FindControl<Control>("FileHistoryOverlay"), "File history and blame");
         Name(this.FindControl<Control>("CredentialOverlay"), "Credentials requested by Git");
+        Name(this.FindControl<Control>("ToolDialogsOverlay"), "Dialog");
         Name(this.FindControl<Control>("PaletteOverlay"), "Command palette");
         Name(this.FindControl<Control>("ShortcutsOverlay"), "Keyboard shortcuts");
         Name(this.FindControl<Control>("DashboardPage"), "Dashboard: recent and favorite repositories");

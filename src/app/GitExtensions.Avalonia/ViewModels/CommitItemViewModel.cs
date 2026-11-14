@@ -1,12 +1,13 @@
 ﻿using System.Globalization;
 using Avalonia.Media;
+using CommunityToolkit.Mvvm.ComponentModel;
 using GitExtensions.Desktop.History;
 using GitExtensions.Extensibility.Git;
 using GitUIPluginInterfaces;
 
 namespace GitExtensions.Desktop.ViewModels;
 
-public sealed class CommitItemViewModel
+public sealed partial class CommitItemViewModel : ObservableObject
 {
     public CommitItemViewModel(GitRevision revision, string refs, IReadOnlyList<RefBadge>? badges = null)
     {

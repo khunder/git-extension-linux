@@ -104,7 +104,7 @@ public class RobustnessTests
         await viewModel.OpenAsync(folder);
 
         viewModel.Status.Should().NotContain("Failed");
-        viewModel.Commits.Select(c => c.Subject).Should().Equal("first");
+        viewModel.Commits.Select(c => c.Subject).Should().Equal("second", "first");
         viewModel.Branch.Should().NotBeNullOrEmpty();
     }
 

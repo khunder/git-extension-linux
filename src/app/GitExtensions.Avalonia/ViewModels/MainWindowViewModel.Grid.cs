@@ -19,8 +19,8 @@ public sealed partial class MainWindowViewModel
     public const string AllBranchesChoice = "All branches";
     public const string CurrentBranchChoice = "Current branch";
 
-    /// <summary>The branch filter a repository opens with (the history of the checked out branch, as before the grid existed).</summary>
-    public const string DefaultBranchChoice = CurrentBranchChoice;
+    /// <summary>The branch filter a repository opens with: all branches, as in the original.</summary>
+    public const string DefaultBranchChoice = AllBranchesChoice;
 
     private Dictionary<ObjectId, CommitRefs> _refsByCommit = [];
     private string? _currentUser;

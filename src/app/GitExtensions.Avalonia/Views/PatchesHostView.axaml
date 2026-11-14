@@ -1,0 +1,13 @@
+<UserControl xmlns="https://github.com/avaloniaui"
+             xmlns:x="http://schemas.microsoft.com/winfx/2006/xaml"
+             xmlns:vm="using:GitExtensions.Desktop.ViewModels"
+             xmlns:views="using:GitExtensions.Desktop.Views"
+             x:Class="GitExtensions.Desktop.Views.PatchesHostView"
+             x:DataType="vm:MainWindowViewModel">
+  <!-- The three patch dialogs; the window's view-model is the data context. -->
+  <Panel>
+    <views:FormatPatchView x:Name="FormatPatchOverlay" DataContext="{Binding FormatPatch}" IsVisible="{Binding IsOpen}" />
+    <views:ApplyPatchView x:Name="ApplyPatchOverlay" DataContext="{Binding ApplyPatch}" IsVisible="{Binding IsOpen}" />
+    <views:ViewPatchView x:Name="ViewPatchOverlay" DataContext="{Binding ViewPatch}" IsVisible="{Binding IsOpen}" />
+  </Panel>
+</UserControl>

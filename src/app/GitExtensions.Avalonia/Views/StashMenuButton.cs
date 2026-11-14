@@ -22,6 +22,18 @@ public sealed class StashMenuButton : Button
     {
         Name = "StashMenuButton";
         Content = "Stash ▾";
+
+        // The content stays the plain label text; the template adds the original's stash icon.
+        ContentTemplate = new Avalonia.Controls.Templates.FuncDataTemplate<string>((_, _) => new StackPanel
+        {
+            Orientation = Avalonia.Layout.Orientation.Horizontal,
+            Spacing = 4,
+            Children =
+            {
+                new AppIcon { IconName = "Stash" },
+                new TextBlock { [!TextBlock.TextProperty] = new Avalonia.Data.Binding(), VerticalAlignment = Avalonia.Layout.VerticalAlignment.Center },
+            },
+        });
         Flyout flyout = new() { Content = _view, Placement = PlacementMode.BottomEdgeAlignedRight };
 
         // The theme caps flyouts at 456px wide, which would clip the stash list and diff.

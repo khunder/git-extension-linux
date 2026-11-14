@@ -21,6 +21,8 @@ public sealed partial class MainToolbarView : UserControl
 
         Describe(RefreshButton, "Refresh");
         Describe(LeftPanelButton, "Show or hide the left panel", "Ctrl+B");
+        Describe(LevelUpButton, "Submodules");
+        Describe(WorktreesButton, "Worktrees");
         Describe(LayoutButton, "Toggle the split layout");
         Describe(CommitInfoPositionButton, "Position of the commit info");
         Describe(RepoPathButton, "Repository path", "Recent repositories; Ctrl+R shows the list");

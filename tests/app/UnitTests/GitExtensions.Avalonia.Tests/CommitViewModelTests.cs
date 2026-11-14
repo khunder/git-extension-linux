@@ -26,6 +26,7 @@ public class CommitViewModelTests
     {
         MainWindowViewModel viewModel = new(GitEnvironment.Initialize(), new NoFolderPicker());
         await viewModel.OpenAsync(repository.Path);
+        await viewModel.UseCurrentBranchAsync();
         await viewModel.Commit!.LoadAsync();
         return viewModel;
     }

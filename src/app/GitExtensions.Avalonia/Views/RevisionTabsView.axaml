@@ -5,6 +5,13 @@
              x:Class="GitExtensions.Desktop.Views.RevisionTabsView"
              x:DataType="vm:MainWindowViewModel">
 
+  <UserControl.Resources>
+    <!-- The side panes only hold a CommitInfoView while the commit info is shown there. -->
+    <DataTemplate x:Key="CommitInfoTemplate" x:DataType="vm:CommitDetailsViewModel">
+      <views:CommitInfoView />
+    </DataTemplate>
+  </UserControl.Resources>
+
   <UserControl.Styles>
     <Style Selector="TabItem.revisionTab">
       <Setter Property="MinHeight" Value="26" />
@@ -17,20 +24,27 @@
     </Style>
   </UserControl.Styles>
 
-  <TabControl x:Name="Tabs" Padding="0" SelectedIndex="{Binding RevisionTabs.SelectedTabIndex, Mode=TwoWay}">
+  <Grid ColumnDefinitions="Auto,*,Auto">
+  <Border x:Name="CommitInfoLeftPane" Grid.Column="0" Width="340" IsVisible="{Binding RevisionTabs.ShowCommitInfoLeft}" BorderThickness="0,0,1,0" BorderBrush="{DynamicResource SubtleBorderBrush}">
+    <ContentControl x:Name="CommitInfoLeftContent" Content="{Binding CommitInfoLeft}" ContentTemplate="{StaticResource CommitInfoTemplate}" />
+  </Border>
+  <Border x:Name="CommitInfoRightPane" Grid.Column="2" Width="340" IsVisible="{Binding RevisionTabs.ShowCommitInfoRight}" BorderThickness="1,0,0,0" BorderBrush="{DynamicResource SubtleBorderBrush}">
+    <ContentControl x:Name="CommitInfoRightContent" Content="{Binding CommitInfoRight}" ContentTemplate="{StaticResource CommitInfoTemplate}" />
+  </Border>
+  <TabControl x:Name="Tabs" Grid.Column="1" Padding="0" SelectedIndex="{Binding RevisionTabs.SelectedTabIndex, Mode=TwoWay}">
     <TabItem x:Name="CommitTabItem" Classes="revisionTab" IsVisible="{Binding RevisionTabs.ShowCommitTab}">
       <TabItem.Header>
         <StackPanel Orientation="Horizontal" Spacing="6">
-          <TextBlock Classes="glyph" Text="●" />
+          <views:AppIcon IconName="CommitSummary" />
           <TextBlock Text="Commit" />
         </StackPanel>
       </TabItem.Header>
       <views:CommitInfoView DataContext="{Binding CommitDetails}" />
     </TabItem>
-    <TabItem x:Name="DiffTabItem" Classes="revisionTab">
+    <TabItem x:Name="DiffTabItem" Classes="revisionTab" IsVisible="{Binding RevisionTabs.ShowDiffTab}">
       <TabItem.Header>
         <StackPanel Orientation="Horizontal" Spacing="6">
-          <TextBlock Classes="glyph" Text="±" />
+          <views:AppIcon IconName="Diff" />
           <TextBlock x:Name="DiffHeaderText" Text="{Binding RevisionTabs.Diff.TabHeader}" />
         </StackPanel>
       </TabItem.Header>
@@ -39,16 +53,16 @@
     <TabItem x:Name="FileTreeTabItem" Classes="revisionTab" IsVisible="{Binding RevisionTabs.ShowFileTreeTab}">
       <TabItem.Header>
         <StackPanel Orientation="Horizontal" Spacing="6">
-          <TextBlock Classes="glyph" Text="▤" />
+          <views:AppIcon IconName="FileTree" />
           <TextBlock Text="File tree" />
         </StackPanel>
       </TabItem.Header>
       <views:RevisionFileTreeView DataContext="{Binding RevisionTabs.FileTree}" />
     </TabItem>
-    <TabItem x:Name="ConsoleTabItem" Classes="revisionTab">
+    <TabItem x:Name="ConsoleTabItem" Classes="revisionTab" IsVisible="{Binding RevisionTabs.ShowConsoleTab}">
       <TabItem.Header>
         <StackPanel Orientation="Horizontal" Spacing="6">
-          <TextBlock Classes="glyph" Text="❯" />
+          <views:AppIcon IconName="Console" />
           <TextBlock Text="Console" />
         </StackPanel>
       </TabItem.Header>
@@ -65,4 +79,5 @@
       <TextBlock Text="No build server is configured." Margin="12" Opacity="0.6" />
     </TabItem>
   </TabControl>
+  </Grid>
 </UserControl>

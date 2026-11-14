@@ -303,6 +303,34 @@ public class RevisionTabsTests
     }
 
     [AvaloniaTest]
+    public async Task File_tree_keeps_the_open_file_when_another_commit_is_selected()
+    {
+        using RevisionTabsRepository repository = new();
+        MainWindowViewModel main = await OpenAsync(repository.Path);
+        main.RevisionTabs.SelectedTabIndex = RevisionTabsViewModel.FileTreeTab;
+        RevisionFileTreeViewModel tree = main.RevisionTabs.FileTree;
+
+        main.SelectedCommit = Commit(main, "Rework files");
+        await WaitUntilAsync(() => tree.Roots.Count > 0);
+        tree.SelectedNode = tree.Roots.Single(n => n.Name == "a.txt");
+        await WaitUntilAsync(() => tree.Lines.Count == 1);
+        tree.Lines[0].Text.Should().Be("rewritten");
+
+        main.SelectedCommit = Commit(main, "Merge feature");
+        await WaitUntilAsync(() => tree.SelectedNode is { FullPath: "a.txt" } && tree.Lines.Count == 1 && tree.Lines[0].Text != "rewritten");
+
+        // A file that does not exist in the other commit says so instead of silently closing.
+        main.SelectedCommit = Commit(main, "Rework files");
+        await WaitUntilAsync(() => tree.Roots.Count > 0);
+        tree.SelectedNode = tree.Roots.Single(n => n.Name == "cc.txt");
+        await WaitUntilAsync(() => tree.Lines.Count > 0);
+        main.SelectedCommit = Commit(main, "Merge feature");
+        await WaitUntilAsync(() => tree.ContentMessage.Contains("does not exist", StringComparison.Ordinal));
+
+        await QuiesceAsync(main);
+    }
+
+    [AvaloniaTest]
     public async Task File_tree_only_lists_when_the_tab_is_active()
     {
         using RevisionTabsRepository repository = new();

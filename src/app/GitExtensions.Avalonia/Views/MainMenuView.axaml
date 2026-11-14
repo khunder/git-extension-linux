@@ -1,6 +1,8 @@
 <UserControl xmlns="https://github.com/avaloniaui"
              xmlns:x="http://schemas.microsoft.com/winfx/2006/xaml"
              xmlns:vm="using:GitExtensions.Desktop.ViewModels"
+             xmlns:svc="using:GitExtensions.Desktop.Services"
+             xmlns:local="using:GitExtensions.Desktop.Views"
              x:Class="GitExtensions.Desktop.Views.MainMenuView"
              x:DataType="vm:MainWindowViewModel">
 
@@ -33,136 +35,264 @@
   <Menu x:Name="MainMenu">
     <!-- Start -->
     <MenuItem x:Name="StartMenu" Header="_Start">
-      <MenuItem x:Name="OpenMenuItem" Header="_Open…" InputGesture="Ctrl+O" Command="{Binding BrowseCommand}" />
+      <MenuItem x:Name="OpenMenuItem" Header="_Open…" InputGesture="Ctrl+O" Command="{Binding BrowseCommand}" >
+        <MenuItem.Icon><local:AppIcon IconName="RepoOpen" /></MenuItem.Icon>
+      </MenuItem>
       <MenuItem x:Name="OpenRecentMenu" Header="Open _recent" />
-      <MenuItem x:Name="CloneMenuItem" Header="_Clone repository…" Command="{Binding ShowCloneCommand}" />
-      <MenuItem x:Name="InitMenuItem" Header="Create _new repository…" Command="{Binding ShowInitCommand}" />
-      <MenuItem Header="_Favorite repositories…" Classes="stub" />
+      <MenuItem x:Name="CloneMenuItem" Header="_Clone repository…" Command="{Binding ShowCloneCommand}">
+        <MenuItem.Icon><local:AppIcon IconName="CloneRepoGit" /></MenuItem.Icon>
+      </MenuItem>
+      <MenuItem x:Name="InitMenuItem" Header="Create _new repository…" Command="{Binding ShowInitCommand}">
+        <MenuItem.Icon><local:AppIcon IconName="RepoCreate" /></MenuItem.Icon>
+      </MenuItem>
+      <MenuItem x:Name="FavoritesMenuItem" Header="_Favorite repositories…" Command="{Binding ShowRepositoryListsCommand}">
+        <MenuItem.Icon><local:AppIcon IconName="DashboardFolderGit" /></MenuItem.Icon>
+      </MenuItem>
       <Separator />
-      <MenuItem x:Name="SettingsMenuItem" Header="_Settings…" InputGesture="Ctrl+," Command="{Binding OpenSettingsCommand}" />
+      <MenuItem x:Name="SettingsMenuItem" Header="_Settings…" InputGesture="Ctrl+," Command="{Binding OpenSettingsCommand}" >
+        <MenuItem.Icon><local:AppIcon IconName="Settings" /></MenuItem.Icon>
+      </MenuItem>
       <Separator />
       <MenuItem x:Name="ExitMenuItem" Header="E_xit" Click="OnExit" />
     </MenuItem>
 
     <!-- Dashboard: only while the start page is shown. -->
     <MenuItem x:Name="DashboardMenu" Header="_Dashboard" IsVisible="{Binding ShowStartView}">
-      <MenuItem x:Name="DashboardRefreshMenuItem" Header="_Refresh" InputGesture="F5" Command="{Binding RefreshDashboardCommand}" />
+      <MenuItem x:Name="DashboardRefreshMenuItem" Header="_Refresh" InputGesture="F5" Command="{Binding RefreshDashboardCommand}" >
+        <MenuItem.Icon><local:AppIcon IconName="ReloadRevisions" /></MenuItem.Icon>
+      </MenuItem>
     </MenuItem>
 
     <!-- Repository -->
     <MenuItem x:Name="RepositoryMenu" Header="_Repository" IsVisible="{Binding HasOpenedRepository}">
-      <MenuItem x:Name="RefreshMenuItem" Header="_Refresh" InputGesture="F5" Command="{Binding RefreshCommand}" />
-      <MenuItem x:Name="FileExplorerMenuItem" Header="File E_xplorer" Command="{Binding OpenFileExplorerCommand}" />
+      <MenuItem x:Name="RefreshMenuItem" Header="_Refresh" InputGesture="F5" Command="{Binding RefreshCommand}" >
+        <MenuItem.Icon><local:AppIcon IconName="ReloadRevisions" /></MenuItem.Icon>
+      </MenuItem>
+      <MenuItem x:Name="FileExplorerMenuItem" Header="File E_xplorer" Command="{Binding OpenFileExplorerCommand}" >
+        <MenuItem.Icon><local:AppIcon IconName="BrowseFileExplorer" /></MenuItem.Icon>
+      </MenuItem>
       <Separator />
-      <MenuItem Header="Remote repositor_ies…" Classes="stub" />
+      <MenuItem x:Name="RemotesMenuItem" Header="Remote repositor_ies…" Command="{Binding ShowRemotesCommand}">
+        <MenuItem.Icon><local:AppIcon IconName="Remotes" /></MenuItem.Icon>
+      </MenuItem>
       <Separator />
-      <MenuItem x:Name="SubmodulesMenuItem" Header="Manage s_ubmodules…" Command="{Binding ShowSubmodulesCommand}" />
-      <MenuItem x:Name="UpdateSubmodulesMenuItem" Header="_Update all submodules" Command="{Binding UpdateAllSubmodulesCommand}" />
-      <MenuItem x:Name="SyncSubmodulesMenuItem" Header="S_ynchronize all submodules" Command="{Binding SynchronizeAllSubmodulesCommand}" />
+      <MenuItem x:Name="SubmodulesMenuItem" Header="Manage s_ubmodules…" Command="{Binding ShowSubmodulesCommand}" >
+        <MenuItem.Icon><local:AppIcon IconName="SubmodulesManage" /></MenuItem.Icon>
+      </MenuItem>
+      <MenuItem x:Name="UpdateSubmodulesMenuItem" Header="_Update all submodules" Command="{Binding UpdateAllSubmodulesCommand}" >
+        <MenuItem.Icon><local:AppIcon IconName="SubmodulesUpdate" /></MenuItem.Icon>
+      </MenuItem>
+      <MenuItem x:Name="SyncSubmodulesMenuItem" Header="S_ynchronize all submodules" Command="{Binding SynchronizeAllSubmodulesCommand}" >
+        <MenuItem.Icon><local:AppIcon IconName="SubmodulesSync" /></MenuItem.Icon>
+      </MenuItem>
       <Separator />
-      <MenuItem x:Name="WorktreesMenuItem" Header="Manage _worktrees…" Command="{Binding ShowWorktreesCommand}" />
+      <MenuItem x:Name="WorktreesMenuItem" Header="Manage _worktrees…" Command="{Binding ShowWorktreesCommand}" >
+        <MenuItem.Icon><local:AppIcon IconName="WorkTree" /></MenuItem.Icon>
+      </MenuItem>
       <Separator />
-      <MenuItem x:Name="EditGitIgnoreMenuItem" Header="Edit .git_ignore" Command="{Binding EditWorkingTreeFileCommand}" CommandParameter=".gitignore" />
+      <MenuItem x:Name="EditGitIgnoreMenuItem" Header="Edit .git_ignore" Command="{Binding EditWorkingTreeFileCommand}" CommandParameter=".gitignore" >
+        <MenuItem.Icon><local:AppIcon IconName="EditGitIgnore" /></MenuItem.Icon>
+      </MenuItem>
       <MenuItem x:Name="EditExcludeMenuItem" Header="Edit .git/_info/exclude" Command="{Binding EditGitDirectoryFileCommand}" CommandParameter="info/exclude" />
       <MenuItem x:Name="EditGitAttributesMenuItem" Header="Edit .git_attributes" Command="{Binding EditWorkingTreeFileCommand}" CommandParameter=".gitattributes" />
       <MenuItem x:Name="EditMailmapMenuItem" Header="Edit .mail_map" Command="{Binding EditWorkingTreeFileCommand}" CommandParameter=".mailmap" />
       <Separator />
       <MenuItem Header="Git _maintenance">
-        <MenuItem x:Name="CompressMenuItem" Header="_Compress git database" Command="{Binding CompressDatabaseCommand}" />
-        <MenuItem Header="_Recover lost objects…" Classes="stub" />
-        <MenuItem x:Name="DeleteIndexLockMenuItem" Header="Delete index._lock" Command="{Binding DeleteIndexLockCommand}" />
+        <MenuItem.Icon><local:AppIcon IconName="Maintenance" /></MenuItem.Icon>
+        <MenuItem x:Name="CompressMenuItem" Header="_Compress git database" Command="{Binding CompressDatabaseCommand}" >
+          <MenuItem.Icon><local:AppIcon IconName="CompressGitDatabase" /></MenuItem.Icon>
+        </MenuItem>
+        <MenuItem x:Name="RecoverLostMenuItem" Header="_Recover lost objects…" Command="{Binding ShowLostObjectsCommand}" >
+          <MenuItem.Icon><local:AppIcon IconName="RecoverLostObjects" /></MenuItem.Icon>
+        </MenuItem>
+        <MenuItem x:Name="DeleteIndexLockMenuItem" Header="Delete index._lock" Command="{Binding DeleteIndexLockCommand}" >
+          <MenuItem.Icon><local:AppIcon IconName="DeleteIndexLock" /></MenuItem.Icon>
+        </MenuItem>
         <Separator />
-        <MenuItem x:Name="EditConfigMenuItem" Header="Edit .git/_config" Command="{Binding EditGitDirectoryFileCommand}" CommandParameter="config" />
+        <MenuItem x:Name="EditConfigMenuItem" Header="Edit .git/_config" Command="{Binding EditGitDirectoryFileCommand}" CommandParameter="config" >
+          <MenuItem.Icon><local:AppIcon IconName="EditGitConfig" /></MenuItem.Icon>
+        </MenuItem>
       </MenuItem>
-      <MenuItem x:Name="RepositorySettingsMenuItem" Header="Repository se_ttings…" Command="{Binding OpenSettingsCommand}" />
+      <MenuItem x:Name="RepositorySettingsMenuItem" Header="Repository se_ttings…" Command="{Binding OpenSettingsCommand}" >
+        <MenuItem.Icon><local:AppIcon IconName="Settings" /></MenuItem.Icon>
+      </MenuItem>
       <Separator />
-      <MenuItem x:Name="CloseMenuItem" Header="_Close (go to Dashboard)" Command="{Binding CloseRepositoryCommand}" />
+      <MenuItem x:Name="CloseMenuItem" Header="_Close (go to Dashboard)" Command="{Binding CloseRepositoryCommand}" >
+        <MenuItem.Icon><local:AppIcon IconName="DashboardFolderGit" /></MenuItem.Icon>
+      </MenuItem>
     </MenuItem>
 
     <!-- Navigate -->
     <MenuItem x:Name="NavigateMenu" Header="_Navigate" IsVisible="{Binding HasOpenedRepository}">
-      <MenuItem Header="Go to _commit…" Classes="stub" />
-      <MenuItem x:Name="GoToCurrentMenuItem" Header="Go to c_urrent revision" Command="{Binding GoToCurrentRevisionCommand}" />
+      <MenuItem x:Name="GoToCommitMenuItem" Header="Go to _commit…" InputGesture="Ctrl+Shift+G" Command="{Binding ShowGoToCommitCommand}" >
+        <MenuItem.Icon><local:AppIcon IconName="GotoCommit" /></MenuItem.Icon>
+      </MenuItem>
+      <MenuItem x:Name="GoToCurrentMenuItem" Header="Go to c_urrent revision" Command="{Binding GoToCurrentRevisionCommand}" >
+        <MenuItem.Icon><local:AppIcon IconName="GotoCurrentRevision" /></MenuItem.Icon>
+      </MenuItem>
       <Separator />
-      <MenuItem x:Name="GoToParentMenuItem" Header="Go to _parent commit" Command="{Binding GoToParentCommitCommand}" />
-      <MenuItem x:Name="GoToChildMenuItem" Header="Go to c_hild commit" Command="{Binding GoToChildCommitCommand}" />
+      <MenuItem x:Name="GoToParentMenuItem" Header="Go to _parent commit" Command="{Binding GoToParentCommitCommand}" >
+        <MenuItem.Icon><local:AppIcon IconName="GoToParentCommit" /></MenuItem.Icon>
+      </MenuItem>
+      <MenuItem x:Name="GoToChildMenuItem" Header="Go to c_hild commit" Command="{Binding GoToChildCommitCommand}" >
+        <MenuItem.Icon><local:AppIcon IconName="GoToChildCommit" /></MenuItem.Icon>
+      </MenuItem>
       <Separator />
       <MenuItem x:Name="NextCommitMenuItem" Header="_Next change in list" InputGesture="J" Command="{Binding NextChangeCommand}" />
       <MenuItem x:Name="PreviousCommitMenuItem" Header="Pre_vious change in list" InputGesture="K" Command="{Binding PreviousChangeCommand}" />
       <Separator />
-      <MenuItem Header="Navigate _backward" Classes="stub" />
-      <MenuItem Header="Navigate _forward" Classes="stub" />
+      <MenuItem x:Name="NavigateBackMenuItem" Header="Navigate _backward" InputGesture="Alt+Left" Command="{Binding NavigateBackCommand}" >
+        <MenuItem.Icon><local:AppIcon IconName="NavigateBackward" /></MenuItem.Icon>
+      </MenuItem>
+      <MenuItem x:Name="NavigateForwardMenuItem" Header="Navigate _forward" InputGesture="Alt+Right" Command="{Binding NavigateForwardCommand}" >
+        <MenuItem.Icon><local:AppIcon IconName="NavigateForward" /></MenuItem.Icon>
+      </MenuItem>
     </MenuItem>
 
     <!-- View -->
     <MenuItem x:Name="ViewMenu" Header="_View" IsVisible="{Binding HasOpenedRepository}">
-      <MenuItem x:Name="LeftPanelMenuItem" Header="Show/hide _left panel" InputGesture="Ctrl+B" Command="{Binding ToggleLeftPanelCommand}" />
-      <MenuItem x:Name="OutputMenuItem" Header="Show/hide _output panel" InputGesture="Ctrl+Shift+O" Command="{Binding Remote.ToggleOutputCommand}" />
-      <Separator />
-      <MenuItem Header="Layout of the commit _info">
-        <MenuItem Header="_Below" Classes="stub" />
-        <MenuItem Header="_Left" Classes="stub" />
-        <MenuItem Header="_Right" Classes="stub" />
+      <MenuItem x:Name="LeftPanelMenuItem" Header="Show/hide _left panel" InputGesture="Ctrl+B" Command="{Binding ToggleLeftPanelCommand}" >
+        <MenuItem.Icon><local:AppIcon IconName="LayoutSidebarLeft" /></MenuItem.Icon>
       </MenuItem>
-      <MenuItem Header="Show _tabs">
-        <MenuItem Header="_Commit" Classes="stub" />
-        <MenuItem Header="_Diff" Classes="stub" />
-        <MenuItem Header="_File tree" Classes="stub" />
-        <MenuItem Header="C_onsole" Classes="stub" />
-        <MenuItem Header="_Build report" Classes="stub" />
+      <MenuItem x:Name="OutputMenuItem" Header="Show/hide _output panel" InputGesture="Ctrl+Shift+O" Command="{Binding Remote.ToggleOutputCommand}" >
+        <MenuItem.Icon><local:AppIcon IconName="Console" /></MenuItem.Icon>
       </MenuItem>
-      <MenuItem Header="F_ilters" Classes="stub" />
-      <MenuItem Header="Show remote _branches" Classes="stub" />
-      <MenuItem Header="Show _tags" Classes="stub" />
       <Separator />
-      <MenuItem x:Name="ViewRefreshMenuItem" Header="_Refresh" InputGesture="F5" Command="{Binding RefreshCommand}" />
+      <MenuItem x:Name="CommitInfoLayoutMenu" Header="Layout of the commit _info">
+        <MenuItem.Icon><local:AppIcon IconName="LayoutFooterTab" /></MenuItem.Icon>
+        <MenuItem x:Name="CommitInfoBelowMenuItem" Header="_Below" ToggleType="Radio" GroupName="CommitInfoPosition" IsChecked="{Binding ViewOptions.IsCommitInfoBelow, Mode=OneWay}" Command="{Binding SetCommitInfoPositionCommand}" CommandParameter="{x:Static svc:CommitInfoLayout.Below}">
+        <MenuItem.Icon><local:AppIcon IconName="LayoutFooterTab" /></MenuItem.Icon>
+      </MenuItem>
+        <MenuItem x:Name="CommitInfoLeftMenuItem" Header="_Left" ToggleType="Radio" GroupName="CommitInfoPosition" IsChecked="{Binding ViewOptions.IsCommitInfoLeft, Mode=OneWay}" Command="{Binding SetCommitInfoPositionCommand}" CommandParameter="{x:Static svc:CommitInfoLayout.Left}">
+        <MenuItem.Icon><local:AppIcon IconName="LayoutSidebarTopLeft" /></MenuItem.Icon>
+      </MenuItem>
+        <MenuItem x:Name="CommitInfoRightMenuItem" Header="_Right" ToggleType="Radio" GroupName="CommitInfoPosition" IsChecked="{Binding ViewOptions.IsCommitInfoRight, Mode=OneWay}" Command="{Binding SetCommitInfoPositionCommand}" CommandParameter="{x:Static svc:CommitInfoLayout.Right}">
+        <MenuItem.Icon><local:AppIcon IconName="LayoutSidebarTopRight" /></MenuItem.Icon>
+      </MenuItem>
+      </MenuItem>
+      <MenuItem x:Name="SplitLayoutMenuItem" Header="Tabs _beside the revision grid" ToggleType="CheckBox" IsChecked="{Binding ViewOptions.SideBySide, Mode=TwoWay}" />
+      <MenuItem x:Name="ShowTabsMenu" Header="Show _tabs">
+        <MenuItem x:Name="ShowCommitTabMenuItem" Header="_Commit" ToggleType="CheckBox" IsChecked="{Binding ViewOptions.ShowCommitTab, Mode=TwoWay}" />
+        <MenuItem x:Name="ShowDiffTabMenuItem" Header="_Diff" ToggleType="CheckBox" IsChecked="{Binding ViewOptions.ShowDiffTab, Mode=TwoWay}" />
+        <MenuItem x:Name="ShowFileTreeTabMenuItem" Header="_File tree" ToggleType="CheckBox" IsChecked="{Binding ViewOptions.ShowFileTreeTab, Mode=TwoWay}" />
+        <MenuItem x:Name="ShowConsoleTabMenuItem" Header="C_onsole" ToggleType="CheckBox" IsChecked="{Binding ViewOptions.ShowConsoleTab, Mode=TwoWay}" />
+        <MenuItem x:Name="ShowBuildReportTabMenuItem" Header="_Build report" ToggleType="CheckBox" IsChecked="{Binding ViewOptions.ShowBuildReportTab, Mode=TwoWay}" />
+      </MenuItem>
+      <MenuItem x:Name="FiltersMenu" Header="F_ilters">
+        <MenuItem x:Name="ShowFilterBarMenuItem" Header="Show filter _bar" ToggleType="CheckBox" IsChecked="{Binding ViewOptions.ShowFilterBar, Mode=TwoWay}" />
+        <MenuItem x:Name="ShowMergeCommitsMenuItem" Header="Show _merge commits" ToggleType="CheckBox" IsChecked="{Binding ShowMergeCommits, Mode=TwoWay}" />
+        <Separator />
+        <MenuItem x:Name="ClearFilterMenuItem" Header="_Clear filter" Command="{Binding ClearFilterCommand}" />
+      </MenuItem>
+      <MenuItem x:Name="ShowRemoteBranchesMenuItem" Header="Show remote _branches" ToggleType="CheckBox" IsChecked="{Binding ShowRemoteBranches, Mode=TwoWay}" />
+      <MenuItem x:Name="ShowTagsMenuItem" Header="Show _tags" ToggleType="CheckBox" IsChecked="{Binding ShowTags, Mode=TwoWay}" />
+      <Separator />
+      <MenuItem x:Name="ViewRefreshMenuItem" Header="_Refresh" InputGesture="F5" Command="{Binding RefreshCommand}" >
+        <MenuItem.Icon><local:AppIcon IconName="ReloadRevisions" /></MenuItem.Icon>
+      </MenuItem>
     </MenuItem>
 
     <!-- Commands -->
     <MenuItem x:Name="CommandsMenu" Header="_Commands" IsVisible="{Binding HasOpenedRepository}">
-      <MenuItem x:Name="CommitMenuItem" Header="_Commit…" InputGesture="Ctrl+K" Command="{Binding ShowCommitWindowCommand}" />
-      <MenuItem x:Name="UndoCommitMenuItem" Header="_Undo last commit…" Command="{Binding UndoLastCommitCommand}" />
-      <MenuItem x:Name="PullMenuItem" Header="Pu_ll…" InputGesture="Ctrl+Shift+L" Command="{Binding Remote.PullCommand}" />
-      <MenuItem x:Name="FetchMenuItem" Header="_Fetch" InputGesture="Ctrl+Shift+F" Command="{Binding Remote.FetchCommand}" />
-      <MenuItem x:Name="PushMenuItem" Header="_Push…" InputGesture="Ctrl+Shift+K" Command="{Binding Remote.PushCommand}" />
+      <MenuItem x:Name="CommitMenuItem" Header="_Commit…" InputGesture="Ctrl+K" Command="{Binding ShowCommitWindowCommand}">
+        <MenuItem.Icon><local:AppIcon IconName="RepoStateClean" /></MenuItem.Icon>
+      </MenuItem>
+      <MenuItem x:Name="UndoCommitMenuItem" Header="_Undo last commit…" Command="{Binding UndoLastCommitCommand}">
+        <MenuItem.Icon><local:AppIcon IconName="ResetFileTo" /></MenuItem.Icon>
+      </MenuItem>
+      <MenuItem x:Name="PullMenuItem" Header="Pu_ll…" InputGesture="Ctrl+Shift+L" Command="{Binding Remote.PullCommand}">
+        <MenuItem.Icon><local:AppIcon IconName="Pull" /></MenuItem.Icon>
+      </MenuItem>
+      <MenuItem x:Name="FetchMenuItem" Header="_Fetch" InputGesture="Ctrl+Shift+F" Command="{Binding Remote.FetchCommand}">
+        <MenuItem.Icon><local:AppIcon IconName="PullFetch" /></MenuItem.Icon>
+      </MenuItem>
+      <MenuItem x:Name="PushMenuItem" Header="_Push…" InputGesture="Ctrl+Shift+K" Command="{Binding Remote.PushCommand}">
+        <MenuItem.Icon><local:AppIcon IconName="Push" /></MenuItem.Icon>
+      </MenuItem>
       <Separator />
-      <MenuItem x:Name="ManageStashesMenuItem" Header="Manage _stashes…" InputGesture="Ctrl+Shift+T" Command="{Binding ManageStashesCommand}" />
-      <MenuItem Header="_Reset changes…" Classes="stub" />
-      <MenuItem Header="Clean _working directory…" Classes="stub" />
+      <MenuItem x:Name="ManageStashesMenuItem" Header="Manage _stashes…" InputGesture="Ctrl+Shift+T" Command="{Binding ManageStashesCommand}">
+        <MenuItem.Icon><local:AppIcon IconName="Stash" /></MenuItem.Icon>
+      </MenuItem>
+      <MenuItem x:Name="ResetChangesMenuItem" Header="_Reset changes…" Command="{Binding ShowResetCommand}">
+        <MenuItem.Icon><local:AppIcon IconName="ResetWorkingDirChanges" /></MenuItem.Icon>
+      </MenuItem>
+      <MenuItem x:Name="CleanMenuItem" Header="Clean _working directory…" Command="{Binding ShowCleanCommand}">
+        <MenuItem.Icon><local:AppIcon IconName="CleanupRepo" /></MenuItem.Icon>
+      </MenuItem>
       <Separator />
-      <MenuItem x:Name="CreateBranchMenuItem" Header="Create _branch…" Command="{Binding CreateBranchCommand}" />
-      <MenuItem Header="_Delete branch…" Classes="stub" />
-      <MenuItem x:Name="CheckoutBranchMenuItem" Header="Chec_kout branch…" Command="{Binding CheckoutBranchCommand}" />
-      <MenuItem x:Name="MergeMenuItem" Header="_Merge branches…" Command="{Binding MergeSelectedRefCommand}" IsEnabled="{Binding CanMergeSelectedRef}" ToolTip.Tip="Merges the branch selected in the left panel into the current branch" ToolTip.ShowOnDisabled="True" />
-      <MenuItem x:Name="RebaseMenuItem" Header="Re_base…" Command="{Binding RebaseOntoSelectedRefCommand}" IsEnabled="{Binding CanMergeSelectedRef}" ToolTip.Tip="Rebases the current branch onto the branch selected in the left panel" ToolTip.ShowOnDisabled="True" />
-      <MenuItem Header="S_olve merge conflicts…" Classes="stub" />
+      <MenuItem x:Name="CreateBranchMenuItem" Header="Create _branch…" Command="{Binding CreateBranchCommand}">
+        <MenuItem.Icon><local:AppIcon IconName="BranchCreate" /></MenuItem.Icon>
+      </MenuItem>
+      <MenuItem x:Name="DeleteBranchMenuItem" Header="_Delete branch…" Command="{Binding ShowDeleteBranchCommand}">
+        <MenuItem.Icon><local:AppIcon IconName="BranchDelete" /></MenuItem.Icon>
+      </MenuItem>
+      <MenuItem x:Name="CheckoutBranchMenuItem" Header="Chec_kout branch…" Command="{Binding CheckoutBranchCommand}">
+        <MenuItem.Icon><local:AppIcon IconName="BranchCheckout" /></MenuItem.Icon>
+      </MenuItem>
+      <MenuItem x:Name="MergeMenuItem" Header="_Merge branches…" Command="{Binding MergeSelectedRefCommand}" IsEnabled="{Binding CanMergeSelectedRef}" ToolTip.Tip="Merges the branch selected in the left panel into the current branch" ToolTip.ShowOnDisabled="True">
+        <MenuItem.Icon><local:AppIcon IconName="Merge" /></MenuItem.Icon>
+      </MenuItem>
+      <MenuItem x:Name="RebaseMenuItem" Header="Re_base…" Command="{Binding RebaseOntoSelectedRefCommand}" IsEnabled="{Binding CanMergeSelectedRef}" ToolTip.Tip="Rebases the current branch onto the branch selected in the left panel" ToolTip.ShowOnDisabled="True">
+        <MenuItem.Icon><local:AppIcon IconName="Rebase" /></MenuItem.Icon>
+      </MenuItem>
+      <MenuItem x:Name="SolveConflictsMenuItem" Header="S_olve merge conflicts…" Command="{Binding ShowMergeConflictsCommand}">
+        <MenuItem.Icon><local:AppIcon IconName="Unmerged" /></MenuItem.Icon>
+      </MenuItem>
       <Separator />
-      <MenuItem x:Name="CreateTagMenuItem" Header="Create _tag…" Command="{Binding CreateTagCommand}" />
-      <MenuItem x:Name="DeleteTagMenuItem" Header="Delete t_ag…" Command="{Binding DeleteSelectedTagCommand}" IsEnabled="{Binding IsSelectedRefTag}" ToolTip.Tip="Deletes the tag selected in the left panel" ToolTip.ShowOnDisabled="True" />
+      <MenuItem x:Name="CreateTagMenuItem" Header="Create _tag…" Command="{Binding CreateTagCommand}">
+        <MenuItem.Icon><local:AppIcon IconName="TagCreate" /></MenuItem.Icon>
+      </MenuItem>
+      <MenuItem x:Name="DeleteTagMenuItem" Header="Delete t_ag…" Command="{Binding DeleteSelectedTagCommand}" IsEnabled="{Binding IsSelectedRefTag}" ToolTip.Tip="Deletes the tag selected in the left panel" ToolTip.ShowOnDisabled="True">
+        <MenuItem.Icon><local:AppIcon IconName="TagDelete" /></MenuItem.Icon>
+      </MenuItem>
       <Separator />
-      <MenuItem Header="Cherry _pick…" Classes="stub" />
-      <MenuItem Header="_Archive revision…" Classes="stub" />
-      <MenuItem Header="Checkout _revision…" Classes="stub" />
-      <MenuItem Header="Bis_ect…" Classes="stub" />
-      <MenuItem x:Name="ReflogMenuItem" Header="Show re_flog…" Command="{Binding ShowReflogCommand}" />
+      <MenuItem x:Name="CherryPickMenuItem" Header="Cherry _pick…" Command="{Binding ShowCherryPickCommand}">
+        <MenuItem.Icon><local:AppIcon IconName="CherryPick" /></MenuItem.Icon>
+      </MenuItem>
+      <MenuItem x:Name="ArchiveMenuItem" Header="_Archive revision…" Command="{Binding ShowArchiveCommand}">
+        <MenuItem.Icon><local:AppIcon IconName="ArchiveRevision" /></MenuItem.Icon>
+      </MenuItem>
+      <MenuItem x:Name="CheckoutRevisionMenuItem" Header="Checkout _revision…" Command="{Binding ShowCheckoutRevisionCommand}">
+        <MenuItem.Icon><local:AppIcon IconName="Checkout" /></MenuItem.Icon>
+      </MenuItem>
+      <MenuItem x:Name="BisectMenuItem" Header="Bis_ect…" Command="{Binding ShowBisectCommand}">
+        <MenuItem.Icon><local:AppIcon IconName="Bisect" /></MenuItem.Icon>
+      </MenuItem>
+      <MenuItem x:Name="ReflogMenuItem" Header="Show re_flog…" Command="{Binding ShowReflogCommand}">
+        <MenuItem.Icon><local:AppIcon IconName="Book" /></MenuItem.Icon>
+      </MenuItem>
       <Separator />
-      <MenuItem Header="Format pa_tch…" Classes="stub" />
-      <MenuItem Header="_Apply patch…" Classes="stub" />
-      <MenuItem Header="_View patch file…" Classes="stub" />
+      <MenuItem x:Name="FormatPatchMenuItem" Header="Format pa_tch…" Command="{Binding ShowFormatPatchCommand}" IsEnabled="{Binding HasOpenedRepository}">
+        <MenuItem.Icon><local:AppIcon IconName="PatchFormat" /></MenuItem.Icon>
+      </MenuItem>
+      <MenuItem x:Name="ApplyPatchMenuItem" Header="_Apply patch…" Command="{Binding ShowApplyPatchCommand}" IsEnabled="{Binding HasOpenedRepository}">
+        <MenuItem.Icon><local:AppIcon IconName="PatchApply" /></MenuItem.Icon>
+      </MenuItem>
+      <MenuItem x:Name="ViewPatchMenuItem" Header="_View patch file…" Command="{Binding ShowViewPatchCommand}">
+        <MenuItem.Icon><local:AppIcon IconName="PatchView" /></MenuItem.Icon>
+      </MenuItem>
     </MenuItem>
 
     <!-- Plugins -->
     <MenuItem x:Name="PluginsMenu" Header="_Plugins">
       <MenuItem Header="(no plugins)" IsEnabled="False" />
       <Separator />
-      <MenuItem Header="Plugins _settings…" Classes="stub" />
+      <MenuItem Header="Plugins _settings…" Classes="stub" >
+        <MenuItem.Icon><local:AppIcon IconName="Settings" /></MenuItem.Icon>
+      </MenuItem>
     </MenuItem>
 
     <!-- Tools -->
     <MenuItem x:Name="ToolsMenu" Header="_Tools">
-      <MenuItem x:Name="ShellMenuItem" Header="Git _bash / terminal" IsEnabled="{Binding HasOpenedRepository}" Command="{Binding OpenShellCommand}" />
-      <MenuItem Header="Start authentication _agent" Classes="stub" />
-      <MenuItem Header="_Generate or import key" Classes="stub" />
+      <MenuItem x:Name="ShellMenuItem" Header="Git _bash / terminal" IsEnabled="{Binding HasOpenedRepository}" Command="{Binding OpenShellCommand}" >
+        <MenuItem.Icon><local:AppIcon IconName="GitForWindows" /></MenuItem.Icon>
+      </MenuItem>
+      <MenuItem Header="Start authentication _agent" Classes="stub" >
+        <MenuItem.Icon><local:AppIcon IconName="pageant" /></MenuItem.Icon>
+      </MenuItem>
+      <MenuItem Header="_Generate or import key" Classes="stub" >
+        <MenuItem.Icon><local:AppIcon IconName="puttygen" /></MenuItem.Icon>
+      </MenuItem>
       <Separator />
       <MenuItem x:Name="ThemeMenu" Header="_Theme">
         <MenuItem x:Name="ThemeSystemMenuItem" Header="_System" Tag="System" ToggleType="Radio" GroupName="Theme" Click="OnThemeClick" />
@@ -173,13 +303,25 @@
 
     <!-- Help -->
     <MenuItem x:Name="HelpMenu" Header="_Help">
-      <MenuItem x:Name="DocumentationMenuItem" Header="_Documentation" Command="{Binding OpenDocumentationCommand}" />
-      <MenuItem x:Name="ReportIssueMenuItem" Header="_Report an issue" Command="{Binding ReportIssueCommand}" />
-      <MenuItem x:Name="ChangelogMenuItem" Header="_Changelog" Command="{Binding OpenChangelogCommand}" />
-      <MenuItem x:Name="ShortcutsMenuItem" Header="_Keyboard shortcuts" InputGesture="F1" Command="{Binding ShowShortcutsCommand}" />
+      <MenuItem x:Name="DocumentationMenuItem" Header="_Documentation" Command="{Binding OpenDocumentationCommand}" >
+        <MenuItem.Icon><local:AppIcon IconName="GotoManual" /></MenuItem.Icon>
+      </MenuItem>
+      <MenuItem x:Name="ReportIssueMenuItem" Header="_Report an issue" Command="{Binding ReportIssueCommand}" >
+        <MenuItem.Icon><local:AppIcon IconName="BugReport" /></MenuItem.Icon>
+      </MenuItem>
+      <MenuItem x:Name="ChangelogMenuItem" Header="_Changelog" Command="{Binding OpenChangelogCommand}" >
+        <MenuItem.Icon><local:AppIcon IconName="Changelog" /></MenuItem.Icon>
+      </MenuItem>
+      <MenuItem x:Name="ShortcutsMenuItem" Header="_Keyboard shortcuts" InputGesture="F1" Command="{Binding ShowShortcutsCommand}" >
+        <MenuItem.Icon><local:AppIcon IconName="Hotkey" /></MenuItem.Icon>
+      </MenuItem>
       <Separator />
-      <MenuItem x:Name="AboutMenuItem" Header="_About Git Extensions" Command="{Binding ShowAboutCommand}" />
-      <MenuItem Header="Check for _updates" Classes="stub" />
+      <MenuItem x:Name="AboutMenuItem" Header="_About Git Extensions" Command="{Binding ShowAboutCommand}" >
+        <MenuItem.Icon><local:AppIcon IconName="GitLogo16" /></MenuItem.Icon>
+      </MenuItem>
+      <MenuItem Header="Check for _updates" Classes="stub" >
+        <MenuItem.Icon><local:AppIcon IconName="CheckForUpdates" /></MenuItem.Icon>
+      </MenuItem>
     </MenuItem>
   </Menu>
 </UserControl>

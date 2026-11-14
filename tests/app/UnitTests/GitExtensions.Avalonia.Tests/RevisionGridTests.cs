@@ -207,11 +207,12 @@ public class RevisionGridTests
 
         viewModel.SelectedBranchChoice.Should().Be(MainWindowViewModel.DefaultBranchChoice);
         viewModel.BranchChoices.Should().Contain([MainWindowViewModel.AllBranchesChoice, MainWindowViewModel.CurrentBranchChoice, "develop", "feature/login", "feature/x", "main"]);
-        Subjects(viewModel).Should().NotContain("Develop only").And.Contain("Merge feature/login");
-
-        viewModel.SelectedBranchChoice = MainWindowViewModel.AllBranchesChoice;
-        await SettleAsync(viewModel);
+        viewModel.SelectedBranchChoice.Should().Be(MainWindowViewModel.AllBranchesChoice, "the grid opens with all branches, as in the original");
         Subjects(viewModel).Should().Contain("Develop only").And.Contain("Merge feature/login");
+
+        viewModel.SelectedBranchChoice = MainWindowViewModel.CurrentBranchChoice;
+        await SettleAsync(viewModel);
+        Subjects(viewModel).Should().NotContain("Develop only").And.Contain("Merge feature/login");
 
         viewModel.SelectedBranchChoice = "develop";
         await SettleAsync(viewModel);

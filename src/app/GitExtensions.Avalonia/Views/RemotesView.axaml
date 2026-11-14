@@ -1,0 +1,76 @@
+<UserControl xmlns="https://github.com/avaloniaui"
+             xmlns:x="http://schemas.microsoft.com/winfx/2006/xaml"
+             xmlns:vm="using:GitExtensions.Desktop.ViewModels"
+             x:Class="GitExtensions.Desktop.Views.RemotesView"
+             x:DataType="vm:RemotesViewModel">
+  <Panel Background="#80000000">
+    <Border x:Name="Card" MaxWidth="820" MaxHeight="560" Margin="24" Padding="20" VerticalAlignment="Center" HorizontalAlignment="Stretch"
+            CornerRadius="8" BorderThickness="1"
+            Background="{DynamicResource SystemControlBackgroundAltHighBrush}"
+            BorderBrush="{DynamicResource SubtleBorderBrush}">
+      <DockPanel>
+        <TextBlock DockPanel.Dock="Top" Text="Remote repositories" FontSize="18" FontWeight="SemiBold" Margin="0,0,0,10" />
+
+        <StackPanel DockPanel.Dock="Bottom" Spacing="6" Margin="0,10,0,0">
+          <TextBlock x:Name="MessageText" Text="{Binding Message}" IsVisible="{Binding HasMessage}" TextWrapping="Wrap" />
+          <StackPanel Orientation="Horizontal" Spacing="8">
+            <Button x:Name="PruneButton" Content="Prune remote branches" Command="{Binding PruneCommand}" />
+            <Button x:Name="UpdateAllButton" Content="Update all remote branch info" Command="{Binding UpdateAllCommand}" />
+            <Button x:Name="CloseButton" Content="Close" Command="{Binding CloseCommand}" HorizontalAlignment="Right" />
+          </StackPanel>
+          <ProgressBar IsIndeterminate="True" IsVisible="{Binding IsBusy}" />
+        </StackPanel>
+
+        <Grid ColumnDefinitions="220,16,*">
+          <DockPanel>
+            <Button x:Name="NewButton" DockPanel.Dock="Bottom" Content="New remote…" Command="{Binding NewCommand}" Margin="0,8,0,0" />
+            <ListBox x:Name="RemoteList" ItemsSource="{Binding Remotes}" SelectedItem="{Binding SelectedRemote}" AutomationProperties.Name="Remotes">
+              <ListBox.ItemTemplate>
+                <DataTemplate x:DataType="vm:RemoteItem">
+                  <TextBlock Text="{Binding Name}" />
+                </DataTemplate>
+              </ListBox.ItemTemplate>
+            </ListBox>
+          </DockPanel>
+
+          <ScrollViewer Grid.Column="2" HorizontalScrollBarVisibility="Disabled">
+            <StackPanel Spacing="4">
+              <TextBlock Text="Name" />
+              <TextBox x:Name="NameBox" Text="{Binding Name}" Watermark="origin" />
+              <TextBlock Text="Fetch URL" Margin="0,6,0,0" />
+              <TextBox x:Name="UrlBox" Text="{Binding Url}" Watermark="https://host/owner/repo.git" />
+              <TextBlock Text="Push URL (optional, defaults to the fetch URL)" Margin="0,6,0,0" />
+              <TextBox x:Name="PushUrlBox" Text="{Binding PushUrl}" />
+              <StackPanel Orientation="Horizontal" Spacing="8" Margin="0,8,0,0">
+                <Button x:Name="SaveButton" Content="{Binding SaveText}" Classes="accent" Command="{Binding SaveCommand}" />
+                <Button x:Name="RemoveButton" Content="Remove…" Command="{Binding RequestRemoveCommand}" IsEnabled="{Binding !IsNew}" />
+              </StackPanel>
+              <Border x:Name="RemoveConfirm" IsVisible="{Binding IsConfirmingRemove}" Padding="10" CornerRadius="4" BorderThickness="1"
+                      BorderBrush="{DynamicResource ErrorTextForeground}">
+                <StackPanel Spacing="8">
+                  <TextBlock Text="Remove this remote? Its remote-tracking branches are deleted from this repository." TextWrapping="Wrap" />
+                  <StackPanel Orientation="Horizontal" Spacing="8">
+                    <Button x:Name="ConfirmRemoveButton" Content="Remove" Command="{Binding ConfirmRemoveCommand}" />
+                    <Button x:Name="CancelRemoveButton" Content="Keep" Command="{Binding CancelRemoveCommand}" />
+                  </StackPanel>
+                </StackPanel>
+              </Border>
+
+              <TextBlock Text="Branches" FontWeight="SemiBold" Margin="0,12,0,2" />
+              <ListBox x:Name="BranchList" ItemsSource="{Binding Branches}" MaxHeight="200" AutomationProperties.Name="Remote branches">
+                <ListBox.ItemTemplate>
+                  <DataTemplate x:DataType="vm:RemoteBranchRow">
+                    <Grid ColumnDefinitions="*,Auto" ColumnSpacing="16">
+                      <TextBlock Text="{Binding Branch}" />
+                      <TextBlock Grid.Column="1" Text="{Binding TrackedBy, StringFormat='tracked by {0}'}" IsVisible="{Binding IsTracked}" Opacity="0.7" />
+                    </Grid>
+                  </DataTemplate>
+                </ListBox.ItemTemplate>
+              </ListBox>
+            </StackPanel>
+          </ScrollViewer>
+        </Grid>
+      </DockPanel>
+    </Border>
+  </Panel>
+</UserControl>

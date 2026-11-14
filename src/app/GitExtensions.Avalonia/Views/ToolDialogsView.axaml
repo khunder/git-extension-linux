@@ -1,0 +1,30 @@
+<UserControl xmlns="https://github.com/avaloniaui"
+             xmlns:x="http://schemas.microsoft.com/winfx/2006/xaml"
+             xmlns:vm="using:GitExtensions.Desktop.ViewModels"
+             xmlns:views="using:GitExtensions.Desktop.Views"
+             x:Class="GitExtensions.Desktop.Views.ToolDialogsView"
+             x:DataType="vm:ToolDialogsViewModel"
+             IsVisible="{Binding IsOpen}">
+  <!-- Scrim over the content area; the card shows the current dialog (go to commit, bisect, recover lost objects). -->
+  <Panel x:Name="Scrim" Background="#80000000">
+    <Border x:Name="Card" MaxWidth="900" Margin="24" Padding="16" VerticalAlignment="Center" HorizontalAlignment="Center"
+            CornerRadius="8" BorderThickness="1"
+            Background="{DynamicResource SystemControlBackgroundAltHighBrush}"
+            BorderBrush="{DynamicResource SubtleBorderBrush}"
+            KeyboardNavigation.TabNavigation="Cycle">
+      <ContentControl x:Name="Host" Content="{Binding Current}">
+        <ContentControl.DataTemplates>
+          <DataTemplate DataType="vm:GoToCommitViewModel">
+            <views:GoToCommitView />
+          </DataTemplate>
+          <DataTemplate DataType="vm:BisectViewModel">
+            <views:BisectView />
+          </DataTemplate>
+          <DataTemplate DataType="vm:LostObjectsViewModel">
+            <views:LostObjectsView />
+          </DataTemplate>
+        </ContentControl.DataTemplates>
+      </ContentControl>
+    </Border>
+  </Panel>
+</UserControl>

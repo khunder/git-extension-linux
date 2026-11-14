@@ -18,6 +18,7 @@ public sealed partial class MainWindow : Window
         _layout = new LayoutSettings();
         ApplyLayout(_layout);
         InitializeShortcuts();
+        InitializeViewOptions();
     }
 
     private const double MinRightAreaWidth = 280;
