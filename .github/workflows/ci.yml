@@ -36,7 +36,7 @@ jobs:
           git --version
 
       - name: Restore
-        run: dotnet restore GitExtensions.slnx
+        run: dotnet restore GitExtensions.slnx -p:Configuration=Release
 
       # TreatWarningsAsErrors is set in Directory.Build.props, so any warning fails the build.
       - name: Build
