@@ -108,7 +108,7 @@
         <views:AppIcon IconName="Pull" />
           <SplitButton.Flyout>
             <MenuFlyout Placement="BottomEdgeAlignedLeft">
-              <MenuItem x:Name="PullDialogMenuItem" Header="Open pull _dialog…" Command="{Binding PullMergeCommand}">
+              <MenuItem x:Name="PullDialogMenuItem" Header="Open pull _dialog…" Command="{Binding ShowPullDialogCommand}">
                 <MenuItem.Icon><views:AppIcon IconName="Pull" /></MenuItem.Icon>
               </MenuItem>
               <MenuItem x:Name="PullMergeMenuItem" Header="Pull - _merge" Command="{Binding PullMergeCommand}">
@@ -150,7 +150,7 @@
             </MenuFlyout>
           </SplitButton.Flyout>
       </SplitButton>
-      <Button x:Name="PushButton" Classes="tb" Command="{Binding Remote.PushCommand}" ToolTip.Tip="Push the current branch (Ctrl+Shift+K)" ToolTip.ShowOnDisabled="True">
+      <Button x:Name="PushButton" Classes="tb" Command="{Binding ShowPushDialogCommand}" ToolTip.Tip="Push the current branch (Ctrl+Shift+K)" ToolTip.ShowOnDisabled="True">
         <views:AppIcon IconName="Push" />
       </Button>
       <ProgressBar Width="48" Height="4" IsIndeterminate="True" IsVisible="{Binding Remote.IsRunning}" VerticalAlignment="Center" Margin="2,0" />

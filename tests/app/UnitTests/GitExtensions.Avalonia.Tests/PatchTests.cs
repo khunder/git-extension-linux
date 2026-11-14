@@ -298,39 +298,56 @@ public class PatchTests
     // ---- Rendering ----
 
     [AvaloniaTest]
-    public async Task Patch_dialogs_render_in_light_and_dark()
+    public async Task Patch_dialogs_open_as_windows_and_render_in_light_and_dark()
     {
         string source = CreateSource();
         string patches = await FormatSeriesAsync(source, Path.Combine(_root, "patches"));
         MainWindowViewModel viewModel = await OpenAsync(source);
-        MainWindow window = new() { DataContext = viewModel };
+        MainWindow window = new() { DataContext = viewModel, Width = 1000, Height = 700 };
         window.Show();
-        Avalonia.Threading.Dispatcher.UIThread.RunJobs();
+        ShellTestSupport.Settle();
 
         try
         {
+            DialogWindow.Open.Should().BeEmpty();
             viewModel.ShowFormatPatchCommand.Execute(null);
+            ShellTestSupport.Settle();
+            DialogWindow dialog = DialogWindow.Open.Should().ContainSingle().Which;
+            dialog.Title.Should().Be("Format patch");
+            dialog.View.Should().BeOfType<FormatPatchView>();
             viewModel.FormatPatch.OutputFolder = Path.Combine(_root, "render");
             await viewModel.FormatPatch.CreateCommand.ExecuteAsync(null);
-            Avalonia.Threading.Dispatcher.UIThread.RunJobs();
-            FindOverlay<FormatPatchView>(window, "FormatPatchOverlay").IsVisible.Should().BeTrue();
-            Capture(window);
+            ShellTestSupport.Settle();
+            Capture(dialog, "format-patch");
 
             viewModel.FormatPatch.CloseCommand.Execute(null);
+            ShellTestSupport.Settle();
+            DialogWindow.Open.Should().BeEmpty();
+
             await viewModel.ShowApplyPatchCommand.ExecuteAsync(null);
             viewModel.ApplyPatch.PatchPath = patches;
             viewModel.ApplyPatch.Output = "Applying: two";
-            Avalonia.Threading.Dispatcher.UIThread.RunJobs();
-            FindOverlay<ApplyPatchView>(window, "ApplyPatchOverlay").IsVisible.Should().BeTrue();
-            FindOverlay<FormatPatchView>(window, "FormatPatchOverlay").IsVisible.Should().BeFalse();
-            Capture(window);
+            ShellTestSupport.Settle();
+            dialog = DialogWindow.Open.Should().ContainSingle().Which;
+            dialog.Title.Should().Be("Apply patch");
+            dialog.Find<Button>("ApplyButton").Content.Should().Be("Apply patch");
+            Capture(dialog, "apply-patch");
 
             viewModel.ApplyPatch.CloseCommand.Execute(null);
+            ShellTestSupport.Settle();
+            DialogWindow.Open.Should().BeEmpty();
+
             viewModel.ShowViewPatchCommand.Execute(null);
             await viewModel.ViewPatch.LoadAsync(Directory.GetFiles(patches).Order().First());
-            Avalonia.Threading.Dispatcher.UIThread.RunJobs();
-            FindOverlay<ViewPatchView>(window, "ViewPatchOverlay").IsVisible.Should().BeTrue();
-            Capture(window);
+            ShellTestSupport.Settle();
+            dialog = DialogWindow.Open.Should().ContainSingle().Which;
+            dialog.Title.Should().Be("View patch file");
+            Capture(dialog, "view-patch");
+
+            // The window's own close button (title bar / Esc) closes the view-model's dialog too.
+            dialog.Close();
+            ShellTestSupport.Settle();
+            viewModel.ViewPatch.IsOpen.Should().BeFalse();
         }
         finally
         {
@@ -339,21 +356,16 @@ public class PatchTests
         }
     }
 
-    private static T FindOverlay<T>(MainWindow window, string name)
-        where T : Avalonia.Controls.Control
+    private static void Capture(DialogWindow dialog, string name)
     {
-        PatchesHostView host = window.FindControl<PatchesHostView>("PatchesOverlay")!;
-        return host.FindControl<T>(name)!;
-    }
-
-    private static void Capture(MainWindow window)
-    {
-        foreach (ThemeVariant variant in new[] { ThemeVariant.Light, ThemeVariant.Dark })
+        foreach ((ThemeVariant variant, string suffix) in new[] { (ThemeVariant.Light, "light"), (ThemeVariant.Dark, "dark") })
         {
             Application.Current!.RequestedThemeVariant = variant;
-            Avalonia.Threading.Dispatcher.UIThread.RunJobs();
-            AvaloniaHeadlessPlatform.ForceRenderTimerTick();
-            window.CaptureRenderedFrame().Should().NotBeNull();
+            ShellTestSupport.Settle();
+            string directory = Path.Combine(AppContext.BaseDirectory, "screenshots");
+            Directory.CreateDirectory(directory);
+            dialog.CaptureRenderedFrame().Should().NotBeNull();
+            dialog.CaptureRenderedFrame()!.Save(Path.Combine(directory, $"{name}-{suffix}.png"));
         }
     }
 }

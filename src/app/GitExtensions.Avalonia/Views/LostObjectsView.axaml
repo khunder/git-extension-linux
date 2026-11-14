@@ -3,8 +3,7 @@
              xmlns:vm="using:GitExtensions.Desktop.ViewModels"
              x:Class="GitExtensions.Desktop.Views.LostObjectsView"
              x:DataType="vm:LostObjectsViewModel">
-  <DockPanel Width="840" Height="480" AutomationProperties.Name="Recover lost objects">
-    <TextBlock DockPanel.Dock="Top" Text="Recover lost objects" FontSize="18" FontWeight="SemiBold" Margin="0,0,0,8" />
+  <DockPanel Margin="16" AutomationProperties.Name="Verify database">
     <WrapPanel DockPanel.Dock="Top" Margin="0,0,0,6">
       <Button x:Name="ScanButton" Content="Scan" Command="{Binding ScanCommand}" Margin="0,0,8,4" />
       <CheckBox x:Name="UnreachableCheck" Content="Unreachable" IsChecked="{Binding Unreachable}" Margin="0,0,8,4" ToolTip.Tip="--unreachable: also list objects only other lost objects point to" />

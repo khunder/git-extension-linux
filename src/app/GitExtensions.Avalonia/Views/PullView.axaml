@@ -1,0 +1,76 @@
+<UserControl xmlns="https://github.com/avaloniaui"
+             xmlns:x="http://schemas.microsoft.com/winfx/2006/xaml"
+             xmlns:vm="using:GitExtensions.Desktop.ViewModels"
+             x:Class="GitExtensions.Desktop.Views.PullView"
+             x:DataType="vm:PullDialogViewModel">
+  <Border x:Name="Card" Padding="16">
+    <DockPanel>
+      <StackPanel DockPanel.Dock="Bottom" Orientation="Horizontal" HorizontalAlignment="Right" Spacing="8" Margin="0,10,0,0">
+        <Button x:Name="CancelRunButton" Content="Stop" Command="{Binding CancelCommand}" IsVisible="{Binding IsRunning}" />
+        <Button x:Name="PullButton" Content="Pull" Classes="accent" IsDefault="True" MinWidth="110" Command="{Binding PullCommand}" />
+        <Button x:Name="CloseButton" Content="Close" Command="{Binding CloseCommand}" />
+      </StackPanel>
+      <ProgressBar DockPanel.Dock="Bottom" Height="3" IsIndeterminate="True" IsVisible="{Binding IsRunning}" Margin="0,8,0,0" />
+      <TextBox x:Name="OutputBox" DockPanel.Dock="Bottom" Text="{Binding OutputText}" IsReadOnly="True" AcceptsReturn="True" TextWrapping="NoWrap"
+               Height="110" Classes="mono" Margin="0,10,0,0" Watermark="What git says appears here" AutomationProperties.Name="Pull output" />
+      <TextBlock x:Name="ErrorText" DockPanel.Dock="Bottom" Text="{Binding Error}" IsVisible="{Binding HasError}" TextWrapping="Wrap"
+                 Foreground="{DynamicResource ErrorTextForeground}" Margin="0,8,0,0" />
+
+      <ScrollViewer HorizontalScrollBarVisibility="Disabled">
+        <StackPanel Spacing="10">
+          <Border BorderThickness="1" BorderBrush="{DynamicResource SubtleBorderBrush}" CornerRadius="4" Padding="10">
+            <StackPanel Spacing="6">
+              <TextBlock Text="Pull from" FontWeight="SemiBold" />
+              <Grid ColumnDefinitions="Auto,*" RowDefinitions="Auto,Auto" ColumnSpacing="10" RowSpacing="6">
+                <RadioButton x:Name="RemoteRadio" GroupName="PullSource" Content="_Remote" IsChecked="{Binding UsesRemote, Mode=OneWay}" VerticalAlignment="Center" />
+                <ComboBox x:Name="RemoteCombo" Grid.Column="1" HorizontalAlignment="Stretch" ItemsSource="{Binding Remotes}" SelectedItem="{Binding SelectedRemote}"
+                          IsEnabled="{Binding UsesRemote}" AutomationProperties.Name="Remote" />
+                <RadioButton x:Name="UrlRadio" Grid.Row="1" GroupName="PullSource" Content="_URL" IsChecked="{Binding UseUrl}" VerticalAlignment="Center" />
+                <TextBox x:Name="UrlBox" Grid.Row="1" Grid.Column="1" Text="{Binding Url}" IsEnabled="{Binding UseUrl}" Watermark="https://host/owner/repo.git or a folder" AutomationProperties.Name="URL" />
+              </Grid>
+            </StackPanel>
+          </Border>
+
+          <Border BorderThickness="1" BorderBrush="{DynamicResource SubtleBorderBrush}" CornerRadius="4" Padding="10">
+            <StackPanel Spacing="6">
+              <TextBlock Text="Branch" FontWeight="SemiBold" />
+              <Grid ColumnDefinitions="Auto,*" RowDefinitions="Auto,Auto" ColumnSpacing="10" RowSpacing="6">
+                <TextBlock Text="Local branch" VerticalAlignment="Center" />
+                <TextBox x:Name="LocalBranchBox" Grid.Column="1" Text="{Binding LocalBranch, Mode=OneWay}" IsReadOnly="True" AutomationProperties.Name="Local branch" />
+                <TextBlock Grid.Row="1" Text="Remote branch" VerticalAlignment="Center" />
+                <ComboBox x:Name="RemoteBranchCombo" Grid.Row="1" Grid.Column="1" HorizontalAlignment="Stretch" IsEditable="True"
+                          ItemsSource="{Binding RemoteBranches}" Text="{Binding RemoteBranch}" AutomationProperties.Name="Remote branch" />
+              </Grid>
+            </StackPanel>
+          </Border>
+
+          <Border BorderThickness="1" BorderBrush="{DynamicResource SubtleBorderBrush}" CornerRadius="4" Padding="10">
+            <StackPanel Spacing="4">
+              <TextBlock Text="Merge options" FontWeight="SemiBold" />
+              <RadioButton x:Name="MergeRadio" GroupName="PullMode" Content="_Merge remote branch into current branch" IsChecked="{Binding IsMerge}" />
+              <RadioButton x:Name="RebaseRadio" GroupName="PullMode" Content="R_ebase current branch on top of remote branch (linear history)" IsChecked="{Binding IsRebase}" />
+              <RadioButton x:Name="FetchRadio" GroupName="PullMode" Content="Do not merge, only _fetch remote changes" IsChecked="{Binding IsFetch}" />
+              <WrapPanel Margin="22,2,0,0" IsEnabled="{Binding CanPrune}">
+                <CheckBox x:Name="FetchAllBox" Content="Fetch _all remotes" IsChecked="{Binding FetchAll}" Margin="0,0,16,0" />
+                <CheckBox x:Name="PruneBox" Content="_Prune remote branches" IsChecked="{Binding Prune}" Margin="0,0,16,0" />
+                <CheckBox x:Name="PruneTagsBox" Content="Prune remote branches an_d tags" IsChecked="{Binding PruneTags}" />
+              </WrapPanel>
+              <CheckBox x:Name="UnshallowBox" Content="Do_wnload full history" IsChecked="{Binding Unshallow}" IsVisible="{Binding IsShallow}" Margin="22,0,0,0" />
+            </StackPanel>
+          </Border>
+
+          <Border BorderThickness="1" BorderBrush="{DynamicResource SubtleBorderBrush}" CornerRadius="4" Padding="10">
+            <StackPanel Spacing="4">
+              <TextBlock Text="Tag options" FontWeight="SemiBold" />
+              <RadioButton x:Name="DefaultTagsRadio" GroupName="PullTags" Content="Follow _tagopt, if not specified, fetch tags reachable from remote HEAD" IsChecked="{Binding IsDefaultTags}" />
+              <RadioButton x:Name="NoTagsRadio" GroupName="PullTags" Content="Fetch _no tag" IsChecked="{Binding IsNoTags}" />
+              <RadioButton x:Name="AllTagsRadio" GroupName="PullTags" Content="Fetch _all tags" IsChecked="{Binding IsAllTags}" />
+            </StackPanel>
+          </Border>
+
+          <CheckBox x:Name="AutoStashBox" Content="Auto stas_h (stash local changes before the pull and apply them afterwards)" IsChecked="{Binding AutoStash}" IsEnabled="{Binding !IsFetch}" />
+        </StackPanel>
+      </ScrollViewer>
+    </DockPanel>
+  </Border>
+</UserControl>

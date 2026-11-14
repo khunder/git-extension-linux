@@ -201,8 +201,8 @@ public class MainMenuToolbarTests
         Click(Item(window, "CommitMenuItem"));
         windows.CommitWindows.Should().Be(1);
 
-        Item(window, "PullMenuItem").Command.Should().BeSameAs(viewModel.Remote.PullCommand);
-        Item(window, "PushMenuItem").Command.Should().BeSameAs(viewModel.Remote.PushCommand);
+        Item(window, "PullMenuItem").Command.Should().BeSameAs(viewModel.ShowPullDialogCommand);
+        Item(window, "PushMenuItem").Command.Should().BeSameAs(viewModel.ShowPushDialogCommand);
         Item(window, "FetchMenuItem").Command.Should().BeSameAs(viewModel.Remote.FetchCommand);
         Item(window, "SettingsMenuItem").Command.Should().BeSameAs(viewModel.OpenSettingsCommand);
         Item(window, "OpenMenuItem").Command.Should().BeSameAs(viewModel.BrowseCommand);

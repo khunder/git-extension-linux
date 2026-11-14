@@ -3,26 +3,36 @@
              xmlns:vm="using:GitExtensions.Desktop.ViewModels"
              x:Class="GitExtensions.Desktop.Views.GoToCommitView"
              x:DataType="vm:GoToCommitViewModel">
-  <StackPanel Spacing="8" Width="440" AutomationProperties.Name="Go to commit">
-    <TextBlock Text="Go to commit" FontSize="18" FontWeight="SemiBold" />
-    <TextBlock Text="Revision expression" />
+  <DockPanel Margin="16" AutomationProperties.Name="Go to commit">
+    <StackPanel DockPanel.Dock="Bottom" Orientation="Horizontal" HorizontalAlignment="Right" Spacing="8" Margin="0,12,0,0">
+      <Button x:Name="GoButton" Content="Go" Classes="accent" IsDefault="True" Command="{Binding GoCommand}" IsEnabled="{Binding !IsBusy}" />
+      <Button x:Name="CancelButton" Content="Cancel" Command="{Binding CancelCommand}" />
+    </StackPanel>
+    <StackPanel Spacing="8">
+    <TextBlock Text="Commit expression:" />
     <TextBox x:Name="ExpressionBox" Text="{Binding Expression}" Watermark="hash, branch, tag, HEAD~3, v1.0^{}…" AutomationProperties.Name="Revision expression">
       <TextBox.KeyBindings>
         <KeyBinding Gesture="Enter" Command="{Binding GoCommand}" />
       </TextBox.KeyBindings>
     </TextBox>
     <Grid ColumnDefinitions="Auto,*" RowDefinitions="Auto,Auto" ColumnSpacing="8" RowSpacing="6">
-      <TextBlock Text="Branch" VerticalAlignment="Center" />
+      <TextBlock Text="Go to branch:" VerticalAlignment="Center" />
       <ComboBox x:Name="BranchCombo" Grid.Column="1" HorizontalAlignment="Stretch" ItemsSource="{Binding Branches}" SelectedItem="{Binding SelectedBranch}"
                 PlaceholderText="Pick a branch" AutomationProperties.Name="Branch" />
-      <TextBlock Grid.Row="1" Text="Tag" VerticalAlignment="Center" />
+      <TextBlock Grid.Row="1" Text="Go to tag:" VerticalAlignment="Center" />
       <ComboBox x:Name="TagCombo" Grid.Row="1" Grid.Column="1" HorizontalAlignment="Stretch" ItemsSource="{Binding Tags}" SelectedItem="{Binding SelectedTag}"
                 PlaceholderText="Pick a tag" AutomationProperties.Name="Tag" />
     </Grid>
     <TextBlock x:Name="ErrorText" Text="{Binding Error}" IsVisible="{Binding HasError}" TextWrapping="Wrap" Foreground="{DynamicResource BuildFailureBrush}" />
-    <StackPanel Orientation="Horizontal" HorizontalAlignment="Right" Spacing="8">
-      <Button x:Name="CancelButton" Content="Cancel" Command="{Binding CancelCommand}" />
-      <Button x:Name="GoButton" Content="Go" Classes="accent" Command="{Binding GoCommand}" IsEnabled="{Binding !IsBusy}" />
+    <Border BorderThickness="1" BorderBrush="{DynamicResource SubtleBorderBrush}" CornerRadius="4" Padding="8" Margin="0,4,0,0">
+      <StackPanel Spacing="2">
+        <TextBlock Text="Help" FontWeight="SemiBold" />
+        <TextBlock Text="Commit expression examples:" Opacity="0.75" />
+        <TextBlock Text="- complete or abbreviated commit hash" Opacity="0.75" Classes="mono" FontSize="12" />
+        <TextBlock Text="- branch or tag name, HEAD, HEAD~3, v1.0^{}" Opacity="0.75" Classes="mono" FontSize="12" />
+        <TextBlock Text="- anything git rev-parse understands" Opacity="0.75" Classes="mono" FontSize="12" />
+      </StackPanel>
+    </Border>
     </StackPanel>
-  </StackPanel>
+  </DockPanel>
 </UserControl>

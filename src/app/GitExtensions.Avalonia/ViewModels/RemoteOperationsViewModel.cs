@@ -290,6 +290,7 @@ public sealed partial class RemoteOperationsViewModel : ObservableObject
 
         FlushOutput();
         _cancellation = null;
+        LastRunSucceeded = exitCode == 0 && !cancelled && exception is null;
 
         if (failure is not null)
         {

@@ -35,7 +35,7 @@ public sealed partial class MainWindowViewModel
     public IReadOnlyList<AppCommand> Commands => _commandList ??= BuildCommands();
 
     /// <summary>True while a modal overlay (settings, file history, palette, help, credentials) has the window's input.</summary>
-    public bool IsOverlayOpen => Settings.IsOpen || FileHistory.IsOpen || Palette.IsOpen || ShortcutsHelp.IsOpen || Credentials.IsOpen || Dialogs.IsOpen;
+    public bool IsOverlayOpen => Settings.IsOpen || FileHistory.IsOpen || Palette.IsOpen || ShortcutsHelp.IsOpen || Credentials.IsOpen;
 
     /// <summary>Raised just before a registry command runs from a shortcut or the palette.</summary>
     public event Action<AppCommand>? CommandInvoked;
@@ -128,8 +128,8 @@ public sealed partial class MainWindowViewModel
             FromCommand("repo.close", "Close repository (go to the dashboard)", "Repository", () => CloseRepositoryCommand, HasRepo, Keys(CommandGesture.Of(Key.W, Ctrl))),
             Make("repo.refresh", "Refresh", "Repository", () => _ = OpenAsync(RepositoryPath), Idle, Keys(CommandGesture.Of(Key.F5))),
             FromCommand("remote.fetch", "Fetch", "Repository", () => Remote.FetchCommand, HasRepo, Keys(CommandGesture.Of(Key.F, CtrlShift))),
-            FromCommand("remote.pull", "Pull", "Repository", () => Remote.PullCommand, HasRepo, Keys(CommandGesture.Of(Key.L, CtrlShift))),
-            FromCommand("remote.push", "Push", "Repository", () => Remote.PushCommand, HasRepo, Keys(CommandGesture.Of(Key.K, CtrlShift))),
+            FromCommand("remote.pull", "Pull…", "Repository", () => ShowPullDialogCommand, HasRepo, Keys(CommandGesture.Of(Key.L, CtrlShift))),
+            FromCommand("remote.push", "Push…", "Repository", () => ShowPushDialogCommand, HasRepo, Keys(CommandGesture.Of(Key.K, CtrlShift))),
             Make("window.commit", "Commit…", "Repository", () => ShowCommitWindowCommand.Execute(null), HasRepo, Keys(CommandGesture.Of(Key.K, Ctrl))),
             Make("stash.show", "Manage stashes…", "Repository", () => Stash.Open(), HasRepo, Keys(CommandGesture.Of(Key.T, CtrlShift))),
 

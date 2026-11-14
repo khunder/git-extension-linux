@@ -3,8 +3,7 @@
              xmlns:vm="using:GitExtensions.Desktop.ViewModels"
              x:Class="GitExtensions.Desktop.Views.BisectView"
              x:DataType="vm:BisectViewModel">
-  <StackPanel Spacing="8" Width="520" AutomationProperties.Name="Bisect">
-    <TextBlock Text="Bisect" FontSize="18" FontWeight="SemiBold" />
+  <StackPanel Spacing="8" Margin="16" AutomationProperties.Name="Bisect">
     <TextBlock x:Name="StateTextBlock" Text="{Binding StateText}" FontWeight="SemiBold" TextWrapping="Wrap" />
     <TextBlock x:Name="FirstBadTextBlock" Text="{Binding FirstBadText}" IsVisible="{Binding HasFirstBad}" TextWrapping="Wrap" Foreground="{DynamicResource BuildFailureBrush}" FontWeight="SemiBold" />
 
@@ -47,6 +46,9 @@
     <TextBox x:Name="OutputBox" Text="{Binding Output}" IsReadOnly="True" AcceptsReturn="True" TextWrapping="Wrap" Height="90" Classes="mono"
              Watermark="What git says appears here" AutomationProperties.Name="Bisect output" />
     <ProgressBar Height="3" IsIndeterminate="True" IsVisible="{Binding IsBusy}" />
-    <TextBlock Text="Esc closes this dialog. Marked commits are tagged good, bad or skip in the history list." Opacity="0.65" FontSize="12" TextWrapping="Wrap" />
+    <Grid ColumnDefinitions="*,Auto" ColumnSpacing="8">
+      <TextBlock Text="Marked commits are tagged good, bad or skip in the history list." Opacity="0.65" FontSize="12" TextWrapping="Wrap" VerticalAlignment="Center" />
+      <Button x:Name="CloseButton" Grid.Column="1" Content="Close" Click="OnCloseClick" />
+    </Grid>
   </StackPanel>
 </UserControl>

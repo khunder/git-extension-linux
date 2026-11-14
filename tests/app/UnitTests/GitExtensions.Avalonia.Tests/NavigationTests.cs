@@ -1,3 +1,4 @@
+using Avalonia;
 using Avalonia.Controls;
 using Avalonia.Headless;
 using Avalonia.Headless.NUnit;
@@ -287,7 +288,7 @@ public class NavigationTests
         vm.Commands.Single(c => c.Id == "history.back").CanExecute().Should().BeFalse();
         vm.IsOverlayOpen.Should().BeFalse();
         vm.Commands.Single(c => c.Id == "history.goToCommit").Execute();
-        vm.IsOverlayOpen.Should().BeTrue("an open dialog counts as an overlay, so shortcuts do not leak through it");
+        vm.Dialogs.IsOpen.Should().BeTrue("the command opens the go to commit dialog (a modal window, so shortcuts cannot leak through it)");
     }
 
     // ---- bisect ----
@@ -496,22 +497,34 @@ public class NavigationTests
         Item("RecoverLostMenuItem").Command.Should().BeSameAs(vm.ShowLostObjectsCommand);
 
         vm.ShowGoToCommitCommand.Execute(null);
-        await ReflogTests.WaitAsync(() => window.GetVisualDescendants().OfType<GoToCommitView>().Any());
+        ShellTestSupport.Settle();
+        DialogWindow gotoDialog = DialogWindow.Open.Should().ContainSingle().Which;
+        gotoDialog.Title.Should().Be("Go to commit");
         ((GoToCommitViewModel)vm.Dialogs.Current!).Expression = "nonsense";
         await ((GoToCommitViewModel)vm.Dialogs.Current!).GoAsync();
-        window.FindControl<ToolDialogsView>("ToolDialogsOverlay")!.IsVisible.Should().BeTrue();
-        window.GetVisualDescendants().OfType<TextBlock>().Any(t => t.Name == "ErrorText" && t.IsVisible).Should().BeTrue();
-        Capture(window, "goto");
+        ShellTestSupport.Settle();
+        gotoDialog.Find<TextBlock>("ErrorText").IsVisible.Should().BeTrue();
+        Capture(gotoDialog, "goto");
         vm.Dialogs.Close();
+        ShellTestSupport.Settle();
+        DialogWindow.Open.Should().BeEmpty();
 
         vm.Bisect.BadRevision = "HEAD";
         vm.Bisect.GoodRevision = hashes[0];
         await vm.Bisect.StartAsync();
         vm.ShowBisectCommand.Execute(null);
-        await ReflogTests.WaitAsync(() => window.GetVisualDescendants().OfType<BisectView>().Any());
+        ShellTestSupport.Settle();
+        DialogWindow bisectDialog = DialogWindow.Open.Should().ContainSingle().Which;
+        bisectDialog.Title.Should().Be("Bisect");
         vm.Bisect.RequestResetCommand.Execute(null);
-        Capture(window, "bisect");
-        vm.Dialogs.Close();
+        ShellTestSupport.Settle();
+        Capture(bisectDialog, "bisect");
+
+        // The dialog's Close button closes the window and the view-model's dialog.
+        bisectDialog.Find<Button>("CloseButton").RaiseEvent(new Avalonia.Interactivity.RoutedEventArgs(Button.ClickEvent));
+        ShellTestSupport.Settle();
+        DialogWindow.Open.Should().BeEmpty();
+        vm.Dialogs.IsOpen.Should().BeFalse();
         await ReflogTests.WaitAsync(() => vm.Commits.Any(c => c.BisectMark == BisectMark.Bad));
         window.GetVisualDescendants().OfType<Border>().Count(b => b.Classes.Contains("bisect")).Should().BeGreaterThan(0);
         Capture(window, "bisect-grid");
@@ -519,15 +532,20 @@ public class NavigationTests
 
         repository.RunGit("checkout", "--quiet", "main");
         vm.ShowLostObjectsCommand.Execute(null);
-        await ReflogTests.WaitAsync(() => window.GetVisualDescendants().OfType<LostObjectsView>().Any());
-        Capture(window, "lost");
+        ShellTestSupport.Settle();
+        DialogWindow lostDialog = DialogWindow.Open.Should().ContainSingle().Which;
+        lostDialog.Title.Should().Be("Verify database");
+        await ReflogTests.WaitAsync(() => !((LostObjectsViewModel)vm.Dialogs.Current!).IsBusy);
+        Capture(lostDialog, "lost");
+        vm.Dialogs.Close();
+        Application.Current!.RequestedThemeVariant = ThemeVariant.Default;
     }
 
-    private static void Capture(MainWindow window, string name)
+    private static void Capture(Window window, string name)
     {
         foreach (ThemeVariant variant in new[] { ThemeVariant.Light, ThemeVariant.Dark })
         {
-            window.RequestedThemeVariant = variant;
+            Application.Current!.RequestedThemeVariant = variant;
             Avalonia.Threading.Dispatcher.UIThread.RunJobs();
             AvaloniaHeadlessPlatform.ForceRenderTimerTick();
             Avalonia.Threading.Dispatcher.UIThread.RunJobs();

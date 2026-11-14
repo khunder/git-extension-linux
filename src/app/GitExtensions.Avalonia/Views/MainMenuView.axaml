@@ -200,13 +200,13 @@
       <MenuItem x:Name="UndoCommitMenuItem" Header="_Undo last commit…" Command="{Binding UndoLastCommitCommand}">
         <MenuItem.Icon><local:AppIcon IconName="ResetFileTo" /></MenuItem.Icon>
       </MenuItem>
-      <MenuItem x:Name="PullMenuItem" Header="Pu_ll…" InputGesture="Ctrl+Shift+L" Command="{Binding Remote.PullCommand}">
+      <MenuItem x:Name="PullMenuItem" Header="Pu_ll…" InputGesture="Ctrl+Shift+L" Command="{Binding ShowPullDialogCommand}">
         <MenuItem.Icon><local:AppIcon IconName="Pull" /></MenuItem.Icon>
       </MenuItem>
       <MenuItem x:Name="FetchMenuItem" Header="_Fetch" InputGesture="Ctrl+Shift+F" Command="{Binding Remote.FetchCommand}">
         <MenuItem.Icon><local:AppIcon IconName="PullFetch" /></MenuItem.Icon>
       </MenuItem>
-      <MenuItem x:Name="PushMenuItem" Header="_Push…" InputGesture="Ctrl+Shift+K" Command="{Binding Remote.PushCommand}">
+      <MenuItem x:Name="PushMenuItem" Header="_Push…" InputGesture="Ctrl+Shift+K" Command="{Binding ShowPushDialogCommand}">
         <MenuItem.Icon><local:AppIcon IconName="Push" /></MenuItem.Icon>
       </MenuItem>
       <Separator />

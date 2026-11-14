@@ -3,14 +3,16 @@
              xmlns:vm="using:GitExtensions.Desktop.ViewModels"
              x:Class="GitExtensions.Desktop.Views.ApplyPatchView"
              x:DataType="vm:ApplyPatchViewModel">
-  <Panel Background="{DynamicResource ScrimBrush}">
-    <Border x:Name="Card" MaxWidth="640" Margin="24" Padding="20" VerticalAlignment="Center" HorizontalAlignment="Stretch"
-            CornerRadius="8" BorderThickness="1"
-            Background="{DynamicResource DialogBackground}"
-            BorderBrush="{DynamicResource SubtleBorderBrush}">
+  <Border x:Name="Card" Padding="16">
+      <DockPanel>
+        <StackPanel DockPanel.Dock="Bottom" Orientation="Horizontal" HorizontalAlignment="Right" Spacing="8" Margin="0,12,0,0">
+          <Button x:Name="AbortButton" Content="Abort patch" Command="{Binding AbortCommand}" IsVisible="{Binding IsAmInProgress}" />
+          <Button x:Name="SkipButton" Content="Skip patch" Command="{Binding SkipCommand}" IsVisible="{Binding IsAmInProgress}" />
+          <Button x:Name="ContinueButton" Content="Continue" Classes="accent" IsDefault="True" Command="{Binding ContinueCommand}" IsVisible="{Binding IsAmInProgress}" />
+          <Button x:Name="ApplyButton" Content="Apply patch" Classes="accent" IsDefault="True" Command="{Binding ApplyCommand}" IsVisible="{Binding !IsAmInProgress}" />
+          <Button x:Name="CloseButton" Content="Close" Command="{Binding CloseCommand}" />
+        </StackPanel>
       <StackPanel Spacing="4">
-        <TextBlock Text="Apply patch" FontSize="18" FontWeight="SemiBold" Margin="0,0,0,8" />
-
         <StackPanel Orientation="Horizontal" Spacing="16">
           <RadioButton x:Name="FileRadio" GroupName="PatchSource" Content="Patch file" IsChecked="True" />
           <RadioButton x:Name="FolderRadio" GroupName="PatchSource" Content="All patches in a folder" IsChecked="{Binding IsFolder}" />
@@ -41,14 +43,7 @@
                  FontFamily="Cascadia Mono, Consolas, DejaVu Sans Mono, monospace" FontSize="12" Margin="0,8,0,0"
                  IsVisible="{Binding Output, Converter={x:Static StringConverters.IsNotNullOrEmpty}}" />
 
-        <StackPanel Orientation="Horizontal" HorizontalAlignment="Right" Spacing="8" Margin="0,12,0,0">
-          <Button x:Name="AbortButton" Content="Abort" Command="{Binding AbortCommand}" IsVisible="{Binding IsAmInProgress}" />
-          <Button x:Name="SkipButton" Content="Skip" Command="{Binding SkipCommand}" IsVisible="{Binding IsAmInProgress}" />
-          <Button x:Name="ContinueButton" Content="Continue" Classes="accent" Command="{Binding ContinueCommand}" IsVisible="{Binding IsAmInProgress}" />
-          <Button x:Name="CloseButton" Content="Close" Command="{Binding CloseCommand}" />
-          <Button x:Name="ApplyButton" Content="Apply" Classes="accent" Command="{Binding ApplyCommand}" IsVisible="{Binding !IsAmInProgress}" />
-        </StackPanel>
       </StackPanel>
-    </Border>
-  </Panel>
+      </DockPanel>
+  </Border>
 </UserControl>

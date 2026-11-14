@@ -73,9 +73,7 @@
       </DockPanel>
     </Grid>
     <views:FileHistoryView x:Name="FileHistoryOverlay" DataContext="{Binding FileHistory}" IsVisible="{Binding IsOpen}" />
-    <views:PatchesHostView x:Name="PatchesOverlay" />
     <views:CommandPaletteView x:Name="PaletteOverlay" DataContext="{Binding Palette}" />
-    <views:ToolDialogsView x:Name="ToolDialogsOverlay" DataContext="{Binding Dialogs}" />
     </Panel>
   </DockPanel>
 </Window>
