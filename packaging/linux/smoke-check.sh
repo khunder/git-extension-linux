@@ -19,8 +19,10 @@ done
 command -v git >/dev/null || { echo "git is not installed"; fail=1; }
 
 # libX11 and friends are loaded with dlopen by Avalonia, so check they are present too.
+# (The listing is captured first: with pipefail, `ldconfig -p | grep -q` can fail with SIGPIPE when grep exits early.)
+system_libs="$("$ldconfig_bin" -p)"
 for lib in libX11.so.6 libXcursor.so.1 libXi.so.6 libXrandr.so.2 libICE.so.6 libSM.so.6 libfontconfig.so.1; do
-  if ! "$ldconfig_bin" -p | grep -q "$lib"; then echo "MISSING system library: $lib"; fail=1; fi
+  if ! grep -q "$lib" <<<"$system_libs"; then echo "MISSING system library: $lib"; fail=1; fi
 done
 
 for bin in "$dir/GitExtensions.Avalonia" "$dir/GitExtensions.AskPass" "$dir"/libSkiaSharp.so "$dir"/libHarfBuzzSharp.so "$dir"/libcoreclr.so "$dir"/libclrjit.so "$dir"/libSystem.Native.so "$dir"/libSystem.Security.Cryptography.Native.OpenSsl.so; do
