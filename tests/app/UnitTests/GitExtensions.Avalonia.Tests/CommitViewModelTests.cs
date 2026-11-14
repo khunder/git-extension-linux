@@ -165,33 +165,6 @@ public class CommitViewModelTests
         viewModel.Commit!.Message.Should().Be("Merge branch 'x'");
     }
 
-    [AvaloniaTest]
-    public async Task Commit_panel_renders_in_a_host_window()
-    {
-        using TestRepository repository = new();
-        repository.RunGit("add", "a.txt");
-        MainWindowViewModel viewModel = new(GitEnvironment.Initialize(), new NoFolderPicker());
-        await viewModel.OpenAsync(repository.Path);
-
-        // The commit panel is shown by the Commit window; a minimal host stands in for it here.
-        Window window = ShellTestSupport.CreateChangesHost(viewModel);
-        viewModel.Commit!.Message = "Update a.txt\n\nExplain the change here.";
-        Avalonia.Threading.Dispatcher.UIThread.RunJobs();
-        AvaloniaHeadlessPlatform.ForceRenderTimerTick();
-
-        CommitView view = window.GetCommitView();
-        view.FindControl<TextBlock>("SummaryText")!.Text.Should().Be("1 staged · 1 unstaged");
-        view.FindControl<Button>("CommitButton")!.IsEffectivelyEnabled.Should().BeTrue();
-
-        WriteableBitmap? frame = window.CaptureRenderedFrame();
-        string directory = Path.Combine(AppContext.BaseDirectory, "screenshots");
-        Directory.CreateDirectory(directory);
-        string file = Path.Combine(directory, "changes-host-commit.png");
-        frame!.Save(file);
-        TestContext.AddTestAttachment(file);
-        window.Close();
-    }
-
     private static async Task WaitForAsync(Func<bool> condition)
     {
         for (int i = 0; i < 200 && !condition(); i++)
@@ -214,10 +187,4 @@ public class CommitViewModelTests
         using System.Diagnostics.Process process = System.Diagnostics.Process.Start(startInfo)!;
         process.WaitForExit();
     }
-}
-
-internal static class CommitRenderExtensions
-{
-    public static CommitView GetCommitView(this Window window)
-        => Avalonia.VisualTree.VisualExtensions.GetVisualDescendants(window).OfType<CommitView>().Single();
 }

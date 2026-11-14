@@ -1114,12 +1114,6 @@ public static partial class AppSettings
 
     public static NullableBooleanSetting DontConfirmUpdateSubmodulesOnCheckout { get; } = new(RootSettingsPath, "dontConfirmUpdateSubmodulesOnCheckout");
 
-    public static string Dictionary
-    {
-        get => SettingsContainer.Detached().Dictionary;
-        set => SettingsContainer.Detached().Dictionary = value;
-    }
-
     public static bool ShowGitCommandLine
     {
         get => GetBool("showgitcommandline", false);

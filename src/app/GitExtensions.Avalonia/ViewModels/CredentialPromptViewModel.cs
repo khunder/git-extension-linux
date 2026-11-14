@@ -11,6 +11,10 @@ namespace GitExtensions.Desktop.ViewModels;
 /// </summary>
 public sealed partial class CredentialPromptViewModel : ObservableObject
 {
+    // Captured on the creating (UI) thread: callers run on pool threads, and touching the static Dispatcher.UIThread there
+    // can create a bogus dispatcher while a headless test session is being set up.
+    private readonly Avalonia.Threading.Dispatcher _dispatcher = Avalonia.Threading.Dispatcher.UIThread;
+
     private readonly SemaphoreSlim _queue = new(1, 1);
     private readonly Dictionary<string, string> _remembered = new(StringComparer.Ordinal);
     private TaskCompletionSource<string?>? _pending;
@@ -60,7 +64,7 @@ public sealed partial class CredentialPromptViewModel : ObservableObject
         await _queue.WaitAsync(cancellationToken);
         try
         {
-            string? reply = await Dispatcher.UIThread.InvokeAsync(() => ShowAsync(prompt, cancellationToken));
+            string? reply = await _dispatcher.InvokeAsync(() => ShowAsync(prompt, cancellationToken));
             return new AskPassResponse(reply);
         }
         finally
@@ -92,7 +96,7 @@ public sealed partial class CredentialPromptViewModel : ObservableObject
         RememberForSession = false;
         IsOpen = true;
 
-        using CancellationTokenRegistration registration = cancellationToken.Register(() => Dispatcher.UIThread.Post(() => Complete(pending, null)));
+        using CancellationTokenRegistration registration = cancellationToken.Register(() => _dispatcher.Post(() => Complete(pending, null)));
         string? answer = await pending.Task;
         return answer;
     }

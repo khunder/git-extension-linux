@@ -9,6 +9,10 @@ namespace GitExtensions.Desktop.Services;
 /// </summary>
 public sealed class AvaloniaMessageDialogs : IMessageDialogs
 {
+    // Captured on the creating (UI) thread: callers run on pool threads, and touching the static Dispatcher.UIThread there
+    // can create a bogus dispatcher while a headless test session is being set up.
+    private readonly Avalonia.Threading.Dispatcher _dispatcher = Avalonia.Threading.Dispatcher.UIThread;
+
     /// <summary>
     ///  Raised on the UI thread with the text to show.
     /// </summary>
@@ -25,13 +29,13 @@ public sealed class AvaloniaMessageDialogs : IMessageDialogs
 
     private void Report(string message)
     {
-        if (Dispatcher.UIThread.CheckAccess())
+        if (_dispatcher.CheckAccess())
         {
             MessageReported?.Invoke(message);
         }
         else
         {
-            Dispatcher.UIThread.Post(() => MessageReported?.Invoke(message));
+            _dispatcher.Post(() => MessageReported?.Invoke(message));
         }
     }
 }

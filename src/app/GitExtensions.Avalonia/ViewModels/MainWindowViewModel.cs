@@ -13,6 +13,10 @@ namespace GitExtensions.Desktop.ViewModels;
 
 public sealed partial class MainWindowViewModel : ObservableObject
 {
+    // Captured on the creating (UI) thread: callers run on pool threads, and touching the static Dispatcher.UIThread there
+    // can create a bogus dispatcher while a headless test session is being set up.
+    private readonly Avalonia.Threading.Dispatcher _dispatcher = Avalonia.Threading.Dispatcher.UIThread;
+
     private readonly GitEnvironment _git;
     private readonly IFolderPicker _folderPicker;
     private CancellationTokenSource? _loadCancellation;
@@ -171,7 +175,7 @@ public sealed partial class MainWindowViewModel : ObservableObject
             await Task.Run(() => LoadHistory(module, refs, openFilter, user, generation, cancellationToken), cancellationToken);
 
             // Let the batches still queued for the UI thread land before reporting the final count.
-            await Dispatcher.UIThread.InvokeAsync(static () => { }, DispatcherPriority.Background);
+            await _dispatcher.InvokeAsync(static () => { }, DispatcherPriority.Background);
 
             Status = $"{Commits.Count} commits shown · {ChangedFiles.Count} changed files";
         }
@@ -318,7 +322,7 @@ public sealed partial class MainWindowViewModel : ObservableObject
             }
 
             int laneCount = Math.Max(1, graphBuilder.MaxLaneCount);
-            Dispatcher.UIThread.Post(() =>
+            _dispatcher.Post(() =>
             {
                 if (cancellationToken.IsCancellationRequested || generation != _historyGeneration)
                 {

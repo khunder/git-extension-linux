@@ -12,6 +12,10 @@ namespace GitExtensions.Desktop.ViewModels;
 /// </summary>
 public sealed partial class CloneViewModel : ObservableObject
 {
+    // Captured on the creating (UI) thread: callers run on pool threads, and touching the static Dispatcher.UIThread there
+    // can create a bogus dispatcher while a headless test session is being set up.
+    private readonly Avalonia.Threading.Dispatcher _dispatcher = Avalonia.Threading.Dispatcher.UIThread;
+
     private readonly IFolderPicker _folderPicker;
     private readonly Func<string, Task> _open;
     private readonly IAskPassProvider? _askPass;
@@ -443,7 +447,7 @@ public sealed partial class CloneViewModel : ObservableObject
 
         if (Interlocked.Exchange(ref _flushPending, 1) == 0)
         {
-            Dispatcher.UIThread.Post(FlushProgress, DispatcherPriority.Background);
+            _dispatcher.Post(FlushProgress, DispatcherPriority.Background);
         }
     }
 

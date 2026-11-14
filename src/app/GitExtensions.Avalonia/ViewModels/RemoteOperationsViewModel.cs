@@ -14,6 +14,10 @@ namespace GitExtensions.Desktop.ViewModels;
 /// </summary>
 public sealed partial class RemoteOperationsViewModel : ObservableObject
 {
+    // Captured on the creating (UI) thread: callers run on pool threads, and touching the static Dispatcher.UIThread there
+    // can create a bogus dispatcher while a headless test session is being set up.
+    private readonly Avalonia.Threading.Dispatcher _dispatcher = Avalonia.Threading.Dispatcher.UIThread;
+
     private readonly Func<GitModule?> _moduleProvider;
     private readonly Action<string> _reportStatus;
     private readonly IMessageDialogs? _messages;
@@ -341,7 +345,7 @@ public sealed partial class RemoteOperationsViewModel : ObservableObject
 
         if (Interlocked.Exchange(ref _flushPending, 1) == 0)
         {
-            Dispatcher.UIThread.Post(FlushOutput, DispatcherPriority.Background);
+            _dispatcher.Post(FlushOutput, DispatcherPriority.Background);
         }
     }
 

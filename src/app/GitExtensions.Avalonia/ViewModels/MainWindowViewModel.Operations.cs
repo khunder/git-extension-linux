@@ -55,7 +55,7 @@ public sealed partial class MainWindowViewModel
         }
 
         _operationRefreshQueued = true;
-        Dispatcher.UIThread.Post(
+        _dispatcher.Post(
             () =>
             {
                 _operationRefreshQueued = false;

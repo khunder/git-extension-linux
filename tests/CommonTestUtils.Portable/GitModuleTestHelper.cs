@@ -1,4 +1,4 @@
-﻿using System.Diagnostics;
+using System.Diagnostics;
 using System.Text;
 using GitCommands;
 using GitCommands.Config;
@@ -247,7 +247,7 @@ public sealed partial class GitModuleTestHelper : IDisposable
         GitConfigSettings localSettings = new(module.GitExecutable, GitSettingLevel.Local);
         localSettings.SetValue(SettingKeyString.UserName, "author");
         localSettings.SetValue(SettingKeyString.UserEmail, "author@mail.com");
-        new GitEncodingSettingsSetter(localSettings).FilesEncoding = new UTF8Encoding(encoderShouldEmitUTF8Identifier: false);
+        localSettings.SetValue(SettingKeyString.FilesEncoding, "utf-8");
         localSettings.SetValue(SettingKeyString.AllowFileProtocol, "always"); // git version 2.38.1 and later disabled file protocol by default
         localSettings.Save();
     }

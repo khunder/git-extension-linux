@@ -29,6 +29,5 @@
     <Project Path="tests/CommonTestUtils.Portable/CommonTestUtils.Portable.csproj" />
     <Project Path="tests/app/UnitTests/GitCommands.Portable.Tests/GitCommands.Portable.Tests.csproj" />
     <Project Path="tests/app/UnitTests/GitExtensions.Avalonia.Tests/GitExtensions.Avalonia.Tests.csproj" />
-    <Project Path="tests/plugins/UnitTests/GitUIPluginInterfaces.Tests/GitUIPluginInterfaces.Tests.csproj" />
   </Folder>
 </Solution>

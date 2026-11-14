@@ -53,6 +53,10 @@ public sealed class CommandLogItem : CommunityToolkit.Mvvm.ComponentModel.Observ
 /// </summary>
 public sealed class CommandLogService : IDisposable
 {
+    // Captured on the creating (UI) thread: callers run on pool threads, and touching the static Dispatcher.UIThread there
+    // can create a bogus dispatcher while a headless test session is being set up.
+    private readonly Avalonia.Threading.Dispatcher _dispatcher = Avalonia.Threading.Dispatcher.UIThread;
+
     /// <summary>The most entries kept (the ring buffer of <see cref="CommandLog"/> is bounded as well).</summary>
     public const int MaxEntries = 500;
 
@@ -137,7 +141,7 @@ public sealed class CommandLogService : IDisposable
         // Many events arrive during a burst of git calls: one queued refresh covers all of them.
         if (Interlocked.Exchange(ref _refreshQueued, 1) == 0)
         {
-            Avalonia.Threading.Dispatcher.UIThread.Post(Refresh, Avalonia.Threading.DispatcherPriority.Background);
+            _dispatcher.Post(Refresh, Avalonia.Threading.DispatcherPriority.Background);
         }
     }
 }

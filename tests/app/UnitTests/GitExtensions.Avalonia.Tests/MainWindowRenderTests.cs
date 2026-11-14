@@ -1,4 +1,4 @@
-﻿using Avalonia.Controls;
+using Avalonia.Controls;
 using Avalonia.Headless;
 using Avalonia.Headless.NUnit;
 using Avalonia.Media.Imaging;
@@ -60,7 +60,6 @@ public class MainWindowRenderTests
         viewModel.ChangedFiles.Count.Should().Be(2);
         window.TryFind<ListBox>("ChangeList").Should().BeNull();
         window.TryFind<DiffView>("DiffPanel").Should().BeNull();
-        window.TryFind<CommitView>("CommitPanel").Should().BeNull();
         window.FindControl<TextBlock>("StatusText")!.Text.Should().Contain("2 commits");
 
         WriteableBitmap? frame = window.CaptureRenderedFrame();

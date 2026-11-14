@@ -242,7 +242,7 @@ public sealed partial class MainWindowViewModel
         try
         {
             await Task.Run(() => LoadHistory(module, refs, filter, user, generation, cancellationToken), cancellationToken);
-            await Avalonia.Threading.Dispatcher.UIThread.InvokeAsync(static () => { }, Avalonia.Threading.DispatcherPriority.Background);
+            await _dispatcher.InvokeAsync(static () => { }, Avalonia.Threading.DispatcherPriority.Background);
             if (!cancellationToken.IsCancellationRequested)
             {
                 if (selected is { } id)
