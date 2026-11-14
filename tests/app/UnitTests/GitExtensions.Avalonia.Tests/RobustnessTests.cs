@@ -268,6 +268,14 @@ public class RobustnessTests
     {
         string folder = CommittedRepository();
         string? previous = Environment.GetEnvironmentVariable("GIT_TEST_ASSUME_DIFFERENT_OWNER");
+        string? previousSystem = Environment.GetEnvironmentVariable("GIT_CONFIG_NOSYSTEM");
+        string? previousGlobal = Environment.GetEnvironmentVariable("GIT_CONFIG_GLOBAL");
+        string emptyGlobalConfig = Path.Combine(folder, "empty-global-gitconfig");
+        File.WriteAllText(emptyGlobalConfig, string.Empty);
+
+        // Some machines (for example CI images) trust every directory through the system or global safe.directory setting.
+        Environment.SetEnvironmentVariable("GIT_CONFIG_NOSYSTEM", "1");
+        Environment.SetEnvironmentVariable("GIT_CONFIG_GLOBAL", emptyGlobalConfig);
         Environment.SetEnvironmentVariable("GIT_TEST_ASSUME_DIFFERENT_OWNER", "1");
         try
         {
@@ -282,6 +290,8 @@ public class RobustnessTests
         finally
         {
             Environment.SetEnvironmentVariable("GIT_TEST_ASSUME_DIFFERENT_OWNER", previous);
+            Environment.SetEnvironmentVariable("GIT_CONFIG_NOSYSTEM", previousSystem);
+            Environment.SetEnvironmentVariable("GIT_CONFIG_GLOBAL", previousGlobal);
         }
     }
 
