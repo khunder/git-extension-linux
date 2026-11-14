@@ -1,0 +1,69 @@
+<UserControl xmlns="https://github.com/avaloniaui"
+             xmlns:x="http://schemas.microsoft.com/winfx/2006/xaml"
+             xmlns:vm="using:GitExtensions.Desktop.ViewModels"
+             x:Class="GitExtensions.Desktop.Views.CloneView"
+             x:DataType="vm:CloneViewModel">
+  <!-- Scrim over the content area; the card is centered. -->
+  <Panel Background="#80000000">
+    <Border x:Name="Card" MaxWidth="600" Margin="24" Padding="20" VerticalAlignment="Center" HorizontalAlignment="Stretch"
+            CornerRadius="8" BorderThickness="1"
+            Background="{DynamicResource SystemControlBackgroundAltHighBrush}"
+            BorderBrush="{DynamicResource SubtleBorderBrush}">
+      <StackPanel Spacing="4">
+        <TextBlock Text="Clone repository" FontSize="18" FontWeight="SemiBold" Margin="0,0,0,8" />
+
+        <TextBlock Text="Repository URL or path" />
+        <TextBox x:Name="UrlBox" Text="{Binding Url}" Watermark="https://host/owner/repo.git, git@host:owner/repo.git or a folder">
+          <TextBox.KeyBindings>
+            <KeyBinding Gesture="Enter" Command="{Binding CloneCommand}" />
+            <KeyBinding Gesture="Escape" Command="{Binding CancelCommand}" />
+          </TextBox.KeyBindings>
+        </TextBox>
+        <TextBlock x:Name="UrlErrorText" Text="{Binding UrlError}" IsVisible="{Binding HasUrlError}" TextWrapping="Wrap" FontSize="12"
+                   Foreground="{DynamicResource ErrorTextForeground}" />
+
+        <TextBlock Text="Clone into folder" Margin="0,8,0,0" />
+        <Grid ColumnDefinitions="*,Auto" ColumnSpacing="8">
+          <TextBox x:Name="ParentBox" Text="{Binding ParentFolder}" Watermark="Parent folder" />
+          <Button x:Name="BrowseButton" Grid.Column="1" Content="Browse…" Command="{Binding BrowseCommand}" />
+        </Grid>
+        <TextBlock x:Name="ParentErrorText" Text="{Binding ParentError}" IsVisible="{Binding HasParentError}" TextWrapping="Wrap" FontSize="12"
+                   Foreground="{DynamicResource ErrorTextForeground}" />
+
+        <TextBlock Text="New folder name" Margin="0,8,0,0" />
+        <TextBox x:Name="NameBox" Text="{Binding TargetName}" Watermark="Derived from the URL" />
+        <TextBlock x:Name="NameErrorText" Text="{Binding NameError}" IsVisible="{Binding HasNameError}" TextWrapping="Wrap" FontSize="12"
+                   Foreground="{DynamicResource ErrorTextForeground}" />
+        <TextBlock x:Name="TargetPathText" Text="{Binding TargetPath, StringFormat='Creates {0}'}" Opacity="0.65" FontSize="12" TextTrimming="CharacterEllipsis" />
+
+        <Grid ColumnDefinitions="*,140" ColumnSpacing="12" Margin="0,8,0,0">
+          <StackPanel Spacing="4">
+            <TextBlock Text="Branch to check out (optional)" />
+            <TextBox x:Name="BranchBox" Text="{Binding Branch}" Watermark="Default branch" />
+            <TextBlock x:Name="BranchErrorText" Text="{Binding BranchError}" IsVisible="{Binding HasBranchError}" TextWrapping="Wrap" FontSize="12"
+                       Foreground="{DynamicResource ErrorTextForeground}" />
+          </StackPanel>
+          <StackPanel Grid.Column="1" Spacing="4">
+            <TextBlock Text="Shallow depth" />
+            <TextBox x:Name="DepthBox" Text="{Binding Depth}" Watermark="Full history" />
+            <TextBlock x:Name="DepthErrorText" Text="{Binding DepthError}" IsVisible="{Binding HasDepthError}" TextWrapping="Wrap" FontSize="12"
+                       Foreground="{DynamicResource ErrorTextForeground}" />
+          </StackPanel>
+        </Grid>
+
+        <CheckBox x:Name="RecursiveBox" Content="Initialize submodules recursively" IsChecked="{Binding RecurseSubmodules}" Margin="0,8,0,0" />
+
+        <TextBlock x:Name="ProgressTextBlock" Text="{Binding ProgressText}" IsVisible="{Binding IsRunning}" Classes="mono" FontSize="12"
+                   TextTrimming="CharacterEllipsis" Margin="0,8,0,0" />
+        <ProgressBar IsIndeterminate="True" IsVisible="{Binding IsRunning}" />
+        <TextBlock x:Name="ErrorText" Text="{Binding ErrorMessage}" IsVisible="{Binding HasError}" TextWrapping="Wrap"
+                   Foreground="{DynamicResource ErrorTextForeground}" Margin="0,8,0,0" />
+
+        <StackPanel Orientation="Horizontal" HorizontalAlignment="Right" Spacing="8" Margin="0,12,0,0">
+          <Button x:Name="CancelButton" Content="Cancel" Command="{Binding CancelCommand}" />
+          <Button x:Name="CloneButton" Content="Clone" Classes="accent" Command="{Binding CloneCommand}" />
+        </StackPanel>
+      </StackPanel>
+    </Border>
+  </Panel>
+</UserControl>

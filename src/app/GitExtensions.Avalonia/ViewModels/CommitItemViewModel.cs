@@ -40,4 +40,7 @@ public sealed class CommitItemViewModel
     public string Refs { get; }
 
     public bool HasRefs => Refs.Length > 0;
+
+    /// <summary>What a screen reader announces for the row.</summary>
+    public string AccessibleName => HasRefs ? $"{Subject}, by {Author}, {Date}, {ShortHash}, {Refs}" : $"{Subject}, by {Author}, {Date}, {ShortHash}";
 }

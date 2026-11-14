@@ -19,6 +19,8 @@ public sealed class ThemeMenuButton : Button
         FontSize = 16;
         ToolTip.SetTip(this, "Theme: system, light or dark");
         Name = "ViewButton";
+        Avalonia.Automation.AutomationProperties.SetName(this, "Theme");
+        Avalonia.Automation.AutomationProperties.SetHelpText(this, "Choose the system, light or dark theme (Ctrl+Shift+D cycles)");
 
         MenuFlyout flyout = new();
         foreach (ThemeChoice choice in Enum.GetValues<ThemeChoice>())

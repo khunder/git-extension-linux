@@ -45,6 +45,8 @@ public sealed partial class RefsTreeViewModel : ObservableObject
         _module = null;
         _entries = [];
         _currentBranch = null;
+        CurrentTrack = null;
+        CancelPrompt();
         Roots.Clear();
     }
 
@@ -54,14 +56,17 @@ public sealed partial class RefsTreeViewModel : ObservableObject
     public async Task LoadAsync(GitModule module)
     {
         _module = module;
+        Task<Dictionary<string, UpstreamTrack>> tracking = Task.Run(() => ReadTracking(module));
         (IReadOnlyList<RefEntry> entries, string current) = await Task.Run(() => (ReadEntries(module), module.GetSelectedBranch(emptyIfDetached: true)));
+        Dictionary<string, UpstreamTrack> tracks = await tracking;
         if (!ReferenceEquals(_module, module))
         {
             return;
         }
 
-        _entries = entries;
+        _entries = ApplyTracking(entries, tracks);
         _currentBranch = current;
+        CurrentTrack = tracks.GetValueOrDefault(current);
         Rebuild();
     }
 

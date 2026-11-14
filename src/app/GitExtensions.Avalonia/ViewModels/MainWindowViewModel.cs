@@ -60,6 +60,8 @@ public sealed partial class MainWindowViewModel : ObservableObject
         Refs = new RefsTreeViewModel(message => Status = message, SelectCommit, () => OpenAsync(RepositoryPath));
         InitializeHistoryExtras();
         InitializeOperations();
+        InitializeCloneInit();
+        InitializeBranchManagement();
     }
 
     public RecentRepositoriesViewModel Recent { get; }

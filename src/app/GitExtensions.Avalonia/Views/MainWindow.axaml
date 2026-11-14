@@ -9,6 +9,7 @@
         MinWidth="640" MinHeight="400">
 
   <Window.Styles>
+    <StyleInclude Source="avares://GitExtensions.Avalonia/Styles/Accessibility.axaml" />
     <Style Selector="TextBlock.mono">
       <Setter Property="FontFamily" Value="Cascadia Mono, Consolas, DejaVu Sans Mono, monospace" />
     </Style>
@@ -39,7 +40,10 @@
         <Button Grid.Column="2" Content="Open" Command="{Binding OpenCurrentCommand}" />
         <Button x:Name="RecentButton" Grid.Column="3" Content="Recent ▾" />
         <views:ThemeMenuButton Grid.Column="4" />
-        <views:StashMenuButton Grid.Column="5" IsVisible="{Binding HasOpenedRepository}" />
+        <StackPanel Grid.Column="5" Orientation="Horizontal" Spacing="6" IsVisible="{Binding HasOpenedRepository}">
+          <views:StashMenuButton />
+          <views:ToolsMenuButton />
+        </StackPanel>
         <Button x:Name="SettingsButton" Grid.Column="6" Content="⚙" FontSize="16" Padding="8,2" Command="{Binding OpenSettingsCommand}" ToolTip.Tip="Settings" />
       </Grid>
     </Border>
@@ -83,6 +87,7 @@
             <Button x:Name="SidebarToggle" Content="«" Padding="6,0" MinHeight="22" VerticalAlignment="Center" ToolTip.Tip="Hide or show the branches sidebar" />
             <TextBlock Classes="header" Text="History" />
             <TextBlock Text="{Binding Branch, StringFormat='on {0}'}" IsVisible="{Binding Branch, Converter={x:Static ObjectConverters.IsNotNull}}" Opacity="0.7" />
+            <TextBlock x:Name="BranchTrackText" Text="{Binding Refs.CurrentTrackText}" IsVisible="{Binding Refs.HasCurrentTrack}" ToolTip.Tip="{Binding Refs.CurrentTrackToolTip}" FontWeight="SemiBold" Foreground="{DynamicResource SystemAccentColor}" />
           </StackPanel>
         </Border>
         <views:CommitActionPromptView x:Name="CommitPrompt" DockPanel.Dock="Top" DataContext="{Binding Actions}" />
@@ -94,10 +99,30 @@
                 <Setter Property="Padding" Value="8,0" />
                 <Setter Property="MinHeight" Value="26" />
               </Style>
+              <Style Selector="ListBoxItem" x:DataType="vm:CommitItemViewModel">
+                <Setter Property="(AutomationProperties.Name)" Value="{Binding AccessibleName}" />
+              </Style>
+              <!-- Responsive row: the date, then the author, give way to the subject as the list narrows (see MainWindow.Shortcuts.cs). -->
+              <Style Selector="ListBox Border.ref">
+                <Setter Property="MaxWidth" Value="120" />
+                <Setter Property="Margin" Value="0,0,8,0" />
+              </Style>
+              <Style Selector="ListBox.narrow Border.ref">
+                <Setter Property="MaxWidth" Value="64" />
+              </Style>
+              <!-- IsVisible is bound on the badge, so a style cannot hide it: collapse its width instead. -->
+              <Style Selector="ListBox.tiny Border.ref">
+                <Setter Property="MaxWidth" Value="0" />
+                <Setter Property="Margin" Value="0" />
+                <Setter Property="ClipToBounds" Value="True" />
+              </Style>
+              <Style Selector="ListBox.medium TextBlock.date, ListBox.narrow TextBlock.date, ListBox.narrow TextBlock.author">
+                <Setter Property="IsVisible" Value="False" />
+              </Style>
             </ListBox.Styles>
             <ListBox.ItemTemplate>
               <DataTemplate x:DataType="vm:CommitItemViewModel">
-                <Grid ColumnDefinitions="76,Auto,*,Auto,150" ColumnSpacing="10">
+                <Grid ColumnDefinitions="76,Auto,*,Auto,Auto" ColumnSpacing="10">
                   <Grid.ContextMenu>
                     <ContextMenu>
                       <MenuItem Header="Copy commit hash" Command="{Binding Actions.CopyHashCommand}" CommandParameter="{Binding}" />
@@ -121,13 +146,13 @@
                   <views:CommitGraphCell Grid.Column="1" Row="{Binding Graph}" LaneCount="{Binding $parent[ListBox].((vm:MainWindowViewModel)DataContext).GraphLaneCount}" />
                   <!-- The refs badge is capped and trimmed so a commit with many refs cannot overrun the author column. -->
                   <DockPanel Grid.Column="2" LastChildFill="True" ClipToBounds="True">
-                    <Border DockPanel.Dock="Left" Classes="ref" IsVisible="{Binding HasRefs}" VerticalAlignment="Center" MaxWidth="120" Margin="0,0,8,0">
+                    <Border DockPanel.Dock="Left" Classes="ref" IsVisible="{Binding HasRefs}" VerticalAlignment="Center">
                       <TextBlock Text="{Binding Refs}" FontSize="11" TextTrimming="CharacterEllipsis" ToolTip.Tip="{Binding Refs}" />
                     </Border>
                     <TextBlock Text="{Binding Subject}" TextTrimming="CharacterEllipsis" VerticalAlignment="Center" />
                   </DockPanel>
-                  <TextBlock Grid.Column="3" Text="{Binding Author}" Opacity="0.75" VerticalAlignment="Center" />
-                  <TextBlock Grid.Column="4" Text="{Binding Date}" Opacity="0.6" VerticalAlignment="Center" HorizontalAlignment="Right" />
+                  <TextBlock Grid.Column="3" Classes="author" Text="{Binding Author}" Opacity="0.75" VerticalAlignment="Center" Width="110" TextTrimming="CharacterEllipsis" />
+                  <TextBlock Grid.Column="4" Classes="date" Text="{Binding Date}" Opacity="0.6" VerticalAlignment="Center" HorizontalAlignment="Right" Width="140" TextAlignment="Right" TextTrimming="CharacterEllipsis" />
                 </Grid>
               </DataTemplate>
             </ListBox.ItemTemplate>
@@ -169,13 +194,17 @@
           <views:DiffView x:Name="DiffPanel" Grid.Row="2" MinHeight="120" DataContext="{Binding Diff}" />
           <views:ConflictResolverView Grid.Row="2" x:Name="ResolverView" DataContext="{Binding Resolver}" IsVisible="{Binding IsActive}" />
           <GridSplitter x:Name="CommitSplitter" Grid.Row="3" Height="5" Background="Transparent" HorizontalAlignment="Stretch" />
-          <views:CommitView x:Name="CommitPanel" Grid.Row="4" MinHeight="110" DataContext="{Binding Commit}" />
+          <views:CommitView x:Name="CommitPanel" Grid.Row="4" MinHeight="128" DataContext="{Binding Commit}" />
         </Grid>
       </DockPanel>
 
     </Grid>
     <views:SettingsView x:Name="SettingsOverlay" DataContext="{Binding Settings}" IsVisible="{Binding IsOpen}" />
     <views:FileHistoryView x:Name="FileHistoryOverlay" DataContext="{Binding FileHistory}" IsVisible="{Binding IsOpen}" />
+    <views:CloneView x:Name="CloneOverlay" DataContext="{Binding Clone}" IsVisible="{Binding IsOpen}" />
+    <views:InitView x:Name="InitOverlay" DataContext="{Binding Init}" IsVisible="{Binding IsOpen}" />
+    <views:CommandPaletteView x:Name="PaletteOverlay" DataContext="{Binding Palette}" />
+    <views:ShortcutsHelpView x:Name="ShortcutsOverlay" DataContext="{Binding ShortcutsHelp}" />
     <views:CredentialPromptView x:Name="CredentialOverlay" DataContext="{Binding Credentials}" />
     </Panel>
   </DockPanel>

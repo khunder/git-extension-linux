@@ -1,0 +1,45 @@
+<UserControl xmlns="https://github.com/avaloniaui"
+             xmlns:x="http://schemas.microsoft.com/winfx/2006/xaml"
+             xmlns:vm="using:GitExtensions.Desktop.ViewModels"
+             x:Class="GitExtensions.Desktop.Views.ShortcutsHelpView"
+             x:DataType="vm:ShortcutsHelpViewModel"
+             Focusable="True"
+             IsVisible="{Binding IsOpen}">
+  <Panel x:Name="Scrim" Background="#80000000">
+    <Border x:Name="Card" MaxWidth="620" MinWidth="280" Margin="16" Padding="16"
+            VerticalAlignment="Center" HorizontalAlignment="Center"
+            CornerRadius="8" BorderThickness="1"
+            Background="{DynamicResource SystemControlBackgroundAltHighBrush}"
+            BorderBrush="{DynamicResource SubtleBorderBrush}"
+            KeyboardNavigation.TabNavigation="Cycle"
+            AutomationProperties.Name="Keyboard shortcuts">
+      <DockPanel>
+        <Grid DockPanel.Dock="Top" ColumnDefinitions="*,Auto" Margin="0,0,0,8">
+          <TextBlock Text="Keyboard shortcuts" FontSize="18" FontWeight="SemiBold" VerticalAlignment="Center" />
+          <Button x:Name="CloseButton" Grid.Column="1" Content="Close" Command="{Binding CloseCommand}" ToolTip.Tip="Close (Esc)" />
+        </Grid>
+        <ScrollViewer x:Name="Scroller" MaxHeight="460" HorizontalScrollBarVisibility="Disabled">
+          <ItemsControl x:Name="GroupList" ItemsSource="{Binding Groups}">
+            <ItemsControl.ItemTemplate>
+              <DataTemplate x:DataType="vm:ShortcutGroup">
+                <StackPanel Margin="0,0,0,10" Spacing="2">
+                  <TextBlock Text="{Binding Name}" FontWeight="SemiBold" Opacity="0.85" Margin="0,0,0,2" />
+                  <ItemsControl ItemsSource="{Binding Entries}">
+                    <ItemsControl.ItemTemplate>
+                      <DataTemplate x:DataType="vm:ShortcutEntry">
+                        <Grid ColumnDefinitions="*,Auto" ColumnSpacing="16" Margin="8,1">
+                          <TextBlock Text="{Binding Title}" TextTrimming="CharacterEllipsis" />
+                          <TextBlock Grid.Column="1" Text="{Binding Gesture}" Classes="mono" Opacity="0.7" FontSize="12" />
+                        </Grid>
+                      </DataTemplate>
+                    </ItemsControl.ItemTemplate>
+                  </ItemsControl>
+                </StackPanel>
+              </DataTemplate>
+            </ItemsControl.ItemTemplate>
+          </ItemsControl>
+        </ScrollViewer>
+      </DockPanel>
+    </Border>
+  </Panel>
+</UserControl>

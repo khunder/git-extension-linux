@@ -1,0 +1,54 @@
+<UserControl xmlns="https://github.com/avaloniaui"
+             xmlns:x="http://schemas.microsoft.com/winfx/2006/xaml"
+             xmlns:vm="using:GitExtensions.Desktop.ViewModels"
+             xmlns:views="using:GitExtensions.Desktop.Views"
+             x:Class="GitExtensions.Desktop.Views.ReflogTabView"
+             x:DataType="vm:ReflogViewModel">
+
+  <DockPanel>
+    <WrapPanel DockPanel.Dock="Top" Orientation="Horizontal" ItemSpacing="8" LineSpacing="6" Margin="8">
+      <TextBlock Text="Reflog of" VerticalAlignment="Center" />
+      <ComboBox x:Name="RefBox" ItemsSource="{Binding Refs}" SelectedItem="{Binding SelectedRef}" MinWidth="140" />
+      <Button x:Name="CheckoutButton" Content="Checkout" Command="{Binding CheckoutCommand}" IsEnabled="{Binding HasSelection}" ToolTip.Tip="Check out the commit (detached HEAD)" />
+      <Button x:Name="BranchButton" Content="Create branch…" Command="{Binding RequestCreateBranchCommand}" IsEnabled="{Binding HasSelection}" />
+      <TextBlock Text="Reset to here:" VerticalAlignment="Center" Margin="8,0,0,0" Opacity="0.7" />
+      <Button x:Name="SoftButton" Content="Soft" Command="{Binding ResetSoftCommand}" IsEnabled="{Binding HasSelection}" ToolTip.Tip="Move the current branch, keep index and working tree" />
+      <Button x:Name="MixedButton" Content="Mixed" Command="{Binding ResetMixedCommand}" IsEnabled="{Binding HasSelection}" ToolTip.Tip="Move the current branch, keep the working tree" />
+      <Button x:Name="HardButton" Content="Hard…" Command="{Binding RequestHardResetCommand}" IsEnabled="{Binding HasSelection}" ToolTip.Tip="Move the current branch and discard all changes" />
+      <Button x:Name="CopyButton" Content="Copy hash" Command="{Binding CopyHashCommand}" IsEnabled="{Binding HasSelection}" />
+    </WrapPanel>
+
+    <Panel x:Name="PromptPanel" DockPanel.Dock="Top" IsVisible="{Binding IsPromptVisible}">
+      <Border Background="{DynamicResource SystemAccentColor}" Opacity="0.15" />
+      <Grid ColumnDefinitions="Auto,*,Auto,Auto" ColumnSpacing="8" Margin="8,6">
+        <TextBlock x:Name="PromptText" Text="{Binding PromptText}" TextWrapping="Wrap" VerticalAlignment="Center" MaxWidth="560" />
+        <TextBox x:Name="BranchNameBox" Grid.Column="1" Text="{Binding BranchName}" IsVisible="{Binding NeedsInput}" Watermark="branch-name">
+          <TextBox.KeyBindings>
+            <KeyBinding Gesture="Enter" Command="{Binding ConfirmPromptCommand}" />
+            <KeyBinding Gesture="Escape" Command="{Binding CancelPromptCommand}" />
+          </TextBox.KeyBindings>
+        </TextBox>
+        <Button x:Name="PromptConfirm" Grid.Column="2" Content="{Binding ConfirmText}" Command="{Binding ConfirmPromptCommand}" />
+        <Button x:Name="PromptCancel" Grid.Column="3" Content="Cancel" Command="{Binding CancelPromptCommand}" />
+      </Grid>
+    </Panel>
+
+    <Grid ColumnDefinitions="400,Auto,*">
+      <ListBox x:Name="ReflogList" ItemsSource="{Binding Entries}" SelectedItem="{Binding SelectedEntry}">
+        <ListBox.ItemTemplate>
+          <DataTemplate x:DataType="vm:ReflogEntry">
+            <Grid ColumnDefinitions="76,66,*,Auto" ColumnSpacing="8">
+              <TextBlock Text="{Binding Selector}" FontFamily="Cascadia Mono, Consolas, DejaVu Sans Mono, monospace" Opacity="0.7" />
+              <TextBlock Grid.Column="1" Text="{Binding ShortHash}" FontFamily="Cascadia Mono, Consolas, DejaVu Sans Mono, monospace" />
+              <TextBlock Grid.Column="2" Text="{Binding Message}" TextTrimming="CharacterEllipsis" ToolTip.Tip="{Binding Message}" />
+              <TextBlock Grid.Column="3" Text="{Binding DateText}" FontSize="11" Opacity="0.6" VerticalAlignment="Center" />
+            </Grid>
+          </DataTemplate>
+        </ListBox.ItemTemplate>
+      </ListBox>
+      <TextBlock Text="{Binding EmptyText}" Opacity="0.6" Margin="12" HorizontalAlignment="Left" VerticalAlignment="Top" IsVisible="{Binding EmptyText, Converter={x:Static StringConverters.IsNotNullOrEmpty}}" />
+      <GridSplitter Grid.Column="1" Width="4" />
+      <views:CommitDetailsView Grid.Column="2" DataContext="{Binding Details}" />
+    </Grid>
+  </DockPanel>
+</UserControl>

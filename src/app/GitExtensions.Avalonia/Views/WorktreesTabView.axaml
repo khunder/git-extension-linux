@@ -1,0 +1,56 @@
+<UserControl xmlns="https://github.com/avaloniaui"
+             xmlns:x="http://schemas.microsoft.com/winfx/2006/xaml"
+             xmlns:vm="using:GitExtensions.Desktop.ViewModels"
+             x:Class="GitExtensions.Desktop.Views.WorktreesTabView"
+             x:DataType="vm:WorktreesViewModel">
+
+  <DockPanel>
+    <StackPanel DockPanel.Dock="Top" Orientation="Horizontal" Spacing="8" Margin="8">
+      <Button x:Name="AddButton" Content="Add worktree…" Command="{Binding RequestAddCommand}" />
+      <Button x:Name="OpenButton" Content="Open as repository" Command="{Binding OpenCommand}" IsEnabled="{Binding HasSelection}" />
+      <Button x:Name="RemoveButton" Content="Remove…" Command="{Binding RequestRemoveCommand}" IsEnabled="{Binding CanRemoveSelected}" ToolTip.Tip="The main worktree cannot be removed" />
+      <Button x:Name="PruneButton" Content="Prune" Command="{Binding PruneCommand}" ToolTip.Tip="Forget worktrees whose folder is gone" />
+    </StackPanel>
+
+    <Panel x:Name="AddForm" DockPanel.Dock="Top" IsVisible="{Binding IsAddFormVisible}">
+      <Border Background="{DynamicResource SystemAccentColor}" Opacity="0.15" />
+      <Grid ColumnDefinitions="*,*,Auto,Auto,Auto" ColumnSpacing="8" Margin="8,6">
+        <TextBox x:Name="NewPathBox" Text="{Binding NewPath}" Watermark="Folder (relative: next to the repository)" />
+        <TextBox x:Name="NewBranchBox" Grid.Column="1" Text="{Binding NewBranch}" Watermark="Branch name">
+          <TextBox.KeyBindings>
+            <KeyBinding Gesture="Enter" Command="{Binding ConfirmAddCommand}" />
+            <KeyBinding Gesture="Escape" Command="{Binding CancelPromptCommand}" />
+          </TextBox.KeyBindings>
+        </TextBox>
+        <CheckBox x:Name="NewBranchCheck" Grid.Column="2" Content="New branch" IsChecked="{Binding CreateNewBranch}" />
+        <Button x:Name="AddConfirm" Grid.Column="3" Content="Add" Command="{Binding ConfirmAddCommand}" />
+        <Button x:Name="AddCancel" Grid.Column="4" Content="Cancel" Command="{Binding CancelPromptCommand}" />
+      </Grid>
+    </Panel>
+
+    <Panel x:Name="RemovePanel" DockPanel.Dock="Top" IsVisible="{Binding IsRemovePromptVisible}">
+      <Border Background="{DynamicResource SystemAccentColor}" Opacity="0.15" />
+      <Grid ColumnDefinitions="*,Auto,Auto" ColumnSpacing="8" Margin="8,6">
+        <TextBlock x:Name="RemoveText" Text="{Binding RemovePromptText}" TextWrapping="Wrap" VerticalAlignment="Center" />
+        <Button x:Name="RemoveConfirm" Grid.Column="1" Content="{Binding RemoveConfirmText}" Command="{Binding ConfirmRemoveCommand}" />
+        <Button x:Name="RemoveCancel" Grid.Column="2" Content="Cancel" Command="{Binding CancelPromptCommand}" />
+      </Grid>
+    </Panel>
+
+    <Panel>
+      <ListBox x:Name="WorktreeList" ItemsSource="{Binding Items}" SelectedItem="{Binding SelectedWorktree}">
+        <ListBox.ItemTemplate>
+          <DataTemplate x:DataType="vm:WorktreeInfo">
+            <Grid ColumnDefinitions="*,180,80,140" ColumnSpacing="10">
+              <TextBlock Text="{Binding Path}" TextTrimming="CharacterEllipsis" ToolTip.Tip="{Binding Path}" VerticalAlignment="Center" />
+              <TextBlock Grid.Column="1" Text="{Binding BranchText}" FontWeight="SemiBold" TextTrimming="CharacterEllipsis" VerticalAlignment="Center" />
+              <TextBlock Grid.Column="2" Text="{Binding ShortHead}" FontFamily="Cascadia Mono, Consolas, DejaVu Sans Mono, monospace" Opacity="0.7" VerticalAlignment="Center" />
+              <TextBlock Grid.Column="3" Text="{Binding Flags}" Opacity="0.7" FontSize="11" VerticalAlignment="Center" />
+            </Grid>
+          </DataTemplate>
+        </ListBox.ItemTemplate>
+      </ListBox>
+      <TextBlock Text="{Binding EmptyText}" Opacity="0.6" Margin="12" HorizontalAlignment="Left" VerticalAlignment="Top" IsVisible="{Binding EmptyText, Converter={x:Static StringConverters.IsNotNullOrEmpty}}" />
+    </Panel>
+  </DockPanel>
+</UserControl>

@@ -1,0 +1,30 @@
+<UserControl xmlns="https://github.com/avaloniaui"
+             xmlns:x="http://schemas.microsoft.com/winfx/2006/xaml"
+             xmlns:vm="using:GitExtensions.Desktop.ViewModels"
+             x:Class="GitExtensions.Desktop.Views.RefsPromptView"
+             x:DataType="vm:RefsTreeViewModel"
+             IsVisible="{Binding IsPromptVisible}">
+  <!-- Inline prompt above the refs tree: asks for names / a start point / an upstream, or confirms a destructive action. -->
+  <Panel>
+    <Border Background="{DynamicResource SystemAccentColor}" Opacity="0.15" />
+    <StackPanel Spacing="6" Margin="8,6">
+      <TextBlock x:Name="RefsPromptTitle" Text="{Binding PromptTitle}" TextWrapping="Wrap" FontWeight="SemiBold" />
+      <TextBlock x:Name="RefsPromptDetail" Text="{Binding PromptDetail}" IsVisible="{Binding HasDetail}" TextWrapping="Wrap" Foreground="{DynamicResource ErrorTextForeground}" />
+      <TextBox x:Name="RefsPromptName" Text="{Binding InputText}" IsVisible="{Binding ShowName}" Watermark="Name">
+        <TextBox.KeyBindings>
+          <KeyBinding Gesture="Enter" Command="{Binding ConfirmPromptCommand}" />
+          <KeyBinding Gesture="Escape" Command="{Binding CancelPromptCommand}" />
+        </TextBox.KeyBindings>
+      </TextBox>
+      <TextBox x:Name="RefsPromptStart" Text="{Binding StartPoint}" IsVisible="{Binding ShowStartPoint}" Watermark="Start point (HEAD, commit, branch or tag)" />
+      <TextBox x:Name="RefsPromptMessage" Text="{Binding MessageText}" IsVisible="{Binding ShowMessage}" Watermark="Tag message (optional: makes it annotated)" AcceptsReturn="True" MaxHeight="80" TextWrapping="Wrap" />
+      <CheckBox x:Name="RefsPromptCheckout" IsChecked="{Binding CheckoutAfterCreate}" IsVisible="{Binding ShowCheckout}" Content="Check out after creating" />
+      <ComboBox x:Name="RefsPromptUpstream" ItemsSource="{Binding UpstreamChoices}" SelectedItem="{Binding SelectedUpstream}" IsVisible="{Binding ShowUpstreamPicker}" HorizontalAlignment="Stretch" />
+      <TextBlock x:Name="RefsPromptError" Text="{Binding ValidationError}" IsVisible="{Binding HasValidationError}" TextWrapping="Wrap" Foreground="{DynamicResource ErrorTextForeground}" />
+      <WrapPanel Orientation="Horizontal">
+        <Button x:Name="RefsPromptConfirm" Margin="0,0,8,4" Content="{Binding ConfirmText}" Command="{Binding ConfirmPromptCommand}" />
+        <Button x:Name="RefsPromptCancel" Content="Cancel" Command="{Binding CancelPromptCommand}" Margin="0,0,0,4" />
+      </WrapPanel>
+    </StackPanel>
+  </Panel>
+</UserControl>

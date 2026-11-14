@@ -21,10 +21,11 @@ public sealed partial class MainWindow : Window
         AddHandler(Thumb.DragCompletedEvent, (_, _) => SaveLayout());
         _layout = new LayoutSettings();
         ApplyLayout(_layout);
+        InitializeShortcuts();
     }
 
-    private const double MinMiddleWidth = 320;
-    private const double MinRightWidth = 300;
+    private const double MinMiddleWidth = 280;
+    private const double MinRightWidth = 280;
 
     private LayoutStore? _layoutStore;
     private LayoutSettings _layout;

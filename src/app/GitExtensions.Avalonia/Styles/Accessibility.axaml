@@ -1,0 +1,24 @@
+<Styles xmlns="https://github.com/avaloniaui"
+        xmlns:x="http://schemas.microsoft.com/winfx/2006/xaml">
+  <!-- A visible keyboard focus ring (shown only for keyboard navigation) that follows the theme's accent colour. -->
+  <Style Selector="Button:focus-visible /template/ ContentPresenter#PART_ContentPresenter">
+    <Setter Property="BorderBrush" Value="{DynamicResource SystemAccentColor}" />
+    <Setter Property="BorderThickness" Value="2" />
+  </Style>
+  <Style Selector="ToggleButton:focus-visible /template/ ContentPresenter#PART_ContentPresenter">
+    <Setter Property="BorderBrush" Value="{DynamicResource SystemAccentColor}" />
+    <Setter Property="BorderThickness" Value="2" />
+  </Style>
+  <Style Selector="ListBoxItem:focus-visible /template/ ContentPresenter#PART_ContentPresenter">
+    <Setter Property="BorderBrush" Value="{DynamicResource SystemAccentColor}" />
+    <Setter Property="BorderThickness" Value="2" />
+  </Style>
+  <Style Selector="TreeViewItem:focus-visible /template/ Border#PART_LayoutRoot">
+    <Setter Property="BorderBrush" Value="{DynamicResource SystemAccentColor}" />
+    <Setter Property="BorderThickness" Value="2" />
+  </Style>
+  <Style Selector="CheckBox:focus-visible /template/ Border#NormalRectangle">
+    <Setter Property="BorderBrush" Value="{DynamicResource SystemAccentColor}" />
+    <Setter Property="BorderThickness" Value="2" />
+  </Style>
+</Styles>

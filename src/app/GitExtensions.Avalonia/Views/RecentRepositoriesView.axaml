@@ -7,6 +7,11 @@
   <DockPanel Margin="16">
     <TextBlock DockPanel.Dock="Top" Text="Recent repositories" FontSize="20" FontWeight="SemiBold" Margin="0,0,0,12" />
 
+    <StackPanel DockPanel.Dock="Top" Orientation="Horizontal" Spacing="8" Margin="0,0,0,12">
+      <Button x:Name="CloneButton" Content="Clone…" Command="{Binding CloneCommand}" />
+      <Button x:Name="InitButton" Content="Init…" Command="{Binding InitCommand}" />
+    </StackPanel>
+
     <Panel>
     <ListBox x:Name="RecentList" ItemsSource="{Binding Items}" IsVisible="{Binding !IsEmpty}" Tapped="OnTapped">
       <ListBox.KeyBindings>

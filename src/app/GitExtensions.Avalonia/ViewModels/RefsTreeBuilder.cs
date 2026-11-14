@@ -3,7 +3,7 @@ using GitExtensions.Extensibility.Git;
 namespace GitExtensions.Desktop.ViewModels;
 
 /// <summary>A branch or tag as read from the repository.</summary>
-public sealed record RefEntry(RefNodeKind Kind, string Name, ObjectId? ObjectId = null);
+public sealed record RefEntry(RefNodeKind Kind, string Name, ObjectId? ObjectId = null, UpstreamTrack? Track = null);
 
 /// <summary>
 ///  Pure grouping/filter logic for the refs sidebar: no git, no UI thread.
@@ -43,7 +43,7 @@ public static class RefsTreeBuilder
                 .GroupBy(e => e.Name[..Math.Max(e.Name.IndexOf('/'), 0)])
                 .OrderBy(g => g.Key, StringComparer.OrdinalIgnoreCase))
             {
-                RefNodeViewModel remoteNode = new(remote.Key, RefNodeKind.Folder);
+                RefNodeViewModel remoteNode = new(remote.Key, RefNodeKind.Folder) { IsRemoteRoot = true };
                 AddTree(remoteNode, remote, currentBranch: null, prefixLength: remote.Key.Length + 1);
                 group.Children.Add(remoteNode);
             }
@@ -79,7 +79,7 @@ public static class RefsTreeBuilder
             }
 
             bool isCurrent = entry.Kind == RefNodeKind.LocalBranch && entry.Name == currentBranch;
-            container.Children.Add(new RefNodeViewModel(segments[^1], entry.Kind, entry.Name, entry.ObjectId, isCurrent));
+            container.Children.Add(new RefNodeViewModel(segments[^1], entry.Kind, entry.Name, entry.ObjectId, isCurrent) { Track = entry.Track });
         }
 
         SortFoldersFirst(parent);
