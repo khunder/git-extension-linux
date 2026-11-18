@@ -14,60 +14,60 @@
 <a class="skip" href="#main">Skip to content</a>
 <header class="top"><div class="wrap">
 <a class="brand" href="../"><img src="../assets/git-extensions-32.png" alt="" width="28" height="28"> Git Extensions Next</a>
-<nav aria-label="Primary"><a href="../#download">Download</a><a href="../#features">Features</a><a href="./" aria-current="page">Docs</a><a href="https://github.com/khunder/git-extension-linux">GitHub</a></nav>
+<nav aria-label="Primary"><a href="../#download">Download</a><a href="../#features">Features</a><a href="./" aria-current="page">Docs</a><a href="https://github.com/khunder/git-extensions-next">GitHub</a></nav>
 </div></header>
 <main id="main"><div class="wrap doc">
 <nav class="side" aria-label="Documentation"><a href="index.html">Overview</a><a href="install.html" aria-current="page">Install</a><a href="usage.html">Using the app</a><a href="build.html">Build and package</a><a href="troubleshooting.html">Troubleshooting</a></nav>
 <article>
 <h1>Install</h1>
 
-<p class="lead">All packages are self-contained: no .NET runtime is needed, only <code>git</code>. Every file is attached to the <a href="https://github.com/khunder/git-extension-linux/releases/latest">GitHub release</a> together with a <code>SHA256SUMS</code> file.</p>
+<p class="lead">All packages are self-contained: no .NET runtime is needed, only <code>git</code>. Every file is attached to the <a href="https://github.com/khunder/git-extensions-next/releases/latest">GitHub release</a> together with a <code>SHA256SUMS</code> file.</p>
 <h2 id="windows">Windows</h2>
-<p>Windows 10 and 11, x64 and arm64. Install <a href="https://git-scm.com/download/win">Git for Windows</a> first. Windows builds are published starting with the first release after 0.2.0, so the file names below use a <code>&lt;version&gt;</code> placeholder; take them from the <a href="https://github.com/khunder/git-extension-linux/releases/latest">latest release</a>.</p>
+<p>Windows 10 and 11, x64 and arm64. Install Git for Windows first. Windows builds are published starting with the first release after 0.2.0, so the file names below use a <code>&lt;version&gt;</code> placeholder; take them from the <a href="https://github.com/khunder/git-extensions-next/releases/latest">latest release</a>.</p>
 <ul>
-<li><strong>Installer</strong>: <code>git-extensions-&lt;version&gt;-windows-x64-setup.exe</code> (or <code>-arm64-</code>). It installs for the current user by default and needs no administrator rights; choose "for all users" when prompted to install system-wide. It adds a Start menu entry, an optional desktop shortcut and an uninstaller.</li>
-<li><strong>Portable zip</strong>: <code>git-extensions-windows-&lt;version&gt;-x64.zip</code> (or <code>-arm64</code>). Unzip anywhere and run <code>GitExtensions.Avalonia.exe</code>.</li>
+<li><strong>Installer</strong>: <a href="https://github.com/khunder/git-extensions-next/releases/latest"><code>git-extensions-&lt;version&gt;-windows-x64-setup.exe</code></a> (or <code>-arm64-</code>). It installs for the current user by default and needs no administrator rights; choose "for all users" when prompted to install system-wide. It adds a Start menu entry, an optional desktop shortcut and an uninstaller.</li>
+<li><strong>Portable zip</strong>: <a href="https://github.com/khunder/git-extensions-next/releases/latest"><code>git-extensions-windows-&lt;version&gt;-x64.zip</code></a> (or <code>-arm64</code>). Unzip anywhere and run <code>GitExtensions.Avalonia.exe</code>.</li>
 </ul>
 <p>The builds are not code-signed, so Windows SmartScreen may warn on first run. Choose "More info", then "Run anyway". Verify the file against <code>SHA256SUMS</code> first if in doubt:</p>
 <div class="cmd"><pre tabindex="0" aria-label="PowerShell checksum command">Get-FileHash .\git-extensions-&lt;version&gt;-windows-x64-setup.exe -Algorithm SHA256</pre><button type="button" aria-label="Copy PowerShell checksum command to clipboard">Copy</button></div>
 <p>To open a repository from a terminal: <code>GitExtensions.Avalonia.exe C:\path\to\repository</code>.</p>
 
 <h2 id="debian">Ubuntu and Debian</h2>
-<p><a href="https://github.com/khunder/git-extension-linux/releases/download/v0.2.0/git-extensions_0.2.0_amd64.deb">git-extensions_0.2.0_amd64.deb</a> and <a href="https://github.com/khunder/git-extension-linux/releases/download/v0.2.0/git-extensions_0.2.0_arm64.deb">git-extensions_0.2.0_arm64.deb</a>.</p>
-<div class="cmd"><pre tabindex="0" aria-label="Debian install">curl -LO https://github.com/khunder/git-extension-linux/releases/download/v0.2.0/git-extensions_0.2.0_amd64.deb
+<p><a href="https://github.com/khunder/git-extensions-next/releases/download/v0.2.0/git-extensions_0.2.0_amd64.deb">git-extensions_0.2.0_amd64.deb</a> and <a href="https://github.com/khunder/git-extensions-next/releases/download/v0.2.0/git-extensions_0.2.0_arm64.deb">git-extensions_0.2.0_arm64.deb</a>.</p>
+<div class="cmd"><pre tabindex="0" aria-label="Debian install">curl -LO https://github.com/khunder/git-extensions-next/releases/download/v0.2.0/git-extensions_0.2.0_amd64.deb
 sudo apt install ./git-extensions_0.2.0_amd64.deb</pre><button type="button" aria-label="Copy Debian install to clipboard">Copy</button></div>
 <div class="cmd"><pre tabindex="0" aria-label="Debian remove">sudo apt remove git-extensions</pre><button type="button" aria-label="Copy Debian remove to clipboard">Copy</button></div>
 
 <h2 id="fedora">Fedora</h2>
-<p><a href="https://github.com/khunder/git-extension-linux/releases/download/v0.2.0/git-extensions-0.2.0-1.fedora.x86_64.rpm">git-extensions-0.2.0-1.fedora.x86_64.rpm</a> (also <code>.aarch64.rpm</code>).</p>
+<p><a href="https://github.com/khunder/git-extensions-next/releases/download/v0.2.0/git-extensions-0.2.0-1.fedora.x86_64.rpm">git-extensions-0.2.0-1.fedora.x86_64.rpm</a> (also <code>.aarch64.rpm</code>).</p>
 <div class="cmd"><pre tabindex="0" aria-label="Fedora install">sudo dnf install ./git-extensions-0.2.0-1.fedora.x86_64.rpm</pre><button type="button" aria-label="Copy Fedora install to clipboard">Copy</button></div>
 <div class="cmd"><pre tabindex="0" aria-label="Fedora remove">sudo dnf remove git-extensions</pre><button type="button" aria-label="Copy Fedora remove to clipboard">Copy</button></div>
 
 <h2 id="opensuse">openSUSE</h2>
-<p><a href="https://github.com/khunder/git-extension-linux/releases/download/v0.2.0/git-extensions-0.2.0-1.opensuse.x86_64.rpm">git-extensions-0.2.0-1.opensuse.x86_64.rpm</a> (also <code>.aarch64.rpm</code>). The packages are not signed.</p>
+<p><a href="https://github.com/khunder/git-extensions-next/releases/download/v0.2.0/git-extensions-0.2.0-1.opensuse.x86_64.rpm">git-extensions-0.2.0-1.opensuse.x86_64.rpm</a> (also <code>.aarch64.rpm</code>). The packages are not signed.</p>
 <div class="cmd"><pre tabindex="0" aria-label="openSUSE install">sudo zypper --no-gpg-checks install ./git-extensions-0.2.0-1.opensuse.x86_64.rpm</pre><button type="button" aria-label="Copy openSUSE install to clipboard">Copy</button></div>
 <p>On newer zypper: <code>sudo zypper install --allow-unsigned-rpm ./git-extensions-...rpm</code>.</p>
 
 <h2 id="arch">Arch Linux</h2>
-<p><a href="https://github.com/khunder/git-extension-linux/releases/download/v0.2.0/git-extensions-0.2.0-1-x86_64.pkg.tar.zst">git-extensions-0.2.0-1-x86_64.pkg.tar.zst</a>.</p>
+<p><a href="https://github.com/khunder/git-extensions-next/releases/download/v0.2.0/git-extensions-0.2.0-1-x86_64.pkg.tar.zst">git-extensions-0.2.0-1-x86_64.pkg.tar.zst</a>.</p>
 <div class="cmd"><pre tabindex="0" aria-label="Arch install">sudo pacman -U ./git-extensions-0.2.0-1-x86_64.pkg.tar.zst</pre><button type="button" aria-label="Copy Arch install to clipboard">Copy</button></div>
 <div class="cmd"><pre tabindex="0" aria-label="Arch remove">sudo pacman -R git-extensions</pre><button type="button" aria-label="Copy Arch remove to clipboard">Copy</button></div>
 
 <h2 id="appimage">AppImage</h2>
-<p>A portable single file; nothing is installed. <a href="https://github.com/khunder/git-extension-linux/releases/download/v0.2.0/git-extensions-0.2.0-x86_64.AppImage">git-extensions-0.2.0-x86_64.AppImage</a> and <a href="https://github.com/khunder/git-extension-linux/releases/download/v0.2.0/git-extensions-0.2.0-aarch64.AppImage">git-extensions-0.2.0-aarch64.AppImage</a>.</p>
+<p>A portable single file; nothing is installed. <a href="https://github.com/khunder/git-extensions-next/releases/download/v0.2.0/git-extensions-0.2.0-x86_64.AppImage">git-extensions-0.2.0-x86_64.AppImage</a> and <a href="https://github.com/khunder/git-extensions-next/releases/download/v0.2.0/git-extensions-0.2.0-aarch64.AppImage">git-extensions-0.2.0-aarch64.AppImage</a>.</p>
 <div class="cmd"><pre tabindex="0" aria-label="AppImage run">chmod +x git-extensions-0.2.0-x86_64.AppImage
 ./git-extensions-0.2.0-x86_64.AppImage [path-to-repository]</pre><button type="button" aria-label="Copy AppImage run to clipboard">Copy</button></div>
 <p>Without FUSE 2 installed, run it with <code>--appimage-extract-and-run</code>.</p>
 
 <h2 id="tarball">Any other distribution (tarball)</h2>
-<p><a href="https://github.com/khunder/git-extension-linux/releases/download/v0.2.0/git-extensions-linux-0.2.0-x64.tar.gz">git-extensions-linux-0.2.0-x64.tar.gz</a> (also <code>-arm64.tar.gz</code>). No root needed: it installs under <code>~/.local</code>.</p>
+<p><a href="https://github.com/khunder/git-extensions-next/releases/download/v0.2.0/git-extensions-linux-0.2.0-x64.tar.gz">git-extensions-linux-0.2.0-x64.tar.gz</a> (also <code>-arm64.tar.gz</code>). No root needed: it installs under <code>~/.local</code>.</p>
 <div class="cmd"><pre tabindex="0" aria-label="Tarball install">tar xzf git-extensions-linux-0.2.0-x64.tar.gz
 cd git-extensions
 ./install.sh</pre><button type="button" aria-label="Copy Tarball install to clipboard">Copy</button></div>
 <div class="cmd"><pre tabindex="0" aria-label="Tarball uninstall">./install.sh --uninstall</pre><button type="button" aria-label="Copy Tarball uninstall to clipboard">Copy</button></div>
 
 <h2 id="verify">Verify a download</h2>
-<div class="cmd"><pre tabindex="0" aria-label="Linux checksum">curl -LO https://github.com/khunder/git-extension-linux/releases/download/v0.2.0/SHA256SUMS
+<div class="cmd"><pre tabindex="0" aria-label="Linux checksum">curl -LO https://github.com/khunder/git-extensions-next/releases/download/v0.2.0/SHA256SUMS
 sha256sum --check --ignore-missing SHA256SUMS</pre><button type="button" aria-label="Copy Linux checksum to clipboard">Copy</button></div>
 
 <h2 id="run">Run</h2>
@@ -79,9 +79,9 @@ sha256sum --check --ignore-missing SHA256SUMS</pre><button type="button" aria-la
 <footer><div class="wrap">
 <ul>
 <li><a href="../">Home</a></li>
-<li><a href="https://github.com/khunder/git-extension-linux">Repository</a></li>
-<li><a href="https://github.com/khunder/git-extension-linux/issues">Issues</a></li>
-<li><a href="https://github.com/khunder/git-extension-linux/blob/main/LICENSE.md">License (GPL-3.0)</a></li>
+<li><a href="https://github.com/khunder/git-extensions-next">Repository</a></li>
+<li><a href="https://github.com/khunder/git-extensions-next/issues">Issues</a></li>
+<li><a href="https://github.com/khunder/git-extensions-next/blob/main/LICENSE.md">License (GPL-3.0)</a></li>
 <li><a href="https://github.com/gitextensions/gitextensions">Upstream Git Extensions</a></li>
 </ul>
 <p>Git Extensions Next is an unofficial, independent port of Git Extensions. Icons by Yusuke Kamiyamane (CC BY 3.0).</p>
