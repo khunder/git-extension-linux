@@ -157,14 +157,14 @@ jobs:
   rpm-opensuse:
     needs: [meta, publish]
     runs-on: ubuntu-latest
-    container: opensuse/tumbleweed:latest
+    container: opensuse/leap:latest
     strategy:
       matrix:
         include:
           - { arch: x64, rpm_arch: x86_64 }
           - { arch: arm64, rpm_arch: aarch64 }
     steps:
-      # download.opensuse.org mirrors are sometimes briefly out of sync: refresh and install with retries.
+      # The rolling Tumbleweed repositories were intermittently invalid on the runners, so build on Leap (static repositories); the rpm only packages a prebuilt tree. Retry in case a mirror is briefly out of sync.
       - run: |
           for attempt in 1 2 3 4 5; do
             zypper --non-interactive clean --all || true
@@ -295,7 +295,7 @@ jobs:
   smoke-opensuse:
     needs: [meta, rpm-opensuse]
     runs-on: ubuntu-latest
-    container: opensuse/tumbleweed:latest
+    container: opensuse/leap:latest
     steps:
       - uses: actions/checkout@v4
       - uses: actions/download-artifact@v4
