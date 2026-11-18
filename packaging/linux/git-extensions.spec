@@ -21,7 +21,7 @@ Version:        %{ge_version}
 Release:        %{ge_release}
 Summary:        Graphical Git client (Git Extensions Next)
 License:        GPL-3.0-or-later
-URL:            https://github.com/khunder/git-extensions-linux
+URL:            https://github.com/khunder/git-extensions-next
 AutoReqProv:    no
 ExclusiveArch:  x86_64 aarch64
 
