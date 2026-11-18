@@ -3,10 +3,10 @@
 # Repackages the prebuilt, self-contained tarball (git-extensions-linux-<version>-<x64|arm64>.tar.gz, produced by
 # build-tarball.sh) as an Arch package; nothing is compiled here. build-arch.sh places the tarball next to this file.
 #
-#   GE_VERSION=0.7.0 makepkg -f   # run as a non-root user, with the tarball in the same directory
+#   GE_VERSION=0.7.1 makepkg -f   # run as a non-root user, with the tarball in the same directory
 
 pkgname=git-extensions
-pkgver=${GE_VERSION:-0.7.0}
+pkgver=${GE_VERSION:-0.7.1}
 pkgver=${pkgver//-/_}
 pkgrel=1
 pkgdesc='Graphical Git client (Git Extensions Next)'
@@ -16,8 +16,8 @@ license=('GPL-3.0-or-later')
 depends=('git' 'glibc' 'gcc-libs' 'zlib' 'openssl' 'libx11' 'libxcursor' 'libxi' 'libxrandr' 'fontconfig' 'freetype2' 'libpng' 'libice' 'libsm')
 optdepends=('openssh: SSH remotes')
 options=('!strip' '!debug' '!lto' '!emptydirs')
-source_x86_64=("git-extensions-linux-${GE_VERSION:-0.7.0}-x64.tar.gz")
-source_aarch64=("git-extensions-linux-${GE_VERSION:-0.7.0}-arm64.tar.gz")
+source_x86_64=("git-extensions-linux-${GE_VERSION:-0.7.1}-x64.tar.gz")
+source_aarch64=("git-extensions-linux-${GE_VERSION:-0.7.1}-arm64.tar.gz")
 sha256sums_x86_64=('SKIP')
 sha256sums_aarch64=('SKIP')
 

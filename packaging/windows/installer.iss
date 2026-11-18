@@ -1,7 +1,7 @@
 ; Inno Setup script for the Windows installer. Driven by build.ps1, which passes:
-;   /DAppVersion=0.7.0 /DArch=x64|arm64 /DPublishDir=<published tree> /DOutDir=<output dir>
+;   /DAppVersion=0.7.1 /DArch=x64|arm64 /DPublishDir=<published tree> /DOutDir=<output dir>
 #ifndef AppVersion
-  #define AppVersion "0.7.0"
+  #define AppVersion "0.7.1"
 #endif
 #ifndef Arch
   #define Arch "x64"

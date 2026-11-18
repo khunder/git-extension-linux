@@ -61,7 +61,7 @@ Download the package for your distribution from the [**latest GitHub release**](
 
 With the GitHub CLI you can also fetch an artifact directly: `gh release download --repo khunder/git-extensions-next --pattern '*.deb'` (without a tag it downloads the latest release).
 
-The commands below use `$VERSION`. Set it to the latest release first (or replace it with a specific version such as `0.7.0`):
+The commands below use `$VERSION`. Set it to the latest release first (or replace it with a specific version such as `0.7.1`):
 
 ```bash
 VERSION=$(curl -fsSL -o /dev/null -w '%{url_effective}' https://github.com/khunder/git-extensions-next/releases/latest | sed -E 's#.*/tag/v?##')
@@ -135,8 +135,8 @@ sha256sum --check --ignore-missing SHA256SUMS
 
 Windows 10 and 11 (x64 and arm64) are supported as a secondary platform. Git for Windows must be installed. Both downloads are self-contained (no .NET runtime needed):
 
-- [`git-extensions-0.7.0-windows-x64-setup.exe`](https://github.com/khunder/git-extensions-next/releases/download/v0.7.0/git-extensions-0.7.0-windows-x64-setup.exe) (or [`arm64`](https://github.com/khunder/git-extensions-next/releases/download/v0.7.0/git-extensions-0.7.0-windows-arm64-setup.exe)): installer (per user by default, no admin rights needed)
-- [`git-extensions-windows-0.7.0-x64.zip`](https://github.com/khunder/git-extensions-next/releases/download/v0.7.0/git-extensions-windows-0.7.0-x64.zip) (or [`arm64`](https://github.com/khunder/git-extensions-next/releases/download/v0.7.0/git-extensions-windows-0.7.0-arm64.zip)): portable, unzip anywhere and run `GitExtensions.Avalonia.exe`
+- [`git-extensions-0.7.1-windows-x64-setup.exe`](https://github.com/khunder/git-extensions-next/releases/download/v0.7.1/git-extensions-0.7.1-windows-x64-setup.exe) (or [`arm64`](https://github.com/khunder/git-extensions-next/releases/download/v0.7.1/git-extensions-0.7.1-windows-arm64-setup.exe)): installer (per user by default, no admin rights needed)
+- [`git-extensions-windows-0.7.1-x64.zip`](https://github.com/khunder/git-extensions-next/releases/download/v0.7.1/git-extensions-windows-0.7.1-x64.zip) (or [`arm64`](https://github.com/khunder/git-extensions-next/releases/download/v0.7.1/git-extensions-windows-0.7.1-arm64.zip)): portable, unzip anywhere and run `GitExtensions.Avalonia.exe`
 
 ### Run
 
@@ -195,7 +195,7 @@ The Avalonia UI tests run headless and use real temporary git repositories. The 
 
 ## Known limitations
 
-This is an early release (0.7.0). Not available yet:
+This is an early release (0.7.1). Not available yet:
 
 - Plugins (the plugin interfaces are kept, but plugins are not loaded or ported)
 - Scripts

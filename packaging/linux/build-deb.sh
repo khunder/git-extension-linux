@@ -1,15 +1,15 @@
 #!/usr/bin/env bash
 # Builds a .deb (Debian, Ubuntu and derivatives) from a published tree.
 #
-#   VERSION=0.7.0 ARCH=amd64 PUBLISH_DIR=<published tree> packaging/linux/build-deb.sh
+#   VERSION=0.7.1 ARCH=amd64 PUBLISH_DIR=<published tree> packaging/linux/build-deb.sh
 #
-# Inputs: VERSION (default 0.7.0), ARCH (amd64 default | arm64), PUBLISH_DIR (required), OUT_DIR (default artifacts/dist).
+# Inputs: VERSION (default 0.7.1), ARCH (amd64 default | arm64), PUBLISH_DIR (required), OUT_DIR (default artifacts/dist).
 # Output: $OUT_DIR/git-extensions_${VERSION}_${ARCH}.deb
 # Uses dpkg-deb when available, otherwise assembles the archive with ar/tar (the result is identical in structure).
 set -euo pipefail
 source "$(dirname "${BASH_SOURCE[0]}")/common.sh"
 
-VERSION="${VERSION:-0.7.0}"
+VERSION="${VERSION:-0.7.1}"
 ARCH="${ARCH:-amd64}"
 OUT_DIR="${OUT_DIR:-$repo_root/artifacts/dist}"
 require_env PUBLISH_DIR

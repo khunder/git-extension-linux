@@ -1,6 +1,6 @@
 # Builds the Windows release artifacts: a portable zip and (when Inno Setup's ISCC.exe is found) a setup installer.
 #
-#   pwsh packaging/windows/build.ps1 [-Version 0.7.0] [-Arch x64|arm64] [-OutDir artifacts/dist] [-SkipInstaller]
+#   pwsh packaging/windows/build.ps1 [-Version 0.7.1] [-Arch x64|arm64] [-OutDir artifacts/dist] [-SkipInstaller]
 #
 # Output:
 #   <OutDir>/git-extensions-windows-<Version>-<Arch>.zip
@@ -9,7 +9,7 @@
 # Both are self-contained (no .NET runtime needed); Git for Windows must be installed separately.
 [CmdletBinding()]
 param(
-    [string]$Version = '0.7.0',
+    [string]$Version = '0.7.1',
     [ValidateSet('x64', 'arm64')][string]$Arch = 'x64',
     [string]$OutDir,
     [switch]$SkipInstaller
