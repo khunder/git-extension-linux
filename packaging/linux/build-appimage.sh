@@ -1,10 +1,10 @@
 #!/usr/bin/env bash
 # Builds a portable AppImage from the published, self-contained tree (the .NET runtime is bundled).
 #
-#   VERSION=0.2.0 ARCH=x64 PUBLISH_DIR=<published tree> packaging/linux/build-appimage.sh
+#   VERSION=0.7.0 ARCH=x64 PUBLISH_DIR=<published tree> packaging/linux/build-appimage.sh
 #
 # Inputs (environment):
-#   VERSION      package version (default 0.2.0)
+#   VERSION      package version (default 0.7.0)
 #   ARCH         x64 (default) or arm64
 #   PUBLISH_DIR  output of publish.sh; when empty the app is published first
 #   OUT_DIR      output directory (default artifacts/dist)
@@ -20,7 +20,7 @@ source "$(dirname "${BASH_SOURCE[0]}")/common.sh"
 APPIMAGETOOL_VERSION=1.9.1
 RUNTIME_TAG=20251108
 
-VERSION="${VERSION:-0.2.0}"
+VERSION="${VERSION:-0.7.0}"
 ARCH="${ARCH:-x64}"
 OUT_DIR="${OUT_DIR:-$repo_root/artifacts/dist}"
 TOOLS_DIR="${TOOLS_DIR:-$repo_root/artifacts/appimage-tools}"

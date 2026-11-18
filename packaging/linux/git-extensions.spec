@@ -1,9 +1,9 @@
 # One spec for Fedora (and RHEL-like) and openSUSE. It packages an already published, self-contained tree that
 # build-rpm.sh stages first, so nothing is compiled here.
 #
-#   rpmbuild -bb --target x86_64 --define "ge_version 0.2.0" --define "ge_stage /path/to/stage" git-extensions.spec
+#   rpmbuild -bb --target x86_64 --define "ge_version 0.7.0" --define "ge_stage /path/to/stage" git-extensions.spec
 
-%{!?ge_version: %global ge_version 0.2.0}
+%{!?ge_version: %global ge_version 0.7.0}
 %{!?ge_release: %global ge_release 1}
 %{!?ge_stage: %{error:define ge_stage (output of stage_root)}}
 
@@ -94,3 +94,6 @@ cp -a %{ge_stage}/. %{buildroot}/
 
 * Sat Nov 14 2026 Git Extensions Next <noreply@github.com> - 0.2.0-1
 - Platform upgrade to .NET 11 and Avalonia 12
+
+* Wed Nov 18 2026 Git Extensions Next <noreply@github.com> - 0.7.0-1
+- Windows builds (installer and zip), renamed to Git Extensions Next, documentation site

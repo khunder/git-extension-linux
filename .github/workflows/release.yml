@@ -6,7 +6,7 @@ on:
   workflow_dispatch:
     inputs:
       version:
-        description: 'Version to release, without the leading v (for example 0.2.0). The tag v<version> is created if missing.'
+        description: 'Version to release, without the leading v (for example 0.7.0). The tag v<version> is created if missing.'
         required: true
         type: string
 

@@ -24,10 +24,10 @@
     <!-- No libicu dependency on the target machine. -->
     <InvariantGlobalization>true</InvariantGlobalization>
     <!-- Release version, shown in the About dialog (read from AssemblyInformationalVersion). -->
-    <Version>0.2.0</Version>
-    <AssemblyVersion>0.2.0.0</AssemblyVersion>
-    <FileVersion>0.2.0.0</FileVersion>
-    <InformationalVersion>0.2.0</InformationalVersion>
+    <Version>0.7.0</Version>
+    <AssemblyVersion>0.7.0.0</AssemblyVersion>
+    <FileVersion>0.7.0.0</FileVersion>
+    <InformationalVersion>0.7.0</InformationalVersion>
     <Company>Git Extensions</Company>
     <Product>Git Extensions Next</Product>
     <GenerateAssemblyInfo>true</GenerateAssemblyInfo>
