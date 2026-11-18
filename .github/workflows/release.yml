@@ -348,8 +348,82 @@ jobs:
           set -e
           test "$code" -eq 124
 
+  windows:
+    needs: meta
+    runs-on: ${{ matrix.runner }}
+    strategy:
+      fail-fast: true
+      matrix:
+        include:
+          - { arch: x64, runner: windows-latest }
+          - { arch: arm64, runner: windows-latest }
+    steps:
+      - uses: actions/checkout@v4
+      - uses: actions/setup-dotnet@v4
+        with:
+          global-json-file: global.json
+      - name: Install Inno Setup
+        shell: pwsh
+        run: choco install innosetup --no-progress -y
+      - name: Build zip and installer
+        shell: pwsh
+        env:
+          VERSION: ${{ needs.meta.outputs.version }}
+        run: ./packaging/windows/build.ps1 -Version $env:VERSION -Arch ${{ matrix.arch }} -OutDir "$PWD/dist"
+      - name: Check the artifacts
+        env:
+          VERSION: ${{ needs.meta.outputs.version }}
+        run: |
+          set -euxo pipefail
+          test -s "dist/git-extensions-windows-$VERSION-${{ matrix.arch }}.zip"
+          test -s "dist/git-extensions-$VERSION-windows-${{ matrix.arch }}-setup.exe"
+      - uses: actions/upload-artifact@v4
+        with:
+          name: pkg-windows-${{ matrix.arch }}
+          path: |
+            dist/*.zip
+            dist/*-setup.exe
+          if-no-files-found: error
+
+  # The x64 build runs here (windows-latest is x64): unzip, start the app and check that it stays up.
+  smoke-windows:
+    needs: [meta, windows]
+    runs-on: windows-latest
+    steps:
+      - uses: actions/download-artifact@v4
+        with:
+          name: pkg-windows-x64
+          path: ${{ runner.temp }}/pkg
+      - name: Start the portable build
+        shell: pwsh
+        env:
+          VERSION: ${{ needs.meta.outputs.version }}
+        run: |
+          $dir = Join-Path $env:RUNNER_TEMP 'unzipped'
+          Expand-Archive "$env:RUNNER_TEMP/pkg/git-extensions-windows-$env:VERSION-x64.zip" -DestinationPath $dir
+          $exe = Join-Path $dir 'GitExtensions/GitExtensions.Avalonia.exe'
+          if (-not (Test-Path $exe)) { throw "missing $exe" }
+          if (-not (Test-Path (Join-Path $dir 'GitExtensions/GitExtensions.AskPass.exe'))) { throw 'missing askpass helper' }
+          $p = Start-Process $exe -PassThru
+          Start-Sleep -Seconds 10
+          if ($p.HasExited) { throw "the app exited early with code $($p.ExitCode)" }
+          Stop-Process $p -Force
+      - name: Silent install and uninstall
+        shell: pwsh
+        env:
+          VERSION: ${{ needs.meta.outputs.version }}
+        run: |
+          $target = Join-Path $env:RUNNER_TEMP 'installed'
+          $setup = "$env:RUNNER_TEMP/pkg/git-extensions-$env:VERSION-windows-x64-setup.exe"
+          Start-Process $setup -ArgumentList '/VERYSILENT', '/SUPPRESSMSGBOXES', '/NORESTART', "/DIR=$target" -Wait
+          if (-not (Test-Path (Join-Path $target 'GitExtensions.Avalonia.exe'))) { throw 'installer did not install the app' }
+          $unins = Get-ChildItem $target -Filter 'unins*.exe' | Select-Object -First 1
+          Start-Process $unins.FullName -ArgumentList '/VERYSILENT', '/SUPPRESSMSGBOXES' -Wait
+          Start-Sleep -Seconds 2
+          if (Test-Path (Join-Path $target 'GitExtensions.Avalonia.exe')) { throw 'uninstall left the app behind' }
+
   release:
-    needs: [meta, tarball, deb, rpm-fedora, rpm-opensuse, arch, appimage, smoke-deb, smoke-fedora, smoke-opensuse, smoke-arch, smoke-appimage]
+    needs: [meta, windows, smoke-windows, tarball, deb, rpm-fedora, rpm-opensuse, arch, appimage, smoke-deb, smoke-fedora, smoke-opensuse, smoke-arch, smoke-appimage]
     runs-on: ubuntu-latest
     permissions:
       contents: write
@@ -378,6 +452,10 @@ jobs:
             "git-extensions-${VERSION//-/_}-1-x86_64.pkg.tar.zst"
             "git-extensions-$VERSION-x86_64.AppImage"
             "git-extensions-$VERSION-aarch64.AppImage"
+            "git-extensions-windows-$VERSION-x64.zip"
+            "git-extensions-windows-$VERSION-arm64.zip"
+            "git-extensions-$VERSION-windows-x64-setup.exe"
+            "git-extensions-$VERSION-windows-arm64-setup.exe"
           )
           for f in "${expected[@]}"; do test -s "$f" || { echo "missing artifact: $f"; exit 1; }; done
           sha256sum "${expected[@]}" > SHA256SUMS

@@ -124,6 +124,13 @@ curl -LO https://github.com/khunder/git-extension-linux/releases/download/v0.2.0
 sha256sum --check --ignore-missing SHA256SUMS
 ```
 
+### Windows
+
+Windows 10 and 11 (x64 and arm64) are supported as a secondary platform. [Git for Windows](https://git-scm.com/download/win) must be installed. Both downloads are self-contained (no .NET runtime needed):
+
+- `git-extensions-<version>-windows-x64-setup.exe` (or `-arm64-`): installer (per user by default, no admin rights needed)
+- `git-extensions-windows-<version>-x64.zip` (or `-arm64`): portable, unzip anywhere and run `GitExtensions.Avalonia.exe`
+
 ### Run
 
 Start "Git Extensions" from the application menu, or from a terminal:
@@ -148,6 +155,12 @@ To build the self-contained tarball (see [packaging/linux/README.md](packaging/l
 ```bash
 packaging/linux/build-tarball.sh                  # linux-x64
 RID=linux-arm64 packaging/linux/build-tarball.sh  # linux-arm64
+```
+
+To build the Windows zip and installer (needs PowerShell 7; the installer also needs [Inno Setup 6](https://jrsoftware.org/isinfo.php)):
+
+```powershell
+pwsh packaging/windows/build.ps1 -Arch x64    # or arm64; add -SkipInstaller for the zip only
 ```
 
 ## Tests
@@ -182,7 +195,7 @@ This is an early release (0.2.0). Not available yet:
 - Hotkeys editor
 - Build server integration
 - Several less common settings pages and dialogs from the original application
-- Only Linux is targeted; there are no Windows or macOS builds
+- Linux is the primary target. Windows builds are new and less tested; there are no macOS builds
 
 Bug reports and pull requests are welcome.
 

@@ -11,6 +11,14 @@
     <RootNamespace>GitExtensions.Desktop</RootNamespace>
     <AvaloniaUseCompiledBindingsByDefault>true</AvaloniaUseCompiledBindingsByDefault>
     <ApplicationManifest>app.manifest</ApplicationManifest>
+  </PropertyGroup>
+
+  <PropertyGroup Condition="'$(OS)' == 'Windows_NT'">
+    <!-- Embedded into the exe by the Windows build; Linux/macOS hosts do not support it. -->
+    <ApplicationIcon>$(RepoRoot)\packaging\windows\git-extensions.ico</ApplicationIcon>
+  </PropertyGroup>
+
+  <PropertyGroup>
     <!-- The repository disables publishing globally (IsPublishable=false); this app is meant to be published. -->
     <IsPublishable>true</IsPublishable>
     <!-- No libicu dependency on the target machine. -->
