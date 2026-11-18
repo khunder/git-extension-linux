@@ -99,7 +99,7 @@ public class SettingsTests
         vm.IsOpen.Should().BeTrue();
         vm.SelectedPage!.Id.Should().Be(SettingsPageIds.Checklist);
         vm.WindowTitle.Should().Be("Settings - Checklist");
-        vm.Pages.Select(p => p.Title).Should().Equal("Git Extensions", "Git", "Plugins");
+        vm.Pages.Select(p => p.Title).Should().Equal("Git Extensions Next", "Git", "Plugins");
         vm.Pages[0].Children.Select(p => p.Title).Should().Equal(
             "General", "Appearance", "Revision links", "Build server integration", "Scripts", "Hotkeys", "Shell extension", "Advanced", "Detailed", "SSH");
         vm.FindPage(SettingsPageIds.Appearance)!.Children.Select(p => p.Title).Should().Equal("Sorting", "Colors", "Fonts", "Console style");

@@ -19,7 +19,7 @@
 Name:           git-extensions
 Version:        %{ge_version}
 Release:        %{ge_release}
-Summary:        Graphical Git client (Git Extensions for Linux)
+Summary:        Graphical Git client (Git Extensions Next)
 License:        GPL-3.0-or-later
 URL:            https://github.com/khunder/git-extensions-linux
 AutoReqProv:    no
@@ -89,8 +89,8 @@ cp -a %{ge_stage}/. %{buildroot}/
 /usr/share/icons/hicolor/*/apps/git-extensions.*
 
 %changelog
-* Sat Nov 14 2026 Git Extensions for Linux <noreply@github.com> - 0.1.0-1
+* Sat Nov 14 2026 Git Extensions Next <noreply@github.com> - 0.1.0-1
 - First release of the Linux build with the Avalonia user interface
 
-* Sat Nov 14 2026 Git Extensions for Linux <noreply@github.com> - 0.2.0-1
+* Sat Nov 14 2026 Git Extensions Next <noreply@github.com> - 0.2.0-1
 - Platform upgrade to .NET 11 and Avalonia 12

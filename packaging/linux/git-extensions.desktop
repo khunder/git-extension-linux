@@ -1,8 +1,8 @@
 [Desktop Entry]
 Type=Application
-Name=Git Extensions
+Name=Git Extensions Next
 GenericName=Git Client
-Comment=Browse history, stage changes and commit with Git Extensions
+Comment=Browse history, stage changes and commit with Git Extensions Next
 Exec=GitExtensions.Avalonia %f
 Icon=git-extensions
 Terminal=false

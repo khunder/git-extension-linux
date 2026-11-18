@@ -26,7 +26,7 @@ public sealed partial class MainWindowViewModel
     private PullAction _defaultPullAction;
 
     /// <summary>
-    ///  "&lt;repository&gt; (&lt;branch&gt;) - Git Extensions", or just "Git Extensions" on the dashboard.
+    ///  "&lt;repository&gt; (&lt;branch&gt;) - Git Extensions Next", or just "Git Extensions" on the dashboard.
     /// </summary>
     public string Title
     {
@@ -34,7 +34,7 @@ public sealed partial class MainWindowViewModel
         {
             if (!HasOpenedRepository)
             {
-                return "Git Extensions";
+                return "Git Extensions Next";
             }
 
             string name = Path.GetFileName(Path.TrimEndingDirectorySeparator(RepositoryPath));
@@ -43,7 +43,7 @@ public sealed partial class MainWindowViewModel
                 name = RepositoryPath;
             }
 
-            return string.IsNullOrEmpty(Branch) ? $"{name} - Git Extensions" : $"{name} ({Branch}) - Git Extensions";
+            return string.IsNullOrEmpty(Branch) ? $"{name} - Git Extensions Next" : $"{name} ({Branch}) - Git Extensions Next";
         }
     }
 

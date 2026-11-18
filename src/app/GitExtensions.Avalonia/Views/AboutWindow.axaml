@@ -1,11 +1,11 @@
 <Window xmlns="https://github.com/avaloniaui"
         xmlns:x="http://schemas.microsoft.com/winfx/2006/xaml"
         x:Class="GitExtensions.Desktop.Views.AboutWindow"
-        Title="About Git Extensions"
+        Title="About Git Extensions Next"
         Width="420" SizeToContent="Height" CanResize="False"
         WindowStartupLocation="CenterOwner">
   <StackPanel Margin="24" Spacing="10">
-    <TextBlock Text="Git Extensions" FontSize="22" FontWeight="SemiBold" />
+    <TextBlock Text="Git Extensions Next" FontSize="22" FontWeight="SemiBold" />
     <TextBlock x:Name="VersionText" Opacity="0.75" />
     <TextBlock TextWrapping="Wrap" Text="A graphical user interface for Git that makes working with Git repositories more intuitive. This is the cross-platform edition." />
     <TextBlock x:Name="LicenseText" Opacity="0.75" Text="Licensed under the GNU General Public License v3." />

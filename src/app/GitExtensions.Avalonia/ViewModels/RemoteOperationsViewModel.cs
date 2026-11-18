@@ -328,7 +328,7 @@ public sealed partial class RemoteOperationsViewModel : ObservableObject
             || text.Contains("Permission denied", StringComparison.OrdinalIgnoreCase))
         {
             text += askPass is null
-                ? " Authentication is required: Git Extensions never prompts, so configure a credential helper or an SSH key."
+                ? " Authentication is required: Git Extensions Next never prompts, so configure a credential helper or an SSH key."
                 : askPass.UserCancelled
                     ? " The credential prompt was cancelled."
                     : " Authentication failed: check the credentials you entered.";

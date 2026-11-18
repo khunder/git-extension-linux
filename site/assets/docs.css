@@ -1,0 +1,19 @@
+.doc{display:grid;grid-template-columns:200px minmax(0,1fr);gap:2rem;padding-top:1.5rem;padding-bottom:2rem}
+.doc .side{position:sticky;top:1rem;align-self:start;display:flex;flex-direction:column;gap:.15rem}
+.doc .side a{padding:.4rem .7rem;border-radius:8px;text-decoration:none;color:var(--muted)}
+.doc .side a:hover{color:var(--accent);background:var(--card)}
+.doc .side a[aria-current="page"]{background:var(--note);color:var(--fg);font-weight:600}
+.doc article{min-width:0;max-width:760px}
+.doc h1{font-size:2rem;margin:.2rem 0 .75rem;line-height:1.2}
+.doc h2{font-size:1.4rem;margin:2rem 0 .5rem;scroll-margin-top:1rem}
+.doc ul{padding-left:1.2rem}
+.doc li{margin:.25rem 0}
+.linkcard{display:block;color:var(--fg);text-decoration:none}
+.linkcard:hover{border-color:var(--accent)}
+.doc table{border-collapse:collapse;width:100%;font-size:.95rem;display:block;overflow-x:auto}
+.doc th,.doc td{border:1px solid var(--border);padding:.45rem .7rem;text-align:left;vertical-align:top}
+.doc th{background:var(--card)}
+@media (max-width:760px){
+  .doc{grid-template-columns:minmax(0,1fr);gap:1rem}
+  .doc .side{position:static;flex-direction:row;flex-wrap:wrap}
+}

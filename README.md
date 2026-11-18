@@ -2,17 +2,17 @@
   <img src="packaging/linux/icons/git-extensions-128.png" alt="Git Extensions logo" width="96" height="96">
 </p>
 
-# Git Extensions for Linux
+# Git Extensions Next
 
 [![Release](https://img.shields.io/github/v/release/khunder/git-extension-linux?sort=semver)](https://github.com/khunder/git-extension-linux/releases/latest)
 [![CI](https://github.com/khunder/git-extension-linux/actions/workflows/ci.yml/badge.svg)](https://github.com/khunder/git-extension-linux/actions/workflows/ci.yml)
 [![License: GPL v3](https://img.shields.io/badge/license-GPL--3.0-blue.svg)](LICENSE.md)
 
-A native Linux port of [Git Extensions](https://github.com/gitextensions/gitextensions), the graphical Git client.
+A cross-platform (Linux and Windows) port of [Git Extensions](https://github.com/gitextensions/gitextensions), the graphical Git client, with a new native user interface.
 
-Git Extensions was written for Windows with WinForms. This project takes the portable core of Git Extensions (`GitCommands`, `GitExtUtils` and the plugin interfaces) and puts a new user interface on top of it, built with [Avalonia 12](https://avaloniaui.net/), a cross-platform .NET UI framework (running on .NET 11). The WinForms UI is not used any more, so the application runs natively on Linux, with no Wine and no Mono.
+Git Extensions was written for Windows with WinForms. This project takes the portable core of Git Extensions (`GitCommands`, `GitExtUtils` and the plugin interfaces) and puts a new user interface on top of it, built with [Avalonia 12](https://avaloniaui.net/), a cross-platform .NET UI framework (running on .NET 11). The WinForms UI is not used any more, so the application runs natively on Linux and Windows, with no Wine and no Mono.
 
-- Website: <https://khunder.github.io/git-extension-linux/>
+- Website and documentation: <https://khunder.github.io/git-extension-linux/> (docs: <https://khunder.github.io/git-extension-linux/docs/>)
 - Releases: <https://github.com/khunder/git-extension-linux/releases>
 - Issues: <https://github.com/khunder/git-extension-linux/issues>
 
@@ -133,7 +133,7 @@ Windows 10 and 11 (x64 and arm64) are supported as a secondary platform. [Git fo
 
 ### Run
 
-Start "Git Extensions" from the application menu, or from a terminal:
+Start "Git Extensions Next" from the application menu, or from a terminal:
 
 ```bash
 git-extensions [path/to/repository]

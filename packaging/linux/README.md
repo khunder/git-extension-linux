@@ -1,6 +1,6 @@
 # Linux packaging (Avalonia UI)
 
-Git Extensions for Linux is shipped as self-contained builds of `GitExtensions.Avalonia` (plus the `GitExtensions.AskPass` helper): the .NET runtime is bundled, the only hard requirement besides the native libraries listed below is `git`. Invariant globalization is enabled, so there is no `libicu` dependency.
+Git Extensions Next is shipped as self-contained builds of `GitExtensions.Avalonia` (plus the `GitExtensions.AskPass` helper): the .NET runtime is bundled, the only hard requirement besides the native libraries listed below is `git`. Invariant globalization is enabled, so there is no `libicu` dependency.
 
 Packages are not built by hand: every release is produced by the [Release workflow](../../.github/workflows/release.yml) and published as assets of the [GitHub release](https://github.com/khunder/git-extension-linux/releases/latest). Download them from there (version 0.2.0 shown; builds exist for x86-64 and arm64):
 

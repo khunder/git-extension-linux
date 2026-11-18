@@ -1,0 +1,71 @@
+<!doctype html>
+<html lang="en">
+<head>
+<meta charset="utf-8">
+<meta name="viewport" content="width=device-width, initial-scale=1">
+<title>Build and package - Git Extensions Next docs</title>
+<meta name="description" content="Build Git Extensions Next from source, run the tests and produce release packages.">
+<meta name="color-scheme" content="light dark">
+<link rel="icon" type="image/png" href="../assets/git-extensions-32.png">
+<link rel="stylesheet" href="../assets/style.css">
+<link rel="stylesheet" href="../assets/docs.css">
+</head>
+<body>
+<a class="skip" href="#main">Skip to content</a>
+<header class="top"><div class="wrap">
+<a class="brand" href="../"><img src="../assets/git-extensions-32.png" alt="" width="28" height="28"> Git Extensions Next</a>
+<nav aria-label="Primary"><a href="../#download">Download</a><a href="../#features">Features</a><a href="./" aria-current="page">Docs</a><a href="https://github.com/khunder/git-extension-linux">GitHub</a></nav>
+</div></header>
+<main id="main"><div class="wrap doc">
+<nav class="side" aria-label="Documentation"><a href="index.html">Overview</a><a href="install.html">Install</a><a href="usage.html">Using the app</a><a href="build.html" aria-current="page">Build and package</a><a href="troubleshooting.html">Troubleshooting</a></nav>
+<article>
+<h1>Build and package</h1>
+
+<p class="lead">Requirements: the <a href="https://dotnet.microsoft.com/download">.NET 11 SDK</a> and <code>git</code>. The same commands work on Linux and Windows.</p>
+<h2>Build and run</h2>
+<div class="cmd"><pre tabindex="0" aria-label="Build and run">git clone https://github.com/khunder/git-extension-linux.git
+cd git-extension-linux
+dotnet build GitExtensions.slnx
+dotnet run --project src/app/GitExtensions.Avalonia -- &lt;repo path&gt;</pre><button type="button" aria-label="Copy Build and run to clipboard">Copy</button></div>
+<h2>Tests</h2>
+<div class="cmd"><pre tabindex="0" aria-label="Run tests">dotnet test GitExtensions.slnx</pre><button type="button" aria-label="Copy Run tests to clipboard">Copy</button></div>
+<p>The Avalonia UI tests run headless (no display needed) and use real temporary Git repositories. The render tests also write the screenshots used on this website.</p>
+<h2>Linux packages</h2>
+<p>Produced by the scripts in <code>packaging/linux</code>; see its README for details.</p>
+<div class="cmd"><pre tabindex="0" aria-label="Linux tarball">packaging/linux/build-tarball.sh                  # linux-x64
+RID=linux-arm64 packaging/linux/build-tarball.sh  # linux-arm64</pre><button type="button" aria-label="Copy Linux tarball to clipboard">Copy</button></div>
+<h2>Windows zip and installer</h2>
+<p>Needs PowerShell 7. The installer step also needs <a href="https://jrsoftware.org/isinfo.php">Inno Setup 6</a>; without it only the zip is built.</p>
+<div class="cmd"><pre tabindex="0" aria-label="Windows build">pwsh packaging/windows/build.ps1 -Arch x64    # or arm64; add -SkipInstaller for the zip only</pre><button type="button" aria-label="Copy Windows build to clipboard">Copy</button></div>
+<p>Output goes to <code>artifacts/dist</code>: <code>git-extensions-windows-&lt;version&gt;-&lt;arch&gt;.zip</code> and <code>git-extensions-&lt;version&gt;-windows-&lt;arch&gt;-setup.exe</code>.</p>
+<h2>Releases</h2>
+<p>Pushing a tag <code>v&lt;version&gt;</code> (or running the Release workflow manually) builds every package, smoke-tests them (clean Linux images and a Windows runner), writes <code>SHA256SUMS</code> and creates the GitHub release.</p>
+<h2>Repository layout</h2>
+<table>
+<thead><tr><th>Path</th><th>Content</th></tr></thead>
+<tbody>
+<tr><td><code>src/app/GitExtensions.Avalonia</code></td><td>The Avalonia application (views, view-models, styles, assets)</td></tr>
+<tr><td><code>src/app/GitCommands</code></td><td>Portable core: running Git, parsing output, settings</td></tr>
+<tr><td><code>src/app/GitExtUtils</code></td><td>Shared utilities</td></tr>
+<tr><td><code>src/app/GitExtensions.AskPass</code></td><td>Credential prompt helper</td></tr>
+<tr><td><code>src/plugins/GitUIPluginInterfaces</code></td><td>Plugin interfaces</td></tr>
+<tr><td><code>tests/</code></td><td>Unit and headless UI tests</td></tr>
+<tr><td><code>packaging/linux</code>, <code>packaging/windows</code></td><td>Package builders</td></tr>
+<tr><td><code>site/</code></td><td>This website (deployed by the Pages workflow)</td></tr>
+</tbody></table>
+
+</article>
+</div></main>
+<footer><div class="wrap">
+<ul>
+<li><a href="../">Home</a></li>
+<li><a href="https://github.com/khunder/git-extension-linux">Repository</a></li>
+<li><a href="https://github.com/khunder/git-extension-linux/issues">Issues</a></li>
+<li><a href="https://github.com/khunder/git-extension-linux/blob/main/LICENSE.md">License (GPL-3.0)</a></li>
+<li><a href="https://github.com/gitextensions/gitextensions">Upstream Git Extensions</a></li>
+</ul>
+<p>Git Extensions Next is an unofficial, independent port of Git Extensions. Icons by Yusuke Kamiyamane (CC BY 3.0).</p>
+</div></footer>
+<script src="../assets/site.js" defer></script>
+</body>
+</html>

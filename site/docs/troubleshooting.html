@@ -1,0 +1,53 @@
+<!doctype html>
+<html lang="en">
+<head>
+<meta charset="utf-8">
+<meta name="viewport" content="width=device-width, initial-scale=1">
+<title>Troubleshooting - Git Extensions Next docs</title>
+<meta name="description" content="Fixes for common problems with Git Extensions Next.">
+<meta name="color-scheme" content="light dark">
+<link rel="icon" type="image/png" href="../assets/git-extensions-32.png">
+<link rel="stylesheet" href="../assets/style.css">
+<link rel="stylesheet" href="../assets/docs.css">
+</head>
+<body>
+<a class="skip" href="#main">Skip to content</a>
+<header class="top"><div class="wrap">
+<a class="brand" href="../"><img src="../assets/git-extensions-32.png" alt="" width="28" height="28"> Git Extensions Next</a>
+<nav aria-label="Primary"><a href="../#download">Download</a><a href="../#features">Features</a><a href="./" aria-current="page">Docs</a><a href="https://github.com/khunder/git-extension-linux">GitHub</a></nav>
+</div></header>
+<main id="main"><div class="wrap doc">
+<nav class="side" aria-label="Documentation"><a href="index.html">Overview</a><a href="install.html">Install</a><a href="usage.html">Using the app</a><a href="build.html">Build and package</a><a href="troubleshooting.html" aria-current="page">Troubleshooting</a></nav>
+<article>
+<h1>Troubleshooting</h1>
+
+<h2 id="history-limit">The history stops after 2000 commits</h2>
+<p>The revision grid loads at most 2000 commits by default (<code>git log --max-count=2000</code>). Raise the history limit in the settings (up to 1,000,000) and reopen the repository.</p>
+<h2 id="credentials">Authentication fails or nothing asks for a password</h2>
+<p>Git Extensions Next shows an in-window prompt when Git asks for credentials through the askpass helper. Some setups never ask (for example SSH with a key that has no agent). Configure a Git credential helper or an SSH key with an agent, then retry from a terminal to confirm Git itself can reach the remote.</p>
+<h2 id="appimage">The AppImage does not start</h2>
+<p>Make it executable (<code>chmod +x</code>). If your system has no FUSE 2, run it with <code>--appimage-extract-and-run</code>.</p>
+<h2 id="smartscreen">Windows warns about an unknown publisher</h2>
+<p>The Windows builds are not code-signed yet. Choose "More info", then "Run anyway", after checking the download against <code>SHA256SUMS</code>.</p>
+<h2 id="git-missing">"git" is not found</h2>
+<p>Install Git (Git for Windows on Windows, your distribution's <code>git</code> package on Linux) and make sure it is on the <code>PATH</code>, then restart the app.</p>
+<h2 id="runtime">The app refuses to start when built from source</h2>
+<p>If the message says the framework <code>Microsoft.NETCore.App 11.0.0</code> is missing while only a release candidate is installed, install the final .NET 11 runtime. The released packages are self-contained and do not need a runtime.</p>
+<h2>Still stuck?</h2>
+<p>Open an issue on <a href="https://github.com/khunder/git-extension-linux/issues">GitHub</a> with your OS, the app version (About dialog) and, if possible, the relevant lines of the command log.</p>
+
+</article>
+</div></main>
+<footer><div class="wrap">
+<ul>
+<li><a href="../">Home</a></li>
+<li><a href="https://github.com/khunder/git-extension-linux">Repository</a></li>
+<li><a href="https://github.com/khunder/git-extension-linux/issues">Issues</a></li>
+<li><a href="https://github.com/khunder/git-extension-linux/blob/main/LICENSE.md">License (GPL-3.0)</a></li>
+<li><a href="https://github.com/gitextensions/gitextensions">Upstream Git Extensions</a></li>
+</ul>
+<p>Git Extensions Next is an unofficial, independent port of Git Extensions. Icons by Yusuke Kamiyamane (CC BY 3.0).</p>
+</div></footer>
+<script src="../assets/site.js" defer></script>
+</body>
+</html>

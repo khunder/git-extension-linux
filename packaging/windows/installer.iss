@@ -13,7 +13,7 @@
   #define OutDir "..\..\artifacts\dist"
 #endif
 
-#define AppName "Git Extensions"
+#define AppName "Git Extensions Next"
 #define AppExe "GitExtensions.Avalonia.exe"
 
 [Setup]
@@ -21,7 +21,7 @@
 AppId={{6B9F3C52-4D0E-4A57-9E2B-3F1A7C8D5E41}
 AppName={#AppName}
 AppVersion={#AppVersion}
-AppPublisher=Git Extensions
+AppPublisher=Git Extensions Next
 AppPublisherURL=https://github.com/khunder/git-extensions-linux
 AppSupportURL=https://github.com/khunder/git-extensions-linux/issues
 DefaultDirName={autopf}\GitExtensions

@@ -151,7 +151,7 @@
             <!-- The checklist of the root page -->
             <Border x:Name="ChecklistPanel" IsVisible="{Binding !IsRowPage}" BorderThickness="1" BorderBrush="{DynamicResource SubtleBorderBrush}" Padding="16" VerticalAlignment="Top">
               <StackPanel Spacing="8" DataContext="{Binding SelectedPage.Checklist}" x:DataType="vm:ChecklistViewModel">
-                <TextBlock Text="The checklist below validates the basic settings needed for Git Extensions to work properly." TextWrapping="Wrap" />
+                <TextBlock Text="The checklist below validates the basic settings needed for Git Extensions Next to work properly." TextWrapping="Wrap" />
                 <ItemsControl x:Name="ChecklistItems" ItemsSource="{Binding Items}">
                   <ItemsControl.ItemsPanel>
                     <ItemsPanelTemplate>

@@ -114,7 +114,7 @@ public class MainMenuToolbarTests
         string[] visible = bar.Items.OfType<MenuItem>().Where(m => m.IsVisible).Select(Header).ToArray();
         visible.Should().Equal("Start", "Dashboard", "Plugins", "Tools", "Help");
         Toolbar(window).IsVisible.Should().BeFalse("the dashboard has no toolbar");
-        window.Title.Should().Be("Git Extensions");
+        window.Title.Should().Be("Git Extensions Next");
         Item(window, "DashboardRefreshMenuItem").Command.Should().BeSameAs(viewModel.RefreshDashboardCommand);
 
         await viewModel.OpenAsync(repository.Path);
@@ -122,7 +122,7 @@ public class MainMenuToolbarTests
         visible = bar.Items.OfType<MenuItem>().Where(m => m.IsVisible).Select(Header).ToArray();
         visible.Should().Equal("Start", "Repository", "Navigate", "View", "Commands", "Plugins", "Tools", "Help");
         Toolbar(window).IsVisible.Should().BeTrue();
-        window.Title.Should().Be($"{Path.GetFileName(repository.Path)} (main) - Git Extensions");
+        window.Title.Should().Be($"{Path.GetFileName(repository.Path)} (main) - Git Extensions Next");
         window.Close();
     }
 
@@ -147,7 +147,7 @@ public class MainMenuToolbarTests
             "Create branch…", "Delete branch…", "Checkout branch…", "Merge branches…", "Rebase…", "Solve merge conflicts…", "Create tag…", "Delete tag…",
             "Cherry pick…", "Archive revision…", "Checkout revision…", "Bisect…", "Show reflog…", "Format patch…", "Apply patch…", "View patch file…",
             "Plugins settings…", "Git bash / terminal", "Start authentication agent", "Generate or import key",
-            "Documentation", "Report an issue", "Changelog", "Keyboard shortcuts", "About Git Extensions", "Check for updates",
+            "Documentation", "Report an issue", "Changelog", "Keyboard shortcuts", "About Git Extensions Next", "Check for updates",
         ];
         string[] headers = all.Select(m => m.Header as string).Where(h => h is not null).Select(h => h!.Replace("_", string.Empty, StringComparison.Ordinal)).ToArray();
         headers.Should().Contain(expected);

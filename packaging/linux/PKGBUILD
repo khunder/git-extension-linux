@@ -1,4 +1,4 @@
-# Maintainer: Git Extensions for Linux <noreply@github.com>
+# Maintainer: Git Extensions Next <noreply@github.com>
 #
 # Repackages the prebuilt, self-contained tarball (git-extensions-linux-<version>-<x64|arm64>.tar.gz, produced by
 # build-tarball.sh) as an Arch package; nothing is compiled here. build-arch.sh places the tarball next to this file.
@@ -9,7 +9,7 @@ pkgname=git-extensions
 pkgver=${GE_VERSION:-0.2.0}
 pkgver=${pkgver//-/_}
 pkgrel=1
-pkgdesc='Graphical Git client (Git Extensions for Linux)'
+pkgdesc='Graphical Git client (Git Extensions Next)'
 arch=('x86_64' 'aarch64')
 url='https://github.com/khunder/git-extensions-linux'
 license=('GPL-3.0-or-later')

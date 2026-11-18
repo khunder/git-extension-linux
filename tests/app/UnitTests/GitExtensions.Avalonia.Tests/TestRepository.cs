@@ -65,9 +65,15 @@ internal sealed class TestRepository : IDisposable
     {
         try
         {
+            // Git writes its object files read-only; on Windows that blocks a recursive delete.
+            foreach (string file in Directory.EnumerateFiles(Path, "*", SearchOption.AllDirectories))
+            {
+                File.SetAttributes(file, FileAttributes.Normal);
+            }
+
             Directory.Delete(Path, recursive: true);
         }
-        catch (IOException)
+        catch (Exception ex) when (ex is IOException or UnauthorizedAccessException)
         {
             // Best effort cleanup of a temp folder.
         }

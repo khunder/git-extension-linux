@@ -3,7 +3,7 @@
 PKG_NAME=git-extensions
 PKG_URL=https://github.com/khunder/git-extensions-linux
 PKG_LICENSE_SPDX=GPL-3.0-or-later
-PKG_SUMMARY="Graphical Git client (Git Extensions for Linux)"
+PKG_SUMMARY="Graphical Git client (Git Extensions Next)"
 PKG_DESCRIPTION="Git Extensions is a graphical user interface for Git: browse history, stage changes, commit, manage branches, remotes and stashes. This package bundles the .NET runtime, so nothing else needs to be installed besides Git."
 
 packaging_dir="$(cd "$(dirname "${BASH_SOURCE[0]}")" && pwd)"

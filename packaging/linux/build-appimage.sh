@@ -89,7 +89,7 @@ cat > "$appdir/usr/share/metainfo/$PKG_NAME.appdata.xml" <<EOF
   <id>git-extensions</id>
   <metadata_license>CC0-1.0</metadata_license>
   <project_license>$PKG_LICENSE_SPDX</project_license>
-  <name>Git Extensions</name>
+  <name>Git Extensions Next</name>
   <summary>$PKG_SUMMARY</summary>
   <description>
     <p>$PKG_DESCRIPTION</p>

@@ -15,7 +15,7 @@ public static partial class SettingsPageCatalog
     public static IReadOnlyList<SettingsPageViewModel> Build(SettingsContext context)
     {
         ChecklistViewModel checklist = new(context.RepositoryDirectory);
-        SettingsPageViewModel root = new(SettingsPageIds.Checklist, "Git Extensions", "GitLogo16") { Checklist = checklist };
+        SettingsPageViewModel root = new(SettingsPageIds.Checklist, "Git Extensions Next", "GitLogo16") { Checklist = checklist };
 
         SettingsPageViewModel appearance = new SettingsPageViewModel(SettingsPageIds.Appearance, "Appearance", "Appearance")
             .Add(Sorting())

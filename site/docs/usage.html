@@ -1,0 +1,66 @@
+<!doctype html>
+<html lang="en">
+<head>
+<meta charset="utf-8">
+<meta name="viewport" content="width=device-width, initial-scale=1">
+<title>Using the app - Git Extensions Next docs</title>
+<meta name="description" content="A tour of Git Extensions Next: history, commit window, branches, merges, remotes and settings.">
+<meta name="color-scheme" content="light dark">
+<link rel="icon" type="image/png" href="../assets/git-extensions-32.png">
+<link rel="stylesheet" href="../assets/style.css">
+<link rel="stylesheet" href="../assets/docs.css">
+</head>
+<body>
+<a class="skip" href="#main">Skip to content</a>
+<header class="top"><div class="wrap">
+<a class="brand" href="../"><img src="../assets/git-extensions-32.png" alt="" width="28" height="28"> Git Extensions Next</a>
+<nav aria-label="Primary"><a href="../#download">Download</a><a href="../#features">Features</a><a href="./" aria-current="page">Docs</a><a href="https://github.com/khunder/git-extension-linux">GitHub</a></nav>
+</div></header>
+<main id="main"><div class="wrap doc">
+<nav class="side" aria-label="Documentation"><a href="index.html">Overview</a><a href="install.html">Install</a><a href="usage.html" aria-current="page">Using the app</a><a href="build.html">Build and package</a><a href="troubleshooting.html">Troubleshooting</a></nav>
+<article>
+<h1>Using the app</h1>
+
+<p class="lead">Open a repository from the dashboard (recent repositories), the folder picker, or by passing its path on the command line.</p>
+<h2>Browsing history</h2>
+<ul>
+<li>The <strong>revision grid</strong> shows the commit graph, ref labels (local branches, remote branches, tags), author, date and message. Use the filter and search boxes to narrow it down.</li>
+<li>Select a commit to see its details, its diff and its file tree. A sidebar tree lists branches, tags, remotes and stashes.</li>
+<li>History is limited to the most recent 2000 commits by default; raise the limit in Settings. See <a href="troubleshooting.html#history-limit">Troubleshooting</a>.</li>
+</ul>
+<h2>Committing</h2>
+<ul>
+<li>The <strong>commit window</strong> stages and unstages whole files, hunks or single lines.</li>
+<li>It supports amend, sign-off, commit message templates and recent messages.</li>
+</ul>
+<h2>Diff, blame and file history</h2>
+<p>The diff viewer works on revisions and on the working tree. The file history window follows renames and can show blame for each line.</p>
+<h2>Branches, tags, remotes, stashes</h2>
+<p>Manage branches, tags, remotes and stashes from the sidebar and the context menus. Submodules and linked worktrees have their own dialogs.</p>
+<h2>History operations</h2>
+<p>Merge, rebase, cherry-pick, bisect, reset, clean and archive are available for commits and refs. Patches can be formatted, applied and viewed. The merge conflict resolver lets you resolve conflicts without leaving the app.</p>
+<h2>Clone, init, pull and push</h2>
+<p>Dedicated dialogs cover clone, init, pull and push. When Git needs a password, passphrase or username, an in-window prompt appears: a small helper (<code>GitExtensions.AskPass</code>) is registered as <code>GIT_ASKPASS</code> / <code>SSH_ASKPASS</code> and relays the question to the app. To avoid typing credentials repeatedly, configure a Git credential helper or an SSH key and agent.</p>
+<h2>Settings and themes</h2>
+<p>The settings dialog covers the common options (general, confirmations, colors, Git config, SSH, scripts and more). The theme follows the system or can be set to light or dark.</p>
+<h2>Keyboard shortcuts and diagnostics</h2>
+<ul>
+<li>The Help menu has a <strong>Keyboard shortcuts</strong> entry with the shortcut list.</li>
+<li>The <strong>command log</strong> shows the Git commands the app ran, and the <strong>reflog browser</strong> shows ref history.</li>
+</ul>
+
+</article>
+</div></main>
+<footer><div class="wrap">
+<ul>
+<li><a href="../">Home</a></li>
+<li><a href="https://github.com/khunder/git-extension-linux">Repository</a></li>
+<li><a href="https://github.com/khunder/git-extension-linux/issues">Issues</a></li>
+<li><a href="https://github.com/khunder/git-extension-linux/blob/main/LICENSE.md">License (GPL-3.0)</a></li>
+<li><a href="https://github.com/gitextensions/gitextensions">Upstream Git Extensions</a></li>
+</ul>
+<p>Git Extensions Next is an unofficial, independent port of Git Extensions. Icons by Yusuke Kamiyamane (CC BY 3.0).</p>
+</div></footer>
+<script src="../assets/site.js" defer></script>
+</body>
+</html>

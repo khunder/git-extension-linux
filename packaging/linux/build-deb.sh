@@ -50,7 +50,7 @@ Version: $VERSION
 Section: vcs
 Priority: optional
 Architecture: $ARCH
-Maintainer: Git Extensions for Linux <noreply@github.com>
+Maintainer: Git Extensions Next <noreply@github.com>
 Installed-Size: $installed_size
 Depends: $DEPENDS
 Recommends: $RECOMMENDS
