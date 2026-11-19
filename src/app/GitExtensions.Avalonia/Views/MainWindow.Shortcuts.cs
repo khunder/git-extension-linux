@@ -200,11 +200,32 @@ public sealed partial class MainWindow
                     SidebarCollapsed = false;
                 }
 
-                SidebarPanel.FindControl<TextBox>("FilterBox")?.Focus();
+                if (DataContext is MainWindowViewModel { IsChangesTabSelected: true })
+                {
+                    ChangesSidebar.FocusFilter();
+                }
+                else
+                {
+                    SidebarPanel.FindControl<TextBox>("FilterBox")?.Focus();
+                }
+
                 break;
             case UiTarget.CommitMessage:
-                // The commit message lives in the Commit window.
-                (DataContext as MainWindowViewModel)?.ShowCommitWindowCommand.Execute(null);
+                // The commit message lives in the Changes tab while it is shown, otherwise in the Commit window.
+                if (DataContext is MainWindowViewModel { IsChangesTabSelected: true })
+                {
+                    if (SidebarCollapsed)
+                    {
+                        SidebarCollapsed = false;
+                    }
+
+                    ChangesSidebar.FocusSummary();
+                }
+                else
+                {
+                    (DataContext as MainWindowViewModel)?.ShowCommitWindowCommand.Execute(null);
+                }
+
                 break;
             case UiTarget.ToggleSidebar:
                 SidebarCollapsed = !SidebarCollapsed;

@@ -104,6 +104,26 @@ public class LayoutTests
     }
 
     [AvaloniaTest]
+    public async Task A_tiny_tabs_weight_cannot_push_the_tabs_onto_the_history()
+    {
+        using TestRepository repository = new();
+        MainWindowViewModel viewModel = new(GitEnvironment.Initialize(), new NoFolderPicker());
+        MainWindow window = new() { DataContext = viewModel, Width = 1200, Height = 720 };
+        window.Show();
+        await viewModel.OpenAsync(repository.Path);
+
+        // A layout stored after the splitter was dragged almost to the bottom.
+        window.ApplyLayout(new LayoutSettings(GridHeight: 1040, TabsHeight: 60));
+        ShellTestSupport.Settle();
+
+        Control grid = window.Find<Control>("RevisionGrid");
+        Control tabs = window.Find<Control>("RevisionTabs");
+        tabs.Bounds.Height.Should().BeGreaterThanOrEqualTo(120, "the tabs keep room for their headers and content");
+        tabs.Bounds.Top.Should().BeGreaterThanOrEqualTo(grid.Bounds.Bottom, "the tabs do not overlap the history");
+        window.Close();
+    }
+
+    [AvaloniaTest]
     public async Task Sidebar_collapse_toggle_hides_and_restores_the_sidebar()
     {
         using TestRepository repository = new();
@@ -121,7 +141,7 @@ public class LayoutTests
         toggle.Execute(null);
         Settle();
         window.SidebarCollapsed.Should().BeTrue();
-        sidebar.IsVisible.Should().BeFalse();
+        sidebar.IsEffectivelyVisible.Should().BeFalse("the whole sidebar (with its Changes | History tabs) is hidden");
         Columns(window).ColumnDefinitions[0].ActualWidth.Should().Be(0);
 
         toggle.Execute(null);

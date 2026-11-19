@@ -11,7 +11,19 @@ public enum ThemeChoice
 {
     System,
     Light,
-    Dark
+    Dark,
+
+    /// <summary>Neutral dark grey, like GitHub Desktop's dark theme.</summary>
+    Graphite,
+
+    /// <summary>Soft light grey.</summary>
+    Mist,
+
+    /// <summary>Dimmed blue-grey dark.</summary>
+    Dusk,
+
+    /// <summary>Warm, paper-like light.</summary>
+    Sand
 }
 
 /// <summary>

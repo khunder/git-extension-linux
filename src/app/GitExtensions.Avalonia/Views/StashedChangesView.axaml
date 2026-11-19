@@ -1,0 +1,81 @@
+<UserControl xmlns="https://github.com/avaloniaui"
+             xmlns:x="http://schemas.microsoft.com/winfx/2006/xaml"
+             xmlns:vm="using:GitExtensions.Desktop.ViewModels"
+             xmlns:diff="using:GitExtensions.Desktop.Diff"
+             xmlns:views="using:GitExtensions.Desktop.Views"
+             x:Class="GitExtensions.Desktop.Views.StashedChangesView"
+             x:DataType="vm:WorkingChangesViewModel">
+
+  <!-- The main area of the Changes tab while "Stashed changes" is selected (like GitHub Desktop). -->
+  <UserControl.Styles>
+    <Style Selector="Border.added"><Setter Property="Background" Value="{DynamicResource DiffAddedBackground}" /></Style>
+    <Style Selector="Border.removed"><Setter Property="Background" Value="{DynamicResource DiffRemovedBackground}" /></Style>
+    <Style Selector="Border.hunk"><Setter Property="Background" Value="{DynamicResource DiffHunkBackground}" /></Style>
+    <Style Selector="ListBox#StashedFiles ListBoxItem">
+      <Setter Property="MinHeight" Value="26" />
+      <Setter Property="Padding" Value="8,0" />
+    </Style>
+  </UserControl.Styles>
+
+  <DockPanel>
+    <Border DockPanel.Dock="Top" Padding="12,10" BorderThickness="0,0,0,1" BorderBrush="{DynamicResource SubtleBorderBrush}">
+      <Grid ColumnDefinitions="*,Auto" ColumnSpacing="12">
+        <StackPanel Spacing="2">
+          <TextBlock Text="Stashed changes" FontSize="15" FontWeight="SemiBold" />
+          <TextBlock x:Name="StashDescription" Text="{Binding BranchStashText}" Opacity="0.65" TextTrimming="CharacterEllipsis" />
+        </StackPanel>
+        <StackPanel Grid.Column="1" Orientation="Horizontal" Spacing="8" VerticalAlignment="Center">
+          <Button x:Name="DiscardStashButton" Content="Discard" Command="{Binding DiscardStashCommand}" Padding="12,4"
+                  ToolTip.Tip="Delete the stash (git stash drop)" />
+          <Button x:Name="RestoreStashButton" Classes="accent" Content="Restore" Command="{Binding RestoreStashCommand}" Padding="14,4"
+                  ToolTip.Tip="Apply the stashed changes to the working tree and remove the stash (git stash pop)" />
+        </StackPanel>
+      </Grid>
+    </Border>
+
+    <Grid ColumnDefinitions="260,Auto,*">
+      <ListBox x:Name="StashedFiles" ItemsSource="{Binding Stashes.Files}" SelectedItem="{Binding Stashes.SelectedFile}" BorderThickness="0">
+        <ListBox.ItemTemplate>
+          <DataTemplate x:DataType="vm:ChangedFileViewModel">
+            <Grid ColumnDefinitions="18,*" ColumnSpacing="6" ToolTip.Tip="{Binding Name}">
+              <TextBlock Text="{Binding Status}" FontFamily="Cascadia Mono, Consolas, DejaVu Sans Mono, monospace" FontWeight="Bold"
+                         Foreground="{DynamicResource AccentTextForeground}" HorizontalAlignment="Center" VerticalAlignment="Center" />
+              <TextBlock Grid.Column="1" FontSize="12.5" VerticalAlignment="Center" TextTrimming="LeadingCharacterEllipsis" Text="{Binding Name}" />
+            </Grid>
+          </DataTemplate>
+        </ListBox.ItemTemplate>
+      </ListBox>
+
+      <GridSplitter Grid.Column="1" Width="5" Background="{DynamicResource SubtleBorderBrush}" />
+
+      <Panel Grid.Column="2">
+        <ItemsControl x:Name="StashedDiffLines" ItemsSource="{Binding Stashes.DiffLines}">
+          <ItemsControl.Template>
+            <ControlTemplate>
+              <ScrollViewer HorizontalScrollBarVisibility="Auto" VerticalScrollBarVisibility="Auto">
+                <ItemsPresenter Name="PART_ItemsPresenter" ItemsPanel="{TemplateBinding ItemsPanel}" />
+              </ScrollViewer>
+            </ControlTemplate>
+          </ItemsControl.Template>
+          <ItemsControl.ItemsPanel>
+            <ItemsPanelTemplate>
+              <VirtualizingStackPanel />
+            </ItemsPanelTemplate>
+          </ItemsControl.ItemsPanel>
+          <ItemsControl.ItemTemplate>
+            <DataTemplate x:DataType="diff:DiffLine">
+              <Border Classes.added="{Binding Kind, Converter={x:Static ObjectConverters.Equal}, ConverterParameter={x:Static diff:DiffLineKind.Added}}"
+                      Classes.removed="{Binding Kind, Converter={x:Static ObjectConverters.Equal}, ConverterParameter={x:Static diff:DiffLineKind.Removed}}"
+                      Classes.hunk="{Binding Kind, Converter={x:Static ObjectConverters.Equal}, ConverterParameter={x:Static diff:DiffLineKind.Hunk}}">
+                <TextBlock Text="{Binding DisplayText}" FontFamily="Cascadia Mono, Consolas, DejaVu Sans Mono, monospace" FontSize="12" TextWrapping="NoWrap"
+                           Opacity="{Binding Kind, Converter={x:Static views:DiffLineBrushes.TextOpacity}}" Margin="8,0" />
+              </Border>
+            </DataTemplate>
+          </ItemsControl.ItemTemplate>
+        </ItemsControl>
+        <TextBlock x:Name="StashedDiffMessage" Text="{Binding Stashes.DiffMessage}" Opacity="0.6" Margin="12" HorizontalAlignment="Left" VerticalAlignment="Top"
+                   IsVisible="{Binding Stashes.DiffMessage, Converter={x:Static StringConverters.IsNotNullOrEmpty}}" />
+      </Panel>
+    </Grid>
+  </DockPanel>
+</UserControl>

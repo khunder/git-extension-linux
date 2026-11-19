@@ -44,6 +44,7 @@ public sealed partial class MainWindowViewModel
         ChangedFiles.Clear();
         Diff = null;
         Commit = null;
+        ResetChangesTab();
         _commitModuleDir = null;
         Branch = null;
         Refs.Clear();

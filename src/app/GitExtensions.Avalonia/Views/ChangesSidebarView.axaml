@@ -1,0 +1,218 @@
+<UserControl xmlns="https://github.com/avaloniaui"
+             xmlns:x="http://schemas.microsoft.com/winfx/2006/xaml"
+             xmlns:vm="using:GitExtensions.Desktop.ViewModels"
+             x:Class="GitExtensions.Desktop.Views.ChangesSidebarView"
+             x:DataType="vm:WorkingChangesViewModel">
+
+  <!-- The Changes tab of the sidebar (like GitHub Desktop): changed files with a check box each, then the commit box. -->
+  <UserControl.Styles>
+    <!-- Compact check boxes (the Fluent ones are sized for touch). -->
+    <Style Selector="CheckBox.include">
+      <Setter Property="MinWidth" Value="0" />
+      <Setter Property="MinHeight" Value="0" />
+      <Setter Property="Padding" Value="0" />
+      <Setter Property="VerticalAlignment" Value="Center" />
+    </Style>
+    <Style Selector="LayoutTransformControl.small">
+      <Setter Property="LayoutTransform" Value="scale(0.78)" />
+      <Setter Property="VerticalAlignment" Value="Center" />
+    </Style>
+
+    <!-- File rows -->
+    <Style Selector="ListBox#FileList ListBoxItem" x:DataType="vm:WorkingFileRowViewModel">
+      <Setter Property="MinHeight" Value="28" />
+      <Setter Property="Padding" Value="8,0" />
+      <Setter Property="IsSelected" Value="{Binding IsSelected, Mode=TwoWay}" />
+    </Style>
+    <Style Selector="Button.stashEntry">
+      <Setter Property="Background" Value="Transparent" />
+      <Setter Property="BorderThickness" Value="0" />
+      <Setter Property="CornerRadius" Value="0" />
+      <Setter Property="HorizontalAlignment" Value="Stretch" />
+      <Setter Property="HorizontalContentAlignment" Value="Stretch" />
+      <Setter Property="Padding" Value="10,6" />
+    </Style>
+    <Style Selector="Button.stashEntry.active">
+      <Setter Property="Background" Value="{DynamicResource SystemControlHighlightListAccentLowBrush}" />
+    </Style>
+    <Style Selector="TextBlock.path">
+      <Setter Property="FontSize" Value="12.5" />
+      <Setter Property="VerticalAlignment" Value="Center" />
+      <Setter Property="TextTrimming" Value="LeadingCharacterEllipsis" />
+    </Style>
+
+    <!-- Status boxes: + added (green), • modified (amber), − deleted (red), → renamed (accent), ! conflict (red). -->
+    <Style Selector="Border.status">
+      <Setter Property="Width" Value="14" />
+      <Setter Property="Height" Value="14" />
+      <Setter Property="CornerRadius" Value="3" />
+      <Setter Property="BorderThickness" Value="1.5" />
+      <Setter Property="VerticalAlignment" Value="Center" />
+      <Setter Property="BorderBrush" Value="{DynamicResource FileStatusModifiedBrush}" />
+    </Style>
+    <Style Selector="Border.status Path">
+      <Setter Property="Stroke" Value="{DynamicResource FileStatusModifiedBrush}" />
+      <Setter Property="StrokeThickness" Value="1.5" />
+      <Setter Property="HorizontalAlignment" Value="Center" />
+      <Setter Property="VerticalAlignment" Value="Center" />
+    </Style>
+    <Style Selector="Border.status Ellipse">
+      <Setter Property="Width" Value="5" />
+      <Setter Property="Height" Value="5" />
+      <Setter Property="Fill" Value="{DynamicResource FileStatusModifiedBrush}" />
+      <Setter Property="HorizontalAlignment" Value="Center" />
+      <Setter Property="VerticalAlignment" Value="Center" />
+    </Style>
+    <Style Selector="Border.status.added"><Setter Property="BorderBrush" Value="{DynamicResource FileStatusAddedBrush}" /></Style>
+    <Style Selector="Border.status.added Path"><Setter Property="Stroke" Value="{DynamicResource FileStatusAddedBrush}" /></Style>
+    <Style Selector="Border.status.deleted"><Setter Property="BorderBrush" Value="{DynamicResource FileStatusDeletedBrush}" /></Style>
+    <Style Selector="Border.status.deleted Path"><Setter Property="Stroke" Value="{DynamicResource FileStatusDeletedBrush}" /></Style>
+    <Style Selector="Border.status.renamed"><Setter Property="BorderBrush" Value="{DynamicResource AccentTextForeground}" /></Style>
+    <Style Selector="Border.status.renamed Path"><Setter Property="Stroke" Value="{DynamicResource AccentTextForeground}" /></Style>
+    <Style Selector="Border.status.conflict"><Setter Property="BorderBrush" Value="{DynamicResource FileStatusDeletedBrush}" /></Style>
+    <Style Selector="Border.status.conflict Path"><Setter Property="Stroke" Value="{DynamicResource FileStatusDeletedBrush}" /></Style>
+
+    <!-- Commit box: the description field and its footer share one border, like GitHub Desktop. -->
+    <Style Selector="TextBox.bare">
+      <Setter Property="BorderThickness" Value="0" />
+      <Setter Property="Background" Value="Transparent" />
+    </Style>
+    <Style Selector="TextBox.bare:pointerover /template/ Border#PART_BorderElement">
+      <Setter Property="BorderThickness" Value="0" />
+      <Setter Property="Background" Value="Transparent" />
+    </Style>
+    <Style Selector="TextBox.bare:focus /template/ Border#PART_BorderElement">
+      <Setter Property="BorderThickness" Value="0" />
+      <Setter Property="Background" Value="Transparent" />
+    </Style>
+    <Style Selector="Border.descriptionFrame">
+      <Setter Property="BorderThickness" Value="1" />
+      <Setter Property="CornerRadius" Value="4" />
+      <Setter Property="BorderBrush" Value="{DynamicResource SubtleBorderBrush}" />
+      <Setter Property="Background" Value="{DynamicResource TextControlBackground}" />
+    </Style>
+    <Style Selector="Border.descriptionFrame:focus-within">
+      <Setter Property="BorderBrush" Value="{DynamicResource AccentTextForeground}" />
+    </Style>
+  </UserControl.Styles>
+
+  <DockPanel>
+    <!-- Confirmation bar (discard files, discard the stash) -->
+    <Border x:Name="ConfirmationBar" DockPanel.Dock="Top" Padding="8,6" IsVisible="{Binding IsConfirming}" Background="{DynamicResource ErrorBannerBackground}">
+      <StackPanel Spacing="6">
+        <TextBlock x:Name="ConfirmationQuestion" Text="{Binding ConfirmationText}" TextWrapping="Wrap" FontSize="12.5" Foreground="{DynamicResource ErrorBannerForeground}" />
+        <StackPanel Orientation="Horizontal" Spacing="6" HorizontalAlignment="Right">
+          <Button x:Name="CancelConfirmationButton" Content="Cancel" Command="{Binding CancelConfirmationCommand}" Padding="10,3" />
+          <Button x:Name="ConfirmButton" Content="{Binding ConfirmButtonText}" Command="{Binding ConfirmCommand}" Padding="10,3" />
+        </StackPanel>
+      </StackPanel>
+    </Border>
+
+    <!-- Filter -->
+    <Border DockPanel.Dock="Top" Padding="8,6" BorderThickness="0,0,0,1" BorderBrush="{DynamicResource SubtleBorderBrush}">
+      <TextBox x:Name="FilterBox" MinHeight="26" Padding="8,3" FontSize="12.5" Text="{Binding Filter}" PlaceholderText="Filter" />
+    </Border>
+
+    <!-- "N changed files" with the select-all check box; right-click to stash or discard everything -->
+    <Border x:Name="ChangesHeader" DockPanel.Dock="Top" Padding="8,4" BorderThickness="0,0,0,1" BorderBrush="{DynamicResource SubtleBorderBrush}"
+            Background="Transparent">
+      <Border.ContextMenu>
+        <ContextMenu>
+          <MenuItem x:Name="StashAllItem" Header="Stash all changes" Command="{Binding StashAllCommand}" IsEnabled="{Binding !HasNoChanges}" />
+          <MenuItem x:Name="DiscardAllItem" Header="Discard all changes…" Command="{Binding DiscardAllCommand}" IsEnabled="{Binding !HasNoChanges}" />
+          <Separator />
+          <MenuItem Header="Refresh" Command="{Binding RefreshCommand}" InputGesture="F5" />
+        </ContextMenu>
+      </Border.ContextMenu>
+      <StackPanel Orientation="Horizontal" Spacing="8">
+        <LayoutTransformControl Classes="small">
+          <CheckBox x:Name="IncludeAllBox" Classes="include" IsChecked="{Binding AllIncluded, Mode=OneWay}" Command="{Binding ToggleAllCommand}"
+                    IsEnabled="{Binding !HasNoChanges}" ToolTip.Tip="Include all files in the commit (stage all), or none (unstage all)" />
+        </LayoutTransformControl>
+        <TextBlock x:Name="ChangedFilesHeader" Text="{Binding ChangedFilesHeader}" FontSize="12.5" VerticalAlignment="Center" />
+      </StackPanel>
+    </Border>
+
+    <!-- Commit box -->
+    <Border DockPanel.Dock="Bottom" Padding="8" BorderThickness="0,1,0,0" BorderBrush="{DynamicResource SubtleBorderBrush}">
+      <StackPanel Spacing="8">
+        <Grid ColumnDefinitions="Auto,*" ColumnSpacing="8">
+          <Border x:Name="AuthorAvatar" Width="24" Height="24" CornerRadius="12" Background="{Binding AuthorBrush}" VerticalAlignment="Center"
+                  ToolTip.Tip="{Binding Author}">
+            <TextBlock Text="{Binding AuthorInitials}" Foreground="White" FontSize="10" FontWeight="SemiBold"
+                       HorizontalAlignment="Center" VerticalAlignment="Center" />
+          </Border>
+          <TextBox x:Name="SummaryBox" Grid.Column="1" Text="{Binding Summary}" PlaceholderText="Summary (required)" MinHeight="28" Padding="8,4"
+                   FontSize="12.5" AcceptsReturn="False" />
+        </Grid>
+        <Border Classes="descriptionFrame">
+          <DockPanel>
+            <Border DockPanel.Dock="Bottom" Padding="8,2,8,4">
+              <LayoutTransformControl Classes="small" HorizontalAlignment="Left">
+                <CheckBox x:Name="AmendBox" Content="Amend last commit" IsChecked="{Binding Commit.Amend}" IsEnabled="{Binding Commit.HasHead}"
+                          MinHeight="0" />
+              </LayoutTransformControl>
+            </Border>
+            <TextBox x:Name="DescriptionBox" Classes="bare" Text="{Binding Description}" PlaceholderText="Description" AcceptsReturn="True"
+                     TextWrapping="Wrap" Height="88" Padding="8,6" FontSize="12.5" VerticalContentAlignment="Top" />
+          </DockPanel>
+        </Border>
+        <TextBlock x:Name="CommitErrorText" Text="{Binding ErrorText}" IsVisible="{Binding HasError}" TextWrapping="Wrap" FontSize="12"
+                   Foreground="{DynamicResource ErrorTextForeground}" />
+        <Button x:Name="SidebarCommitButton" Classes="accent" HorizontalAlignment="Stretch" HorizontalContentAlignment="Center" MinHeight="32"
+                Command="{Binding CommitCommand}" ToolTip.Tip="Commit the checked files (Ctrl+Enter)">
+          <TextBlock Text="{Binding CommitButtonText}" TextTrimming="CharacterEllipsis" FontWeight="SemiBold" FontSize="13" />
+        </Button>
+      </StackPanel>
+    </Border>
+
+    <!-- The stash of the current branch, like GitHub Desktop's "Stashed Changes" entry -->
+    <Border DockPanel.Dock="Bottom" BorderThickness="0,1,0,0" BorderBrush="{DynamicResource SubtleBorderBrush}" IsVisible="{Binding HasBranchStash}">
+      <Button x:Name="StashedChangesButton" Classes="stashEntry" Classes.active="{Binding IsShowingStash}" Command="{Binding ShowStashCommand}"
+              ToolTip.Tip="Show the stashed changes of this branch (restore or discard them there)">
+        <Grid ColumnDefinitions="Auto,*" ColumnSpacing="8">
+          <Path Data="M0,3 H12 V11 H0 Z M0,3 L2,0 H10 L12,3 M4,6 H8" Stroke="{DynamicResource AccentTextForeground}" StrokeThickness="1.3"
+                VerticalAlignment="Center" />
+          <StackPanel Grid.Column="1">
+            <TextBlock Text="Stashed changes" FontSize="12.5" FontWeight="SemiBold" />
+            <TextBlock Text="{Binding BranchStashText}" FontSize="11" Opacity="0.6" TextTrimming="CharacterEllipsis" />
+          </StackPanel>
+        </Grid>
+      </Button>
+    </Border>
+
+    <!-- Files -->
+    <Panel>
+      <ListBox x:Name="FileList" ItemsSource="{Binding Rows}" SelectionMode="Multiple" BorderThickness="0" Background="Transparent">
+        <ListBox.ItemTemplate>
+          <DataTemplate x:DataType="vm:WorkingFileRowViewModel">
+            <Grid ColumnDefinitions="Auto,*,Auto" ColumnSpacing="8" ToolTip.Tip="{Binding Name}" Background="Transparent">
+              <LayoutTransformControl Classes="small">
+                <CheckBox Classes="include" IsChecked="{Binding IsIncluded, Mode=OneWay}" Command="{Binding ToggleCommand}" />
+              </LayoutTransformControl>
+              <TextBlock Grid.Column="1" Classes="path">
+                <Run Text="{Binding DirectoryPrefix}" Foreground="{DynamicResource SystemControlForegroundBaseMediumBrush}" /><Run Text="{Binding FileName}" />
+              </TextBlock>
+              <Border Grid.Column="2" Classes="status" ToolTip.Tip="{Binding Description}"
+                      Classes.added="{Binding IsAdded}" Classes.deleted="{Binding IsDeleted}"
+                      Classes.renamed="{Binding IsRenamed}" Classes.conflict="{Binding IsConflicted}">
+                <Panel>
+                  <Path Data="M0,3.5 H7 M3.5,0 V7" IsVisible="{Binding IsAdded}" />
+                  <Path Data="M0,3.5 H7" IsVisible="{Binding IsDeleted}" />
+                  <Path Data="M0,3.5 H6 M3.5,1 L6,3.5 L3.5,6" IsVisible="{Binding IsRenamed}" />
+                  <Path Data="M3.5,0 V4.5 M3.5,6 V7" IsVisible="{Binding IsConflicted}" />
+                  <Ellipse IsVisible="{Binding IsModified}" />
+                </Panel>
+              </Border>
+            </Grid>
+          </DataTemplate>
+        </ListBox.ItemTemplate>
+      </ListBox>
+      <StackPanel IsVisible="{Binding HasNoChanges}" HorizontalAlignment="Center" VerticalAlignment="Center" Spacing="4" IsHitTestVisible="False">
+        <TextBlock x:Name="NoChangesText" Text="No local changes" FontSize="15" FontWeight="SemiBold" HorizontalAlignment="Center" Opacity="0.8" />
+        <TextBlock Text="There are no uncommitted changes in this repository." FontSize="12" Opacity="0.6" TextWrapping="Wrap"
+                   TextAlignment="Center" MaxWidth="200" />
+      </StackPanel>
+    </Panel>
+  </DockPanel>
+</UserControl>

@@ -256,10 +256,10 @@ public sealed partial class CommitWindowViewModel : ObservableObject, IDisposabl
     }
 
     public Task StageFilesAsync(IReadOnlyList<ChangedFileViewModel> files)
-        => ChangeIndexAsync(module => module.StageFiles([.. files.Select(f => f.Item).Where(i => !i.IsStatusOnly)], out string output) ? null : output, files.Count > 0);
+        => ChangeIndexAsync(module => WorkingTreeIndex.Stage(module, files), files.Count > 0);
 
     public Task UnstageFilesAsync(IReadOnlyList<ChangedFileViewModel> files)
-        => ChangeIndexAsync(module => module.UnstageFiles([.. files.Select(f => f.Item).Where(i => !i.IsStatusOnly)], out string output) ? null : output, files.Count > 0);
+        => ChangeIndexAsync(module => WorkingTreeIndex.Unstage(module, files), files.Count > 0);
 
     [RelayCommand]
     private Task StageSelectedAsync() => StageFilesAsync(UnstagedSelection);

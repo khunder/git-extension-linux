@@ -83,13 +83,9 @@ public sealed partial class MainWindowViewModel
 
     private static void CycleTheme()
     {
-        ThemeChoice next = ThemeService.Current.Choice switch
-        {
-            ThemeChoice.System => ThemeChoice.Light,
-            ThemeChoice.Light => ThemeChoice.Dark,
-            _ => ThemeChoice.System,
-        };
-        ThemeService.Current.Set(next);
+        // System, Light, Dark, then the named themes, and round again.
+        ThemeChoice[] all = Enum.GetValues<ThemeChoice>();
+        ThemeService.Current.Set(all[(Array.IndexOf(all, ThemeService.Current.Choice) + 1) % all.Length]);
     }
 
     private IReadOnlyList<AppCommand> BuildCommands()
@@ -157,8 +153,10 @@ public sealed partial class MainWindowViewModel
 
             // View
             Make("view.sidebar", "Toggle branches sidebar", "View", () => UiRequested?.Invoke(UiTarget.ToggleSidebar), HasRepo, Keys(CommandGesture.Of(Key.B, Ctrl))),
+            Make("view.changesTab", "Show the Changes tab", "View", () => SelectSidebarTab(ChangesTabIndex), () => HasRepo() && IsChangesTabEnabled, Keys(CommandGesture.Of(Key.D1, Ctrl))),
+            Make("view.historyTab", "Show the History tab", "View", () => SelectSidebarTab(HistoryTabIndex), () => HasRepo() && IsChangesTabEnabled, Keys(CommandGesture.Of(Key.D2, Ctrl))),
             FromCommand("view.output", "Toggle Output panel", "View", () => Remote.ToggleOutputCommand, HasRepo, Keys(CommandGesture.Of(Key.O, CtrlShift))),
-            Make("view.theme", "Cycle theme (system, light, dark)", "View", CycleTheme, gestures: Keys(CommandGesture.Of(Key.D, CtrlShift))),
+            Make("view.theme", "Cycle theme (system, light, dark, graphite, mist, dusk, sand)", "View", CycleTheme, gestures: Keys(CommandGesture.Of(Key.D, CtrlShift))),
             Make("view.settings", "Settings", "View", () => _ = Settings.OpenAsync(), gestures: Keys(CommandGesture.Of(Key.OemComma, Ctrl))),
 
             // Navigation

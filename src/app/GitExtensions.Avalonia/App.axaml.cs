@@ -10,7 +10,10 @@ namespace GitExtensions.Desktop;
 public sealed class App : Application
 {
     public override void Initialize()
-        => AvaloniaXamlLoader.Load(this);
+    {
+        AvaloniaXamlLoader.Load(this);
+        ThemePalettes.Register(Resources);
+    }
 
     public override void OnFrameworkInitializationCompleted()
     {

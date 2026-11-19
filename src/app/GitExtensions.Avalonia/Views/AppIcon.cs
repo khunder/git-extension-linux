@@ -37,7 +37,7 @@ public sealed class AppIcon : Control
 
     public override void Render(DrawingContext context)
     {
-        bool dark = ActualThemeVariant == ThemeVariant.Dark;
+        bool dark = Services.ThemePalettes.IsDark(ActualThemeVariant);
         var bitmap = IconCache.Get(IconName, dark);
         if (bitmap is null)
         {

@@ -33,18 +33,7 @@ public sealed partial class CommitWindowViewModel
 
         try
         {
-            string path = Path.Combine(_workingDir, ".gitignore");
-            await Task.Run(() =>
-            {
-                string existing = File.Exists(path) ? File.ReadAllText(path) : string.Empty;
-                HashSet<string> lines = [.. existing.Split('\n').Select(l => l.TrimEnd('\r'))];
-                string prefix = existing.Length > 0 && !existing.EndsWith('\n') ? "\n" : string.Empty;
-                string add = string.Concat(names.Select(n => "/" + n).Where(n => !lines.Contains(n)).Select(n => n + "\n"));
-                if (add.Length > 0)
-                {
-                    File.AppendAllText(path, prefix + add);
-                }
-            });
+            await Task.Run(() => WorkingTreeIndex.AppendToGitIgnore(_workingDir, names.Select(n => "/" + n)));
         }
         catch (Exception ex) when (ex is IOException or UnauthorizedAccessException)
         {
