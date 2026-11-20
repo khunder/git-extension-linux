@@ -40,7 +40,7 @@
         <TextBlock x:Name="ConflictText" Text="{Binding ConflictText}" IsVisible="{Binding HasConflicts}" TextWrapping="Wrap" FontWeight="SemiBold" />
         <TextBlock x:Name="InProgressText" Text="A patch series is being applied. Continue, skip the current patch or abort." IsVisible="{Binding IsAmInProgress}" TextWrapping="Wrap" />
         <TextBox x:Name="OutputBox" Text="{Binding Output}" IsReadOnly="True" AcceptsReturn="True" TextWrapping="NoWrap" MaxHeight="180" MinHeight="60"
-                 FontFamily="Cascadia Mono, Consolas, DejaVu Sans Mono, monospace" FontSize="12" Margin="0,8,0,0"
+                 FontFamily="Cascadia Mono, Consolas, DejaVu Sans Mono, monospace" FontSize="{DynamicResource EditorFontSize}" Margin="0,8,0,0"
                  IsVisible="{Binding Output, Converter={x:Static StringConverters.IsNotNullOrEmpty}}" />
 
       </StackPanel>

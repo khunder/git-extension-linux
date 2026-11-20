@@ -309,8 +309,20 @@ public sealed partial class MainWindowViewModel : ObservableObject
     {
         RevisionReader reader = new(module);
 
+        // Stash entries are shown in the history like the original does ("Show stashes in history"): their commits are added to the walk and labelled stash@{n}.
+        List<(string Id, string Name)> stashes = AppSettings.ShowStashes && filter.Branches == BranchFilterMode.AllBranches && !filter.HasText ? ReadStashCommits(module) : [];
+        if (stashes.Count > 0)
+        {
+            refs = WithStashBadges(refs, stashes);
+        }
+
         // A newer load (open or filter change, numbered on the UI thread) makes this one stale: its batches must not reach the list any more.
         int row = 0;
+
+        // Commits that are not ancestors of the checked out branch are greyed. The log lists children before their parents,
+        // so one pass collects the ancestors of HEAD. With a detached HEAD nothing is greyed.
+        ObjectId? headId = refs.Where(pair => pair.Value.Badges?.Any(badge => badge.IsCurrent) == true).Select(pair => (ObjectId?)pair.Key).FirstOrDefault();
+        HashSet<ObjectId> reachable = [];
 
         // The graph lanes and row view-models are computed here, on the reader's thread, so the UI thread only has to
         // insert the finished batch. The builder belongs to this load: a newer load never shares it.
@@ -326,7 +338,21 @@ public sealed partial class MainWindowViewModel : ObservableObject
             foreach (GitRevision revision in batch)
             {
                 CommitItemViewModel item = CreateItem(revision, refs, filter, user, (row++ & 1) == 1, Actions);
-                item.Graph = graphBuilder.Append(item.ObjectId.ToString(), revision.ParentIds?.Select(id => id.ToString()).ToList() ?? []);
+                if (headId is { } head)
+                {
+                    bool onCurrentBranch = revision.ObjectId == head || reachable.Contains(revision.ObjectId);
+                    if (onCurrentBranch)
+                    {
+                        foreach (ObjectId parent in revision.ParentIds ?? [])
+                        {
+                            reachable.Add(parent);
+                        }
+                    }
+
+                    item.IsDimmed = !onCurrentBranch;
+                }
+
+                item.Graph = graphBuilder.Append(item.ObjectId.ToString(), revision.ParentIds?.Select(id => id.ToString()).ToList() ?? [], item.IsDimmed);
                 items.Add(item);
             }
 
@@ -344,7 +370,44 @@ public sealed partial class MainWindowViewModel : ObservableObject
             });
         });
 
-        reader.GetLog(observer, RevisionFilterArgs.Build(filter, EffectiveHistoryLimit), pathFilter: string.Empty, hasNotes: false, autostashLabel: "autostash", cancellationToken);
+        reader.GetLog(observer, RevisionFilterArgs.Build(filter, EffectiveHistoryLimit, stashes.Select(s => s.Id)), pathFilter: string.Empty, hasNotes: false, autostashLabel: "autostash", cancellationToken);
+    }
+
+    private static List<(string Id, string Name)> ReadStashCommits(GitModule module)
+    {
+        try
+        {
+            ExecutionResult result = module.GitExecutable.Execute("stash list --format=%H%x1f%gd", throwOnErrorExit: false);
+            return result.ExitedSuccessfully
+                ? [.. result.StandardOutput.Split("\n", StringSplitOptions.RemoveEmptyEntries)
+                    .Select(line => line.Trim('\r', '\n').Split('\u001f'))
+                    .Where(parts => parts.Length == 2 && parts[0].Length >= 40)
+                    .Select(parts => (parts[0], parts[1]))]
+                : [];
+        }
+        catch (Exception ex) when (ex is InvalidOperationException or System.ComponentModel.Win32Exception)
+        {
+            return [];
+        }
+    }
+
+    private static Dictionary<ObjectId, CommitRefs> WithStashBadges(Dictionary<ObjectId, CommitRefs> refs, List<(string Id, string Name)> stashes)
+    {
+        Dictionary<ObjectId, CommitRefs> result = new(refs);
+        foreach ((string id, string name) in stashes)
+        {
+            if (!ObjectId.TryParse(id, out ObjectId commit))
+            {
+                continue;
+            }
+
+            RefBadge badge = new(RefBadgeKind.Stash, name, false);
+            result[commit] = result.TryGetValue(commit, out CommitRefs existing)
+                ? new CommitRefs(existing.Joined, [.. existing.Badges, badge])
+                : new CommitRefs(name, [badge]);
+        }
+
+        return result;
     }
 
     private sealed class BatchObserver(Action<IReadOnlyList<GitRevision>> onNext) : IObserver<IReadOnlyList<GitRevision>>

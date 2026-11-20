@@ -48,6 +48,9 @@ public sealed partial class RevisionGridView : UserControl
                 ? RevisionGridContextMenu.Build(viewModel, commit, viewModel.Actions.Clipboard ?? new TopLevelClipboardService(TopLevel.GetTopLevel(this)))
                 : null);
         UncommittedRow.Focusable = true;
+        UpdateStripes();
+        AttachedToVisualTree += (_, _) => RowColors.Changed += OnRowColorsChanged;
+        DetachedFromVisualTree += (_, _) => RowColors.Changed -= OnRowColorsChanged;
         CommitList.DoubleTapped += (_, _) => RowActivated?.Invoke(this, EventArgs.Empty);
         UncommittedRow.PointerPressed += OnUncommittedPressed;
 
@@ -55,6 +58,16 @@ public sealed partial class RevisionGridView : UserControl
         {
             AttachGrip(grip);
         }
+    }
+
+    private void OnRowColorsChanged() => Avalonia.Threading.Dispatcher.UIThread.Post(UpdateStripes);
+
+    // The striping options of Settings > Appearance > Colors become classes of the list that the row styles react to.
+    private void UpdateStripes()
+    {
+        CommitList.Classes.Set("noAlt", !RowColors.Enabled);
+        CommitList.Classes.Set("customAlt", RowColors.HasNormal);
+        CommitList.Classes.Set("customMineAlt", RowColors.HasMine);
     }
 
     /// <summary>Raised when a row is activated (double click or Enter).</summary>

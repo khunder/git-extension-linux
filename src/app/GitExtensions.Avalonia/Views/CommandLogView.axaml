@@ -22,7 +22,7 @@
         </ItemsControl.ItemsPanel>
         <ItemsControl.ItemTemplate>
           <DataTemplate x:DataType="svc:CommandLogItem">
-            <TextBlock Text="{Binding Text}" Classes.error="{Binding IsError}" FontFamily="Cascadia Mono, Consolas, DejaVu Sans Mono, monospace" FontSize="12" TextWrapping="NoWrap" />
+            <TextBlock Text="{Binding Text}" Classes.error="{Binding IsError}" FontFamily="Cascadia Mono, Consolas, DejaVu Sans Mono, monospace" FontSize="{DynamicResource EditorFontSize}" TextWrapping="NoWrap" />
           </DataTemplate>
         </ItemsControl.ItemTemplate>
       </ItemsControl>

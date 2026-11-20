@@ -30,7 +30,8 @@ public sealed class CommitGraphBuilder
     /// </summary>
     /// <param name="id">The commit id (any string key, e.g. the sha).</param>
     /// <param name="parents">The parent ids, first parent first.</param>
-    public CommitGraphRow Append(string id, IReadOnlyList<string> parents)
+    /// <param name="dimmed">The commit is not part of the checked out branch: the lines it starts are marked dimmed.</param>
+    public CommitGraphRow Append(string id, IReadOnlyList<string> parents, bool dimmed = false)
     {
         List<GraphSegment> segments = [];
         int highest = -1;
@@ -52,7 +53,7 @@ public sealed class CommitGraphBuilder
             // A branch tip nobody has referred to yet: start a new lane.
             nodeLane = AllocateLane();
             nodeColor = _nextColor++;
-            _lanes[nodeLane] = new OpenLane(null, nodeColor);
+            _lanes[nodeLane] = new OpenLane(null, nodeColor, false);
         }
         else
         {
@@ -64,15 +65,15 @@ public sealed class CommitGraphBuilder
             OpenLane lane = _lanes[i];
             if (lane.Waiting == id)
             {
-                segments.Add(new GraphSegment(GraphSegmentKind.In, i, lane.Color));
+                segments.Add(new GraphSegment(GraphSegmentKind.In, i, lane.Color, lane.Dimmed));
                 highest = Math.Max(highest, i);
-                _lanes[i] = new OpenLane(null, lane.Color);
+                _lanes[i] = new OpenLane(null, lane.Color, false);
             }
             else if (lane.Waiting is not null)
             {
                 if (i < CollapseFromLane || !collapsedPassAdded)
                 {
-                    segments.Add(new GraphSegment(GraphSegmentKind.Pass, i, lane.Color));
+                    segments.Add(new GraphSegment(GraphSegmentKind.Pass, i, lane.Color, lane.Dimmed));
                     collapsedPassAdded |= i >= CollapseFromLane;
                 }
 
@@ -92,7 +93,7 @@ public sealed class CommitGraphBuilder
             int existing = p == 0 ? -1 : _lanes.FindIndex(l => l.Waiting == parent);
             if (existing >= 0)
             {
-                segments.Add(new GraphSegment(GraphSegmentKind.Out, existing, _lanes[existing].Color));
+                segments.Add(new GraphSegment(GraphSegmentKind.Out, existing, _lanes[existing].Color, dimmed));
                 highest = Math.Max(highest, existing);
                 continue;
             }
@@ -110,8 +111,8 @@ public sealed class CommitGraphBuilder
                 color = _nextColor++;
             }
 
-            _lanes[target] = new OpenLane(parent, color);
-            segments.Add(new GraphSegment(GraphSegmentKind.Out, target, color));
+            _lanes[target] = new OpenLane(parent, color, dimmed);
+            segments.Add(new GraphSegment(GraphSegmentKind.Out, target, color, dimmed));
             highest = Math.Max(highest, target);
         }
 
@@ -136,9 +137,9 @@ public sealed class CommitGraphBuilder
             return free;
         }
 
-        _lanes.Add(new OpenLane(null, 0));
+        _lanes.Add(new OpenLane(null, 0, false));
         return _lanes.Count - 1;
     }
 
-    private readonly record struct OpenLane(string? Waiting, int Color);
+    private readonly record struct OpenLane(string? Waiting, int Color, bool Dimmed);
 }

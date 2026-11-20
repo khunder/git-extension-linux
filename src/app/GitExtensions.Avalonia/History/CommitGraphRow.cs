@@ -17,7 +17,7 @@ public enum GraphSegmentKind
 ///  for <see cref="GraphSegmentKind.In"/> it is the lane at the top; for <see cref="GraphSegmentKind.Out"/> the lane at the bottom.
 ///  The other end of In/Out is the node of the row.
 /// </summary>
-public readonly record struct GraphSegment(GraphSegmentKind Kind, int Lane, int Color);
+public readonly record struct GraphSegment(GraphSegmentKind Kind, int Lane, int Color, bool Dimmed = false);
 
 /// <summary>
 ///  Everything needed to draw the graph cell of one commit; immutable, so a virtualized row can render it on its own.

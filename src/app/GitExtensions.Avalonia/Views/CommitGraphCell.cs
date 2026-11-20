@@ -30,6 +30,16 @@ public sealed class CommitGraphCell : Control
     public static readonly StyledProperty<bool> IsHeadProperty =
         AvaloniaProperty.Register<CommitGraphCell, bool>(nameof(IsHead));
 
+    /// <summary>The commit is not part of the checked out branch: its node is drawn grey.</summary>
+    public static readonly StyledProperty<bool> IsDimmedProperty =
+        AvaloniaProperty.Register<CommitGraphCell, bool>(nameof(IsDimmed));
+
+    // Opaque, so the line behind a grey node does not show through it.
+    private static readonly IBrush DimmedFill = new ImmutableSolidColorBrush(Color.FromRgb(0xB4, 0xB9, 0xBF));
+    private static readonly IBrush DimmedFillDark = new ImmutableSolidColorBrush(Color.FromRgb(0x6C, 0x72, 0x7A));
+    private static readonly IPen DimmedPen = new ImmutablePen(new ImmutableSolidColorBrush(Color.FromArgb(0xB0, 0x9A, 0xA0, 0xA8)), LineThickness, lineCap: PenLineCap.Round);
+    private static readonly IPen HeadOutline = new ImmutablePen(new ImmutableSolidColorBrush(Color.FromArgb(0xE0, 0x00, 0x00, 0x00)), 1.25);
+
     public const int MaxVisibleLanes = 12;
     public const double LaneWidth = 14;
     private const double NodeRadius = 4.5;
@@ -38,11 +48,11 @@ public sealed class CommitGraphCell : Control
     // Mid-tone colors that stay readable on light and dark backgrounds.
     private static readonly Color[] Palette =
     [
-        Color.FromRgb(0x5B, 0x9B, 0xF0),
+        Color.FromRgb(0x3C, 0xB4, 0x3C),
         Color.FromRgb(0x9B, 0x4D, 0xC8),
         Color.FromRgb(0xE0, 0x44, 0x44),
         Color.FromRgb(0x9A, 0xA0, 0xA8),
-        Color.FromRgb(0x2E, 0xA0, 0x6B),
+        Color.FromRgb(0x5B, 0x9B, 0xF0),
         Color.FromRgb(0xE0, 0x8A, 0x2E),
         Color.FromRgb(0x14, 0xA3, 0xB8),
         Color.FromRgb(0xC2, 0x4D, 0x8F),
@@ -51,11 +61,11 @@ public sealed class CommitGraphCell : Control
     // Lighter variants of the same hues so the lanes stay distinguishable on the dark surfaces.
     private static readonly Color[] DarkPalette =
     [
-        Color.FromRgb(0x6A, 0xA9, 0xFF),
+        Color.FromRgb(0x4C, 0xD0, 0x4C),
         Color.FromRgb(0xC1, 0x83, 0xEE),
         Color.FromRgb(0xFF, 0x6B, 0x6B),
         Color.FromRgb(0xAA, 0xB0, 0xB8),
-        Color.FromRgb(0x3F, 0xC4, 0x8A),
+        Color.FromRgb(0x6A, 0xA9, 0xFF),
         Color.FromRgb(0xF2, 0xA0, 0x4A),
         Color.FromRgb(0x2C, 0xC4, 0xD8),
         Color.FromRgb(0xE0, 0x72, 0xB0),
@@ -71,7 +81,7 @@ public sealed class CommitGraphCell : Control
 
     static CommitGraphCell()
     {
-        AffectsRender<CommitGraphCell>(RowProperty, IsMergeProperty, IsHeadProperty);
+        AffectsRender<CommitGraphCell>(RowProperty, IsMergeProperty, IsHeadProperty, IsDimmedProperty);
         AffectsMeasure<CommitGraphCell>(LaneCountProperty);
     }
 
@@ -91,6 +101,12 @@ public sealed class CommitGraphCell : Control
     {
         get => GetValue(IsHeadProperty);
         set => SetValue(IsHeadProperty, value);
+    }
+
+    public bool IsDimmed
+    {
+        get => GetValue(IsDimmedProperty);
+        set => SetValue(IsDimmedProperty, value);
     }
 
     public int LaneCount
@@ -122,7 +138,8 @@ public sealed class CommitGraphCell : Control
         IBrush[] brushes = dark ? DarkBrushes : Brushes;
         foreach (GraphSegment segment in row.Segments)
         {
-            IPen pen = pens[segment.Color % Pens.Length];
+            // Lines that belong to a commit outside the checked out branch are grey, like its node.
+            IPen pen = segment.Dimmed ? DimmedPen : pens[segment.Color % Pens.Length];
             double x = X(segment.Lane);
             switch (segment.Kind)
             {
@@ -138,18 +155,18 @@ public sealed class CommitGraphCell : Control
             }
         }
 
-        IBrush fill = brushes[row.Color % Brushes.Length];
+        IBrush fill = IsDimmed ? (dark ? DimmedFillDark : DimmedFill) : brushes[row.Color % Brushes.Length];
         Point center = new(nodeX, middle);
         if (IsMerge)
         {
-            context.DrawRectangle(fill, null, new Rect(nodeX - NodeRadius, middle - NodeRadius, NodeRadius * 2, NodeRadius * 2));
+            context.DrawRectangle(fill, IsHead ? HeadOutline : null, new Rect(nodeX - NodeRadius, middle - NodeRadius, NodeRadius * 2, NodeRadius * 2));
         }
         else
         {
             context.DrawEllipse(fill, null, center, NodeRadius, NodeRadius);
         }
 
-        if (IsHead)
+        if (IsHead && !IsMerge)
         {
             context.DrawEllipse(null, pens[row.Color % Pens.Length], center, NodeRadius + 2.5, NodeRadius + 2.5);
         }

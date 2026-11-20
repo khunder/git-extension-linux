@@ -51,8 +51,8 @@
         <ItemsControl.ItemTemplate>
           <DataTemplate x:DataType="rev:ContentLine">
             <Grid ColumnDefinitions="52,*">
-              <TextBlock Text="{Binding Number}" FontFamily="Cascadia Mono, Consolas, DejaVu Sans Mono, monospace" FontSize="12" Opacity="0.5" TextAlignment="Right" Margin="0,0,8,0" />
-              <TextBlock Grid.Column="1" Text="{Binding DisplayText}" FontFamily="Cascadia Mono, Consolas, DejaVu Sans Mono, monospace" FontSize="12" TextWrapping="NoWrap" />
+              <TextBlock Text="{Binding Number}" FontFamily="Cascadia Mono, Consolas, DejaVu Sans Mono, monospace" FontSize="{DynamicResource EditorFontSize}" Opacity="0.5" TextAlignment="Right" Margin="0,0,8,0" />
+              <TextBlock Grid.Column="1" Text="{Binding DisplayText}" FontFamily="Cascadia Mono, Consolas, DejaVu Sans Mono, monospace" FontSize="{DynamicResource EditorFontSize}" TextWrapping="NoWrap" />
             </Grid>
           </DataTemplate>
         </ItemsControl.ItemTemplate>

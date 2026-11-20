@@ -15,6 +15,8 @@ public sealed partial class CommitWindow
         MenuKit.AttachBuilt(MessageBox, _ => ViewModel is { } viewModel ? MessageMenu(viewModel) : null);
         MenuKit.AttachBuilt(UnstagedList, row => row is ChangedFileViewModel file ? FileListContextMenu.Build(MenuContext(file, staged: false)) : null);
         MenuKit.AttachBuilt(StagedList, row => row is ChangedFileViewModel file ? FileListContextMenu.Build(MenuContext(file, staged: true)) : null);
+        MenuKit.AttachBuilt(UnstagedTreeView, row => row is ChangeTreeNode { File: { } file } ? FileListContextMenu.Build(MenuContext(file, staged: false)) : null);
+        MenuKit.AttachBuilt(StagedTreeView, row => row is ChangeTreeNode { File: { } file } ? FileListContextMenu.Build(MenuContext(file, staged: true)) : null);
     }
 
     private FileMenuContext MenuContext(ChangedFileViewModel row, bool staged)

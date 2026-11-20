@@ -183,11 +183,19 @@ public static partial class SettingsPageCatalog
             B("Use multiple colors for branches", () => AppSettings.MulticolorBranches, v => AppSettings.MulticolorBranches = v),
             B("Highlight authored revisions", () => AppSettings.HighlightAuthoredRevisions, v => AppSettings.HighlightAuthoredRevisions = v),
             B("Fill ref labels", () => AppSettings.FillRefLabels, v => AppSettings.FillRefLabels = v),
-            B("Draw alternate background color for rows", () => AppSettings.RevisionGraphDrawAlternateBackColor, v => AppSettings.RevisionGraphDrawAlternateBackColor = v),
+            B("Draw alternate background color for rows", () => AppSettings.RevisionGraphDrawAlternateBackColor, SetAlternateRows),
+            new ColorRow("Alternate row color", () => RowColors.EffectiveNormal, c => RowColors.SetNormal(c.ToString()), () => RowColors.SetNormal(string.Empty), "The stripe of every other row in the revision grid."),
+            new ColorRow("Alternate row color of your commits", () => RowColors.EffectiveMine, c => RowColors.SetMine(c.ToString()), () => RowColors.SetMine(string.Empty), "The stripe of every other row of the commits you authored."),
             B("Draw non-relatives in gray", () => AppSettings.RevisionGraphDrawNonRelativesGray, v => AppSettings.RevisionGraphDrawNonRelativesGray = v),
             B("Draw non-relatives text in gray", () => AppSettings.RevisionGraphDrawNonRelativesTextGray, v => AppSettings.RevisionGraphDrawNonRelativesTextGray = v),
-            new NoticeRow("Not available yet: editing individual colors. Colors follow the theme."),
+            new NoticeRow("Pick the alpha in the color picker for a more or less subtle stripe; Use default goes back to the theme. The other colors follow the theme."),
             NotAppliedNotice());
+    }
+
+    private static void SetAlternateRows(bool value)
+    {
+        AppSettings.RevisionGraphDrawAlternateBackColor = value;
+        RowColors.NotifyEnabledChanged();
     }
 
     private static SettingsPageViewModel Fonts()

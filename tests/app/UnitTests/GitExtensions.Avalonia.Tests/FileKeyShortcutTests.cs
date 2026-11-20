@@ -48,7 +48,7 @@ public class FileKeyShortcutTests
 
     private static async Task<(Window Owner, MainWindowViewModel Main, CommitWindow Window, CommitWindowViewModel ViewModel)> ShowAsync(string path)
     {
-        CommitWindowStore.Current = new CommitWindowStore(Path.Combine(Path.GetTempPath(), "ge-avalonia-keys-" + Guid.NewGuid().ToString("N") + ".json"));
+        CommitWindowStore.Current = new CommitWindowStore(Path.Combine(Path.GetTempPath(), "ge-avalonia-keys-" + Guid.NewGuid().ToString("N") + ".json")).WithListLayout();
         MainWindowViewModel main = new(GitEnvironment.Initialize(), new NoFolderPicker());
         Window owner = new() { Width = 800, Height = 600 };
         owner.Show();

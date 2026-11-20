@@ -25,6 +25,7 @@ public sealed partial class CommitWindowViewModel : ObservableObject, IDisposabl
     private bool _syncingSelection;
     private bool _disposed;
     private Func<Task>? _pendingReset;
+    private readonly HashSet<string> _collapsedFolders = [];
     private IReadOnlyList<ChangedFileViewModel> _unstagedSelection = [];
     private IReadOnlyList<ChangedFileViewModel> _stagedSelection = [];
 
@@ -73,6 +74,9 @@ public sealed partial class CommitWindowViewModel : ObservableObject, IDisposabl
     [ObservableProperty]
     private bool _isPushing;
 
+    [ObservableProperty]
+    private bool _showTree;
+
     /// <param name="main">The main window view-model that is refreshed after changes.</param>
     public CommitWindowViewModel(MainWindowViewModel main, GitModule module, IMessageDialogs messages, CommitWindowStore store)
     {
@@ -84,6 +88,7 @@ public sealed partial class CommitWindowViewModel : ObservableObject, IDisposabl
         RepositoryName = new DirectoryInfo(module.WorkingDir.TrimEnd('/', '\\')).Name;
         _title = $"Commit to {RepositoryName}";
         _closeAfterCommit = store.CloseAfterCommit;
+        _showTree = store.ShowTree;
 
         Commit = new CommitViewModel(module, AllChanges, messages, () => Task.CompletedTask);
         Commit.Committed += store.AddRecent;
@@ -120,6 +125,15 @@ public sealed partial class CommitWindowViewModel : ObservableObject, IDisposabl
     public RangeObservableCollection<ChangedFileViewModel> Unstaged { get; } = [];
 
     public RangeObservableCollection<ChangedFileViewModel> Staged { get; } = [];
+
+    /// <summary>The unstaged files grouped by folder (the tree layout of the list).</summary>
+    public RangeObservableCollection<ChangeTreeNode> UnstagedTree { get; } = [];
+
+    /// <summary>The staged files grouped by folder (the tree layout of the list).</summary>
+    public RangeObservableCollection<ChangeTreeNode> StagedTree { get; } = [];
+
+    /// <summary>The flat list layout is shown (the opposite of <see cref="ShowTree"/>).</summary>
+    public bool ShowList => !ShowTree;
 
     /// <summary>The last messages that were committed, newest first.</summary>
     public RangeObservableCollection<string> RecentMessages { get; } = [];
@@ -420,6 +434,12 @@ public sealed partial class CommitWindowViewModel : ObservableObject, IDisposabl
 
     partial void OnCloseAfterCommitChanged(bool value) => _store.SetCloseAfterCommit(value);
 
+    partial void OnShowTreeChanged(bool value)
+    {
+        _store.SetShowTree(value);
+        OnPropertyChanged(nameof(ShowList));
+    }
+
     partial void OnErrorTextChanged(string? value) => OnPropertyChanged(nameof(HasError));
 
     private async Task ShowSelectedAsync()
@@ -601,6 +621,8 @@ public sealed partial class CommitWindowViewModel : ObservableObject, IDisposabl
 
         Unstaged.ReplaceAll(AllChanges.Where(c => !c.IsStaged && Matches(c)));
         Staged.ReplaceAll(AllChanges.Where(c => c.IsStaged && Matches(c)));
+        UnstagedTree.ReplaceAll(ChangeTreeNode.Build(Unstaged, _collapsedFolders, "unstaged"));
+        StagedTree.ReplaceAll(ChangeTreeNode.Build(Staged, _collapsedFolders, "staged"));
         UpdateStatus();
     }
 

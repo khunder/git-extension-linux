@@ -117,7 +117,7 @@ public class MergeConflictsAndCommitExtrasTests
         owner.Show();
         WindowService service = new(main, owner);
         main.WindowService = service;
-        CommitWindowStore.Current = new CommitWindowStore(NewStorePath());
+        CommitWindowStore.Current = new CommitWindowStore(NewStorePath()).WithListLayout();
         main.ShowCommitWindowCommand.Execute(null);
         CommitWindow window = service.CommitWindow!;
         CommitWindowViewModel viewModel = (CommitWindowViewModel)window.DataContext!;
@@ -243,7 +243,7 @@ public class MergeConflictsAndCommitExtrasTests
     public async Task Keys_s_u_and_r_stage_unstage_and_reset_the_focused_pane()
     {
         using TestRepository repository = new();
-        CommitWindowStore.Current = new CommitWindowStore(NewStorePath());
+        CommitWindowStore.Current = new CommitWindowStore(NewStorePath()).WithListLayout();
         MainWindowViewModel main = new(GitEnvironment.Initialize(), new NoFolderPicker());
         Window owner = new() { Width = 800, Height = 600 };
         owner.Show();

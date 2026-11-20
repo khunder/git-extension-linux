@@ -23,6 +23,8 @@ public sealed class App : Application
             GitEnvironment git = GitEnvironment.Initialize();
 
             ThemeService.Current.ApplyCurrent();
+            EditorZoom.Install();
+            RowColors.Apply();
 
             MainWindow window = new();
             MainWindowViewModel viewModel = new(git, new WindowFolderPicker(window));

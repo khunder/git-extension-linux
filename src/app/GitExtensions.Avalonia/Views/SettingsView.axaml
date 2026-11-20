@@ -126,6 +126,18 @@
                       </StackPanel>
                     </Border>
                   </DataTemplate>
+                  <DataTemplate DataType="vm:ColorRow">
+                    <Border Classes.match="{Binding IsMatch}" Padding="4,2" CornerRadius="3">
+                      <StackPanel Spacing="2">
+                        <Grid ColumnDefinitions="*,Auto,Auto" ColumnSpacing="8">
+                          <TextBlock Text="{Binding Label}" TextWrapping="Wrap" VerticalAlignment="Center" />
+                          <ColorPicker Grid.Column="1" Color="{Binding Value, Mode=TwoWay}" IsAlphaEnabled="True" IsAlphaVisible="True" IsEnabled="{Binding IsEnabled}" />
+                          <Button Grid.Column="2" Content="Use default" Command="{Binding UseDefaultCommand}" IsEnabled="{Binding IsEnabled}" />
+                        </Grid>
+                        <TextBlock Text="{Binding Description}" IsVisible="{Binding HasDescription}" Opacity="0.7" FontSize="12" TextWrapping="Wrap" />
+                      </StackPanel>
+                    </Border>
+                  </DataTemplate>
                   <DataTemplate DataType="vm:ActionRow">
                     <StackPanel Spacing="4" Margin="0,2">
                       <StackPanel Orientation="Horizontal" Spacing="8">

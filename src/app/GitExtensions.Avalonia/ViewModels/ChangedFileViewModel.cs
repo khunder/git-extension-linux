@@ -32,6 +32,16 @@ public sealed class ChangedFileViewModel
         };
     }
 
+    /// <summary>The icon name for the change: the pen (modified), green plus (added), red minus (deleted), like the original.</summary>
+    public string StatusIcon => Status switch
+    {
+        "A" => "FileAdded",
+        "D" => "FileRemoved",
+        "R" or "C" => "Renamed",
+        "U" => "Unmerged",
+        _ => "FileStatusModified"
+    };
+
     /// <summary>The file name without its folder.</summary>
     public string FileName { get; }
 

@@ -193,6 +193,10 @@
       <MenuItem x:Name="ViewRefreshMenuItem" Header="_Refresh" InputGesture="F5" Command="{Binding RefreshCommand}" >
         <MenuItem.Icon><local:AppIcon IconName="ReloadRevisions" /></MenuItem.Icon>
       </MenuItem>
+      <Separator />
+      <MenuItem x:Name="ZoomInMenuItem" Header="Zoom _in" InputGesture="Ctrl+OemPlus" Click="OnZoomIn" />
+      <MenuItem x:Name="ZoomOutMenuItem" Header="Zoom _out" InputGesture="Ctrl+OemMinus" Click="OnZoomOut" />
+      <MenuItem x:Name="ZoomResetMenuItem" Header="Reset _zoom" InputGesture="Ctrl+D0" Click="OnZoomReset" />
     </MenuItem>
 
     <!-- Commands -->

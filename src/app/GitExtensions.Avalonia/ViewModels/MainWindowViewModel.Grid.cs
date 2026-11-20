@@ -288,8 +288,25 @@ public sealed partial class MainWindowViewModel
                         .Select(gitRef => new RefBadge(
                             gitRef.IsTag ? RefBadgeKind.Tag : gitRef.IsRemote ? RefBadgeKind.RemoteBranch : RefBadgeKind.LocalBranch,
                             gitRef.IsTag ? gitRef.LocalName : gitRef.IsRemote ? gitRef.Name : gitRef.LocalName,
-                            gitRef.IsHead && gitRef.LocalName == current))
+                            gitRef.IsHead && gitRef.LocalName == current)
+                        {
+                            IsCurrentUpstream = gitRef.IsRemote && current.Length > 0 && gitRef.Name.IndexOf('/') is var slash and > 0 && string.Equals(gitRef.Name[(slash + 1)..], current, StringComparison.Ordinal),
+                        })
                         .ToList()));
+    }
+
+    // Like the original: the label of the ref, what kind of ref it is, then the message of the commit it points at.
+    private static string BadgeToolTip(RefBadge badge, GitRevision revision)
+    {
+        string kind = badge.Kind switch
+        {
+            RefBadgeKind.Tag => "is a tag",
+            RefBadgeKind.RemoteBranch => "is a remote branch",
+            RefBadgeKind.Stash => "is a stash",
+            _ => badge.IsCurrent ? "is the checked out branch" : "is a local branch",
+        };
+        string message = string.IsNullOrWhiteSpace(revision.Body) ? revision.Subject : revision.Body.Trim();
+        return $"[{badge.Name}]{Environment.NewLine}{kind}{Environment.NewLine}{Environment.NewLine}{message}";
     }
 
     private static CommitItemViewModel CreateItem(GitRevision revision, Dictionary<ObjectId, CommitRefs> refs, RevisionFilter filter, string? user, bool alternate, CommitActionsViewModel actions)
@@ -297,7 +314,7 @@ public sealed partial class MainWindowViewModel
         CommitRefs found = refs.GetValueOrDefault(revision.ObjectId);
         IReadOnlyList<RefBadge> badges = found.Badges is null
             ? []
-            : RefBadgeBuilder.Arrange(found.Badges.Where(b => (b.Kind != RefBadgeKind.RemoteBranch || filter.ShowRemoteBranches) && (b.Kind != RefBadgeKind.Tag || filter.ShowTags)));
+            : [.. RefBadgeBuilder.Arrange(found.Badges.Where(b => (b.Kind != RefBadgeKind.RemoteBranch || filter.ShowRemoteBranches) && (b.Kind != RefBadgeKind.Tag || filter.ShowTags))).Select(b => b.IsOverflow || b.ToolTip is not null ? b : b with { ToolTip = BadgeToolTip(b, revision) })];
         return new CommitItemViewModel(revision, found.Joined ?? string.Empty, badges)
         {
             Actions = actions,

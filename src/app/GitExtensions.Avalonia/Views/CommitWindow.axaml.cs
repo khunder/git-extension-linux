@@ -14,6 +14,7 @@ public sealed partial class CommitWindow : Window
 {
     private bool _forceClose;
     private CommitWindowViewModel? _attached;
+    private bool _syncingTree;
 
     public CommitWindow()
     {
@@ -40,16 +41,24 @@ public sealed partial class CommitWindow : Window
         if (_attached is not null)
         {
             _attached.CloseRequested -= OnCloseRequested;
+            _attached.UnstagedTree.CollectionChanged -= OnUnstagedTreeChanged;
+            _attached.StagedTree.CollectionChanged -= OnStagedTreeChanged;
         }
 
         _attached = ViewModel;
         if (_attached is not null)
         {
             _attached.CloseRequested += OnCloseRequested;
+            _attached.UnstagedTree.CollectionChanged += OnUnstagedTreeChanged;
+            _attached.StagedTree.CollectionChanged += OnStagedTreeChanged;
         }
     }
 
     private void OnCloseRequested() => Dispatcher.UIThread.Post(ForceClose);
+
+    private void OnUnstagedTreeChanged(object? sender, System.Collections.Specialized.NotifyCollectionChangedEventArgs e) => OnTreeRebuilt(UnstagedTreeView, staged: false);
+
+    private void OnStagedTreeChanged(object? sender, System.Collections.Specialized.NotifyCollectionChangedEventArgs e) => OnTreeRebuilt(StagedTreeView, staged: true);
 
     private void OnClosing(object? sender, WindowClosingEventArgs e)
     {
@@ -103,7 +112,8 @@ public sealed partial class CommitWindow : Window
         }
 
         // The side of the file that is selected: the staged list when it has the focus or holds the selected file.
-        bool staged = IsWithin(focused, StagedList) || (!IsWithin(focused, UnstagedList) && viewModel.SelectedStaged is not null && viewModel.SelectedUnstaged is null);
+        bool staged = IsWithin(focused, StagedList) || IsWithin(focused, StagedTreeView)
+            || (!IsWithin(focused, UnstagedList) && !IsWithin(focused, UnstagedTreeView) && viewModel.SelectedStaged is not null && viewModel.SelectedUnstaged is null);
         IReadOnlyList<ChangedFileViewModel> files = staged ? viewModel.StagedSelection : viewModel.UnstagedSelection;
         if (files.Count == 0)
         {
@@ -131,7 +141,7 @@ public sealed partial class CommitWindow : Window
 
     private void OnUnstagedSelectionChanged(object? sender, SelectionChangedEventArgs e)
     {
-        if (sender is ListBox list && ViewModel is { } viewModel)
+        if (!_syncingTree && sender is ListBox list && ViewModel is { } viewModel)
         {
             viewModel.UnstagedSelection = [.. list.SelectedItems?.OfType<ChangedFileViewModel>() ?? []];
         }
@@ -139,15 +149,100 @@ public sealed partial class CommitWindow : Window
 
     private void OnStagedSelectionChanged(object? sender, SelectionChangedEventArgs e)
     {
-        if (sender is ListBox list && ViewModel is { } viewModel)
+        if (!_syncingTree && sender is ListBox list && ViewModel is { } viewModel)
         {
             viewModel.StagedSelection = [.. list.SelectedItems?.OfType<ChangedFileViewModel>() ?? []];
         }
     }
 
+    private void OnUnstagedTreeSelectionChanged(object? sender, SelectionChangedEventArgs e)
+        => OnTreeSelectionChanged(UnstagedTreeView, StagedTreeView, staged: false);
+
+    private void OnStagedTreeSelectionChanged(object? sender, SelectionChangedEventArgs e)
+        => OnTreeSelectionChanged(StagedTreeView, UnstagedTreeView, staged: true);
+
+    // The selected folders stand for all the files below them; the first file drives the diff, like the first row of a list.
+    private void OnTreeSelectionChanged(TreeView tree, TreeView other, bool staged)
+    {
+        if (_syncingTree || ViewModel is not { } viewModel)
+        {
+            return;
+        }
+
+        List<ChangedFileViewModel> files = [.. (tree.SelectedItems?.OfType<ChangeTreeNode>() ?? []).SelectMany(n => n.Files()).Distinct()];
+        _syncingTree = true;
+        try
+        {
+            if (files.Count > 0)
+            {
+                other.SelectedItems?.Clear();
+            }
+
+            if (staged)
+            {
+                viewModel.StagedSelection = files;
+                viewModel.SelectedStaged = files.FirstOrDefault();
+            }
+            else
+            {
+                viewModel.UnstagedSelection = files;
+                viewModel.SelectedUnstaged = files.FirstOrDefault();
+            }
+        }
+        finally
+        {
+            _syncingTree = false;
+        }
+    }
+
+    // After the lists are rebuilt (refresh, staging) select the node of the file that is still selected in the view-model.
+    private void OnTreeRebuilt(TreeView tree, bool staged)
+    {
+        Dispatcher.UIThread.Post(() =>
+        {
+            if (ViewModel is not { } viewModel || _syncingTree)
+            {
+                return;
+            }
+
+            ChangedFileViewModel? file = staged ? viewModel.SelectedStaged : viewModel.SelectedUnstaged;
+            ChangeTreeNode? node = file is null ? null : FindNode(tree.ItemsSource as IEnumerable<ChangeTreeNode>, file);
+            _syncingTree = true;
+            try
+            {
+                if (node is not null)
+                {
+                    tree.SelectedItem = node;
+                }
+            }
+            finally
+            {
+                _syncingTree = false;
+            }
+        });
+    }
+
+    private static ChangeTreeNode? FindNode(IEnumerable<ChangeTreeNode>? nodes, ChangedFileViewModel file)
+    {
+        foreach (ChangeTreeNode node in nodes ?? [])
+        {
+            if (node.File == file)
+            {
+                return node;
+            }
+
+            if (FindNode(node.Children, file) is { } found)
+            {
+                return found;
+            }
+        }
+
+        return null;
+    }
+
     private void OnUnstagedDoubleTapped(object? sender, TappedEventArgs e)
     {
-        if (ViewModel is { } viewModel && e.Source is Control { DataContext: ChangedFileViewModel })
+        if (ViewModel is { } viewModel && e.Source is Control { DataContext: ChangedFileViewModel or ChangeTreeNode { IsFile: true } })
         {
             viewModel.StageSelectedCommand.Execute(null);
         }
@@ -155,7 +250,7 @@ public sealed partial class CommitWindow : Window
 
     private void OnStagedDoubleTapped(object? sender, TappedEventArgs e)
     {
-        if (ViewModel is { } viewModel && e.Source is Control { DataContext: ChangedFileViewModel })
+        if (ViewModel is { } viewModel && e.Source is Control { DataContext: ChangedFileViewModel or ChangeTreeNode { IsFile: true } })
         {
             viewModel.UnstageSelectedCommand.Execute(null);
         }

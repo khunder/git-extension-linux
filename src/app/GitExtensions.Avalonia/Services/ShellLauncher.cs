@@ -26,6 +26,12 @@ public static class ShellLauncher
         {
             if (OperatingSystem.IsWindows())
             {
+                if (FindGitBash() is { } gitBash)
+                {
+                    _ = Process.Start(new ProcessStartInfo(gitBash) { WorkingDirectory = folder, UseShellExecute = false, ArgumentList = { "--cd=" + folder } });
+                    return null;
+                }
+
                 _ = Process.Start(new ProcessStartInfo("cmd.exe") { WorkingDirectory = folder, UseShellExecute = true });
                 return null;
             }
@@ -53,6 +59,28 @@ public static class ShellLauncher
         {
             return $"Could not start a terminal: {ex.Message}";
         }
+    }
+
+    /// <summary>Git for Windows' <c>git-bash.exe</c>: next to the <c>git.exe</c> on the PATH, or in the usual install folders.</summary>
+    private static string? FindGitBash()
+    {
+        List<string> candidates = [];
+        if (FindOnPath("git.exe") is { } git && Path.GetDirectoryName(git) is { } gitDir)
+        {
+            // <root>\cmd\git.exe, <root>\bin\git.exe or <root>\mingw64\bin\git.exe
+            for (string? dir = gitDir; dir is not null && candidates.Count < 4; dir = Path.GetDirectoryName(dir))
+            {
+                candidates.Add(Path.Combine(dir, "git-bash.exe"));
+            }
+        }
+
+        foreach (Environment.SpecialFolder folder in new[] { Environment.SpecialFolder.ProgramFiles, Environment.SpecialFolder.ProgramFilesX86 })
+        {
+            candidates.Add(Path.Combine(Environment.GetFolderPath(folder), "Git", "git-bash.exe"));
+        }
+
+        candidates.Add(Path.Combine(Environment.GetFolderPath(Environment.SpecialFolder.LocalApplicationData), "Programs", "Git", "git-bash.exe"));
+        return candidates.FirstOrDefault(File.Exists);
     }
 
     private static string? FindOnPath(string program)

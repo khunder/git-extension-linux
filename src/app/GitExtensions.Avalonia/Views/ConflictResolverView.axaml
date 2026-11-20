@@ -54,7 +54,7 @@
               <Border Background="{DynamicResource ConflictMarkerBackground}" IsVisible="{Binding IsMarker}" />
               <Border Background="{DynamicResource ConflictOursBackground}" IsVisible="{Binding IsOurs}" />
               <Border Background="{DynamicResource ConflictTheirsBackground}" IsVisible="{Binding IsTheirs}" />
-              <TextBlock Text="{Binding Text}" Padding="8,0" FontFamily="Cascadia Mono, Consolas, DejaVu Sans Mono, monospace" />
+              <TextBlock Text="{Binding Text}" Padding="8,0" FontFamily="Cascadia Mono, Consolas, DejaVu Sans Mono, monospace" FontSize="{DynamicResource EditorFontSize}" />
             </Panel>
           </DataTemplate>
         </ItemsControl.ItemTemplate>

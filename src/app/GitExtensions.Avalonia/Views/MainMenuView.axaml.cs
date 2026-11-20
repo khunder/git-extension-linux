@@ -101,4 +101,10 @@ public sealed partial class MainMenuView : UserControl
             item.IsChecked = item.Tag is string tag && tag == current;
         }
     }
+
+    private void OnZoomIn(object? sender, RoutedEventArgs e) => EditorZoom.Change(+1);
+
+    private void OnZoomOut(object? sender, RoutedEventArgs e) => EditorZoom.Change(-1);
+
+    private void OnZoomReset(object? sender, RoutedEventArgs e) => EditorZoom.Reset();
 }

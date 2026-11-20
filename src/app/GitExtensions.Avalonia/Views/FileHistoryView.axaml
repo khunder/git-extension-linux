@@ -40,7 +40,7 @@
               <StackPanel Spacing="1" ToolTip.Tip="{Binding Path}">
                 <TextBlock Text="{Binding Subject}" TextTrimming="CharacterEllipsis" />
                 <Grid ColumnDefinitions="76,*,Auto" ColumnSpacing="8">
-                  <TextBlock Text="{Binding ShortHash}" FontFamily="Cascadia Mono, Consolas, DejaVu Sans Mono, monospace" FontSize="12" Opacity="0.65" />
+                  <TextBlock Text="{Binding ShortHash}" FontFamily="Cascadia Mono, Consolas, DejaVu Sans Mono, monospace" FontSize="{DynamicResource EditorFontSize}" Opacity="0.65" />
                   <TextBlock Grid.Column="1" Text="{Binding Author}" FontSize="12" Opacity="0.75" TextTrimming="CharacterEllipsis" />
                   <TextBlock Grid.Column="2" Text="{Binding DateText}" FontSize="12" Opacity="0.6" />
                 </Grid>
@@ -76,9 +76,9 @@
                         Classes.removed="{Binding Kind, Converter={x:Static ObjectConverters.Equal}, ConverterParameter={x:Static diff:DiffLineKind.Removed}}"
                         Classes.hunk="{Binding Kind, Converter={x:Static ObjectConverters.Equal}, ConverterParameter={x:Static diff:DiffLineKind.Hunk}}">
                   <Grid ColumnDefinitions="44,44,*" Opacity="{Binding Kind, Converter={x:Static views:DiffLineBrushes.TextOpacity}}">
-                    <TextBlock Text="{Binding OldNumber}" FontFamily="Cascadia Mono, Consolas, DejaVu Sans Mono, monospace" FontSize="12" Opacity="0.5" TextAlignment="Right" Margin="0,0,6,0" />
-                    <TextBlock Grid.Column="1" Text="{Binding NewNumber}" FontFamily="Cascadia Mono, Consolas, DejaVu Sans Mono, monospace" FontSize="12" Opacity="0.5" TextAlignment="Right" Margin="0,0,6,0" />
-                    <TextBlock Grid.Column="2" Text="{Binding DisplayText}" FontFamily="Cascadia Mono, Consolas, DejaVu Sans Mono, monospace" FontSize="12" TextWrapping="NoWrap" />
+                    <TextBlock Text="{Binding OldNumber}" FontFamily="Cascadia Mono, Consolas, DejaVu Sans Mono, monospace" FontSize="{DynamicResource EditorFontSize}" Opacity="0.5" TextAlignment="Right" Margin="0,0,6,0" />
+                    <TextBlock Grid.Column="1" Text="{Binding NewNumber}" FontFamily="Cascadia Mono, Consolas, DejaVu Sans Mono, monospace" FontSize="{DynamicResource EditorFontSize}" Opacity="0.5" TextAlignment="Right" Margin="0,0,6,0" />
+                    <TextBlock Grid.Column="2" Text="{Binding DisplayText}" FontFamily="Cascadia Mono, Consolas, DejaVu Sans Mono, monospace" FontSize="{DynamicResource EditorFontSize}" TextWrapping="NoWrap" />
                   </Grid>
                 </Border>
               </DataTemplate>

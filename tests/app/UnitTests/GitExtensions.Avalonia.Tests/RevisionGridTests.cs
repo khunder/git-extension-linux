@@ -71,14 +71,30 @@ public class RevisionGridTests
         IReadOnlyList<RefBadge> badges = RefBadgeBuilder.Arrange(
         [
             new RefBadge(RefBadgeKind.Tag, "v1", false),
-            new RefBadge(RefBadgeKind.RemoteBranch, "origin/main", false),
+            new RefBadge(RefBadgeKind.RemoteBranch, "origin/dev", false),
             new RefBadge(RefBadgeKind.LocalBranch, "zeta", false),
             new RefBadge(RefBadgeKind.LocalBranch, "main", true),
         ],
         maxVisible: 4);
-        badges.Select(b => b.Name).Should().Equal("main", "zeta", "origin/main", "v1");
+        badges.Select(b => b.Name).Should().Equal("main", "zeta", "origin/dev", "v1");
         badges[0].IsCurrent.Should().BeTrue();
         badges.Should().NotContain(b => b.IsOverflow);
+    }
+
+    [AvaloniaTest]
+    public void A_local_branch_and_its_remote_on_the_same_commit_become_one_joined_label()
+    {
+        IReadOnlyList<RefBadge> badges = RefBadgeBuilder.Arrange(
+        [
+            new RefBadge(RefBadgeKind.LocalBranch, "feature/x", false),
+            new RefBadge(RefBadgeKind.RemoteBranch, "origin/feature/x", false),
+            new RefBadge(RefBadgeKind.RemoteBranch, "upstream/other", false),
+        ]);
+
+        badges.Select(b => b.Name).Should().Equal("feature/x", "upstream/other");
+        badges[0].RemoteSuffix.Should().Be("origin");
+        badges[0].HasRemoteSuffix.Should().BeTrue();
+        badges[1].HasRemoteSuffix.Should().BeFalse();
     }
 
     [AvaloniaTest]
@@ -96,7 +112,7 @@ public class RevisionGridTests
     public void Avatar_initials_and_colour_derive_from_the_name()
     {
         AvatarStyle.Initials("Philippe Miossec").Should().Be("PM");
-        AvatarStyle.Initials("RussKie").Should().Be("R");
+        AvatarStyle.Initials("RussKie").Should().Be("Ru", "a single name shows its first two letters, like the original");
         AvatarStyle.Initials("  ").Should().Be("?");
         AvatarStyle.Initials("jan-de.vries").Should().Be("JV");
         AvatarStyle.ColorIndex("Alice").Should().Be(AvatarStyle.ColorIndex("alice"));

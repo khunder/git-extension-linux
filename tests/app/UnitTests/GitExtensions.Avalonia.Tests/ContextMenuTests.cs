@@ -693,7 +693,7 @@ public class ContextMenuTests
             string suffix = theme == ThemeVariant.Light ? "light" : "dark";
             MainWindowViewModel main = new(GitEnvironment.Initialize(), new NoFolderPicker());
             await main.OpenAsync(repository.Path);
-            CommitWindowViewModel vm = main.CreateCommitWindowViewModel(new CommitWindowStore(Path.Combine(Path.GetTempPath(), "ge-ctx-" + Guid.NewGuid().ToString("N") + ".json")))!;
+            CommitWindowViewModel vm = main.CreateCommitWindowViewModel(new CommitWindowStore(Path.Combine(Path.GetTempPath(), "ge-ctx-" + Guid.NewGuid().ToString("N") + ".json")).WithListLayout())!;
             await vm.LoadAsync();
             CommitWindow window = new() { DataContext = vm, Width = 1000, Height = 700, RequestedThemeVariant = theme };
             window.Show();
@@ -727,7 +727,7 @@ public class ContextMenuTests
         repository.RunGit("config", "user.email", "committer@example.com");
         MainWindowViewModel main = new(GitEnvironment.Initialize(), new NoFolderPicker());
         await main.OpenAsync(repository.Path);
-        CommitWindowViewModel vm = main.CreateCommitWindowViewModel(new CommitWindowStore(Path.Combine(Path.GetTempPath(), "ge-ctx-" + Guid.NewGuid().ToString("N") + ".json")))!;
+        CommitWindowViewModel vm = main.CreateCommitWindowViewModel(new CommitWindowStore(Path.Combine(Path.GetTempPath(), "ge-ctx-" + Guid.NewGuid().ToString("N") + ".json")).WithListLayout())!;
         await vm.LoadAsync();
         CommitWindow window = new() { DataContext = vm, Width = 1000, Height = 700 };
         window.Show();
@@ -764,7 +764,7 @@ public class ContextMenuTests
         using TestRepository repository = new();
         MainWindowViewModel main = new(GitEnvironment.Initialize(), new NoFolderPicker());
         await main.OpenAsync(repository.Path);
-        CommitWindowViewModel vm = main.CreateCommitWindowViewModel(new CommitWindowStore(Path.Combine(Path.GetTempPath(), "ge-ctx-" + Guid.NewGuid().ToString("N") + ".json")))!;
+        CommitWindowViewModel vm = main.CreateCommitWindowViewModel(new CommitWindowStore(Path.Combine(Path.GetTempPath(), "ge-ctx-" + Guid.NewGuid().ToString("N") + ".json")).WithListLayout())!;
         await vm.LoadAsync();
         vm.SelectedUnstaged = vm.Unstaged.Single(f => f.Name == "a.txt");
         await WaitUntilAsync(() => vm.Diff.Lines.Any(l => l.IsChange));

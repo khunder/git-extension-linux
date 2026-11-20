@@ -117,3 +117,13 @@ internal sealed class TestRepository : IDisposable
         }
     }
 }
+
+internal static class CommitWindowStoreTestExtensions
+{
+    /// <summary>The tests drive the flat file lists; the tree layout has its own tests.</summary>
+    public static GitExtensions.Desktop.Services.CommitWindowStore WithListLayout(this GitExtensions.Desktop.Services.CommitWindowStore store)
+    {
+        store.SetShowTree(false);
+        return store;
+    }
+}

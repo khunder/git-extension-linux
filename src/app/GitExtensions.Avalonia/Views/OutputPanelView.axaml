@@ -14,7 +14,7 @@
       </Grid>
       <ScrollViewer x:Name="OutputScroll" HorizontalScrollBarVisibility="Auto">
         <SelectableTextBlock x:Name="OutputBlock" Text="{Binding OutputText}" Margin="8,0,8,4"
-                             FontFamily="Cascadia Mono, Consolas, DejaVu Sans Mono, monospace" FontSize="12" />
+                             FontFamily="Cascadia Mono, Consolas, DejaVu Sans Mono, monospace" FontSize="{DynamicResource EditorFontSize}" />
       </ScrollViewer>
     </DockPanel>
   </Border>

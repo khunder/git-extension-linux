@@ -244,3 +244,20 @@ public sealed class RowList : ObservableCollection<SettingRow>
         return this;
     }
 }
+
+/// <summary>A color edited with a color picker; "Use default" goes back to the theme's color.</summary>
+public sealed partial class ColorRow : ValueRow<Avalonia.Media.Color>
+{
+    private readonly Action _useDefault;
+
+    public ColorRow(string label, Func<Avalonia.Media.Color> get, Action<Avalonia.Media.Color> set, Action useDefault, string? description = null)
+        : base(label, get, set, immediate: true, description)
+        => _useDefault = useDefault;
+
+    [CommunityToolkit.Mvvm.Input.RelayCommand]
+    private void UseDefault()
+    {
+        _useDefault();
+        Load();
+    }
+}

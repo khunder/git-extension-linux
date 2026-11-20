@@ -45,7 +45,7 @@ public sealed record RevisionFilter
 /// <summary>Maps a <see cref="RevisionFilter"/> to the revision part of the <c>git log</c> command line.</summary>
 public static class RevisionFilterArgs
 {
-    public static string Build(RevisionFilter filter, int maxCount)
+    public static string Build(RevisionFilter filter, int maxCount, IEnumerable<string>? extraRevisions = null)
     {
         StringBuilder args = new();
         args.Append("--topo-order --max-count=").Append(maxCount);
@@ -80,6 +80,14 @@ public static class RevisionFilterArgs
         }
 
         args.Append(' ').Append(Revisions(filter));
+        if (extraRevisions is not null && filter.Branches == BranchFilterMode.AllBranches)
+        {
+            foreach (string revision in extraRevisions.Where(IsSafeRevision))
+            {
+                args.Append(' ').Append(revision);
+            }
+        }
+
         return args.ToString();
     }
 

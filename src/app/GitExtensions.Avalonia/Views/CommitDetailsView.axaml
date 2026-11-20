@@ -1,6 +1,7 @@
 <UserControl xmlns="https://github.com/avaloniaui"
              xmlns:x="http://schemas.microsoft.com/winfx/2006/xaml"
              xmlns:vm="using:GitExtensions.Desktop.ViewModels"
+             xmlns:local="using:GitExtensions.Desktop.Views"
              x:Class="GitExtensions.Desktop.Views.CommitDetailsView"
              x:DataType="vm:CommitDetailsViewModel">
 
@@ -48,7 +49,7 @@
           <ListBox.ItemTemplate>
             <DataTemplate x:DataType="vm:ChangedFileViewModel">
               <Grid ColumnDefinitions="22,*" ColumnSpacing="8">
-                <TextBlock Text="{Binding Status}" FontFamily="Cascadia Mono, Consolas, DejaVu Sans Mono, monospace" FontWeight="Bold" HorizontalAlignment="Center" />
+                <local:AppIcon IconName="{Binding StatusIcon}" HorizontalAlignment="Center" />
                 <TextBlock Grid.Column="1" Text="{Binding Name}" TextTrimming="CharacterEllipsis" />
               </Grid>
             </DataTemplate>

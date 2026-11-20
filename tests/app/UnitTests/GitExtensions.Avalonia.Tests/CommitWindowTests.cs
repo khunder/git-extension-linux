@@ -33,7 +33,7 @@ public class CommitWindowTests
         MainWindowViewModel main = new(GitEnvironment.Initialize(), new NoFolderPicker());
         await main.OpenAsync(path);
         await main.UseCurrentBranchAsync();
-        CommitWindowViewModel window = main.CreateCommitWindowViewModel(store ?? new CommitWindowStore(NewStorePath()))!;
+        CommitWindowViewModel window = main.CreateCommitWindowViewModel(store ?? new CommitWindowStore(NewStorePath()).WithListLayout())!;
         await window.LoadAsync();
         return (main, window);
     }
@@ -332,7 +332,7 @@ public class CommitWindowTests
 
     private static async Task<(WindowService Service, Window Owner, MainWindowViewModel Main, CommitWindow Window)> ShowAsync(string path, ThemeVariant? variant = null)
     {
-        CommitWindowStore.Current = new CommitWindowStore(NewStorePath());
+        CommitWindowStore.Current = new CommitWindowStore(NewStorePath()).WithListLayout();
         MainWindowViewModel main = new(GitEnvironment.Initialize(), new NoFolderPicker());
         Window owner = new() { Width = 800, Height = 600 };
         owner.Show();

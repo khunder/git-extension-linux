@@ -11,7 +11,7 @@ public static class AvatarStyle
         return words.Length switch
         {
             0 => "?",
-            1 => char.ToUpperInvariant(words[0][0]).ToString(),
+            1 => words[0].Length == 1 ? char.ToUpperInvariant(words[0][0]).ToString() : string.Concat(char.ToUpperInvariant(words[0][0]), char.ToLowerInvariant(words[0][1])),
             _ => string.Concat(char.ToUpperInvariant(words[0][0]), char.ToUpperInvariant(words[^1][0])),
         };
     }

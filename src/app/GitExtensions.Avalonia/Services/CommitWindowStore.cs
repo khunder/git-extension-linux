@@ -47,9 +47,20 @@ public sealed class CommitWindowStore
         }
     }
 
+    /// <summary>
+    ///  Show the changed files as a folder tree instead of a flat list (default <see langword="true"/>).
+    /// </summary>
+    public bool ShowTree { get; private set; } = true;
+
     public void SetCloseAfterCommit(bool value)
     {
         CloseAfterCommit = value;
+        Save();
+    }
+
+    public void SetShowTree(bool value)
+    {
+        ShowTree = value;
         Save();
     }
 
@@ -85,6 +96,7 @@ public sealed class CommitWindowStore
             {
                 _recent = [.. (document.Recent ?? []).Where(m => !string.IsNullOrWhiteSpace(m)).Take(MaxRecentMessages)];
                 CloseAfterCommit = document.CloseAfterCommit;
+                ShowTree = document.ShowTree;
             }
         }
         catch (Exception ex) when (ex is IOException or UnauthorizedAccessException or JsonException or NotSupportedException)
@@ -99,7 +111,7 @@ public sealed class CommitWindowStore
             Document document;
             lock (_lock)
             {
-                document = new Document { Recent = [.. _recent], CloseAfterCommit = CloseAfterCommit };
+                document = new Document { Recent = [.. _recent], CloseAfterCommit = CloseAfterCommit, ShowTree = ShowTree };
             }
 
             Directory.CreateDirectory(Path.GetDirectoryName(FilePath)!);
@@ -116,5 +128,7 @@ public sealed class CommitWindowStore
         public List<string>? Recent { get; set; }
 
         public bool CloseAfterCommit { get; set; } = true;
+
+        public bool ShowTree { get; set; } = true;
     }
 }

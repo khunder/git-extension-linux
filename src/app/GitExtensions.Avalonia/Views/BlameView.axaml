@@ -37,11 +37,11 @@
         <DataTemplate x:DataType="vm:BlameLineViewModel">
           <Border Classes.band="{Binding IsAlternate}" ToolTip.Tip="{Binding ToolTip}">
             <Grid ColumnDefinitions="76,130,84,52,Auto">
-              <TextBlock Text="{Binding ShortHash}" FontFamily="Cascadia Mono, Consolas, DejaVu Sans Mono, monospace" FontSize="12" Opacity="0.65" Margin="6,0,0,0" />
+              <TextBlock Text="{Binding ShortHash}" FontFamily="Cascadia Mono, Consolas, DejaVu Sans Mono, monospace" FontSize="{DynamicResource EditorFontSize}" Opacity="0.65" Margin="6,0,0,0" />
               <TextBlock Grid.Column="1" Text="{Binding Author}" FontSize="12" Opacity="0.85" TextTrimming="CharacterEllipsis" Margin="0,0,8,0" />
               <TextBlock Grid.Column="2" Text="{Binding Date}" FontSize="12" Opacity="0.6" />
-              <TextBlock Grid.Column="3" Text="{Binding LineNumber}" FontFamily="Cascadia Mono, Consolas, DejaVu Sans Mono, monospace" FontSize="12" Opacity="0.5" TextAlignment="Right" Margin="0,0,8,0" />
-              <TextBlock Grid.Column="4" Text="{Binding DisplayText}" FontFamily="Cascadia Mono, Consolas, DejaVu Sans Mono, monospace" FontSize="12" TextWrapping="NoWrap" />
+              <TextBlock Grid.Column="3" Text="{Binding LineNumber}" FontFamily="Cascadia Mono, Consolas, DejaVu Sans Mono, monospace" FontSize="{DynamicResource EditorFontSize}" Opacity="0.5" TextAlignment="Right" Margin="0,0,8,0" />
+              <TextBlock Grid.Column="4" Text="{Binding DisplayText}" FontFamily="Cascadia Mono, Consolas, DejaVu Sans Mono, monospace" FontSize="{DynamicResource EditorFontSize}" TextWrapping="NoWrap" />
             </Grid>
           </Border>
         </DataTemplate>

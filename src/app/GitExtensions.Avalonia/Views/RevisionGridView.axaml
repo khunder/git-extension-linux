@@ -10,19 +10,23 @@
     <ResourceDictionary>
       <ResourceDictionary.ThemeDictionaries>
         <ResourceDictionary x:Key="Light">
-          <SolidColorBrush x:Key="RefLocalBackground" Color="#E3F4E1" />
-          <SolidColorBrush x:Key="RefLocalBorder" Color="#5DB85C" />
+          <SolidColorBrush x:Key="RefLocalBackground" Color="#FFFFFF" />
+          <SolidColorBrush x:Key="RefLocalBorder" Color="#3C9A3C" />
+          <Color x:Key="RefLocalBorderColor">#3C9A3C</Color>
           <SolidColorBrush x:Key="RefLocalForeground" Color="#1E6B1C" />
-          <SolidColorBrush x:Key="RefRemoteBackground" Color="#E0EBFA" />
-          <SolidColorBrush x:Key="RefRemoteBorder" Color="#6A9AD8" />
-          <SolidColorBrush x:Key="RefRemoteForeground" Color="#1F4E9A" />
-          <SolidColorBrush x:Key="RefTagBackground" Color="#FFF3C4" />
-          <SolidColorBrush x:Key="RefTagBorder" Color="#D2B13A" />
-          <SolidColorBrush x:Key="RefTagForeground" Color="#6B5300" />
+          <SolidColorBrush x:Key="RowBodyForeground" Color="#7A7A7A" />
+          <SolidColorBrush x:Key="RefRemoteBackground" Color="#FFFFFF" />
+          <SolidColorBrush x:Key="RefRemoteBorder" Color="#C25B5B" />
+          <Color x:Key="RefRemoteBorderColor">#C25B5B</Color>
+          <SolidColorBrush x:Key="RefRemoteForeground" Color="#A02828" />
+          <SolidColorBrush x:Key="RefTagBackground" Color="#FFFFFF" />
+          <SolidColorBrush x:Key="RefTagBorder" Color="#7B7BC8" />
+          <SolidColorBrush x:Key="RefTagForeground" Color="#2B2B80" />
           <SolidColorBrush x:Key="RefOverflowBackground" Color="#E6E6E6" />
           <SolidColorBrush x:Key="RefOverflowForeground" Color="#444444" />
           <SolidColorBrush x:Key="GridHeaderBackground" Color="#F0F0F0" />
-          <SolidColorBrush x:Key="RowMineBackground" Color="#40FFF2A8" />
+          <SolidColorBrush x:Key="RowMineBackground" Color="#FFE8F0FF" />
+          <SolidColorBrush x:Key="RowMineAlternateBackground" Color="#FFE1ECFE" />
           <SolidColorBrush x:Key="RowMergeBackground" Color="#14808080" />
           <SolidColorBrush x:Key="RowAlternateBackground" Color="#0C808080" />
           <SolidColorBrush x:Key="RowSelectedBackground" Color="#0078D7" />
@@ -34,19 +38,23 @@
         <ResourceDictionary x:Key="Dark">
           <SolidColorBrush x:Key="RefLocalBackground" Color="#1F3D20" />
           <SolidColorBrush x:Key="RefLocalBorder" Color="#4C9A4B" />
+          <Color x:Key="RefLocalBorderColor">#4C9A4B</Color>
           <SolidColorBrush x:Key="RefLocalForeground" Color="#9BE39A" />
-          <SolidColorBrush x:Key="RefRemoteBackground" Color="#1B3250" />
-          <SolidColorBrush x:Key="RefRemoteBorder" Color="#4F7FBF" />
-          <SolidColorBrush x:Key="RefRemoteForeground" Color="#A9CBF5" />
-          <SolidColorBrush x:Key="RefTagBackground" Color="#4A3F12" />
-          <SolidColorBrush x:Key="RefTagBorder" Color="#A88C27" />
-          <SolidColorBrush x:Key="RefTagForeground" Color="#F2DB86" />
+          <SolidColorBrush x:Key="RowBodyForeground" Color="#9A9A9A" />
+          <SolidColorBrush x:Key="RefRemoteBackground" Color="#4A2424" />
+          <SolidColorBrush x:Key="RefRemoteBorder" Color="#B05A5A" />
+          <Color x:Key="RefRemoteBorderColor">#B05A5A</Color>
+          <SolidColorBrush x:Key="RefRemoteForeground" Color="#F2AAAA" />
+          <SolidColorBrush x:Key="RefTagBackground" Color="#1B3250" />
+          <SolidColorBrush x:Key="RefTagBorder" Color="#4F7FBF" />
+          <SolidColorBrush x:Key="RefTagForeground" Color="#A9CBF5" />
           <SolidColorBrush x:Key="RefOverflowBackground" Color="#3A3A3A" />
           <SolidColorBrush x:Key="RefOverflowForeground" Color="#DDDDDD" />
           <SolidColorBrush x:Key="GridHeaderBackground" Color="#2D2D30" />
-          <SolidColorBrush x:Key="RowMineBackground" Color="#33B8A02A" />
+          <SolidColorBrush x:Key="RowMineBackground" Color="#334F7FBF" />
+          <SolidColorBrush x:Key="RowMineAlternateBackground" Color="#3A4F7FBF" />
           <SolidColorBrush x:Key="RowMergeBackground" Color="#18FFFFFF" />
-          <SolidColorBrush x:Key="RowAlternateBackground" Color="#0CFFFFFF" />
+          <SolidColorBrush x:Key="RowAlternateBackground" Color="#08FFFFFF" />
           <SolidColorBrush x:Key="RowSelectedBackground" Color="#1F5FAE" />
           <SolidColorBrush x:Key="RowSelectedForeground" Color="#FFFFFF" />
           <SolidColorBrush x:Key="BuildSuccessBrush" Color="#4CAF50" />
@@ -88,10 +96,20 @@
     <Style Selector="Border.row.mine">
       <Setter Property="Background" Value="{DynamicResource RowMineBackground}" />
     </Style>
+    <Style Selector="Border.row.mine.alt">
+      <Setter Property="Background" Value="{DynamicResource RowMineAlternateBackground}" />
+    </Style>
+    <!-- Settings > Appearance > Colors: stripes off, or custom stripe colors. -->
+    <Style Selector="ListBox.customAlt Border.row.alt:not(.mine)"><Setter Property="Background" Value="{DynamicResource CustomAlternateRow}" /></Style>
+    <Style Selector="ListBox.customMineAlt Border.row.mine.alt"><Setter Property="Background" Value="{DynamicResource CustomMineAlternateRow}" /></Style>
+    <Style Selector="ListBox.noAlt Border.row.alt:not(.mine)"><Setter Property="Background" Value="Transparent" /></Style>
+    <Style Selector="ListBox.noAlt Border.row.mine.alt"><Setter Property="Background" Value="{DynamicResource RowMineBackground}" /></Style>
     <Style Selector="Border.row.mine TextBlock.author">
       <Setter Property="FontWeight" Value="Bold" />
       <Setter Property="Opacity" Value="1" />
     </Style>
+    <Style Selector="Run.body"><Setter Property="Foreground" Value="{DynamicResource RowBodyForeground}" /></Style>
+    <Style Selector="Border.row.head TextBlock.subject"><Setter Property="FontWeight" Value="Bold" /></Style>
     <Style Selector="Border.row.mine TextBlock.avatarText">
       <Setter Property="FontWeight" Value="Bold" />
     </Style>
@@ -101,39 +119,53 @@
       <Setter Property="BorderThickness" Value="1" />
       <Setter Property="Padding" Value="5,0" />
       <Setter Property="Margin" Value="0,0,6,0" />
-      <Setter Property="MaxWidth" Value="180" />
+      <Setter Property="MaxWidth" Value="320" />
       <Setter Property="VerticalAlignment" Value="Center" />
     </Style>
-    <Style Selector="Border.badge > TextBlock">
-      <Setter Property="FontSize" Value="12" />
+    <Style Selector="Border.badge > TextBlock, Border.badge > StackPanel > TextBlock">
+      <Setter Property="FontSize" Value="{DynamicResource EditorFontSize}" />
       <Setter Property="TextTrimming" Value="CharacterEllipsis" />
     </Style>
     <Style Selector="Border.badge.local">
       <Setter Property="Background" Value="{DynamicResource RefLocalBackground}" />
       <Setter Property="BorderBrush" Value="{DynamicResource RefLocalBorder}" />
     </Style>
-    <Style Selector="Border.badge.local > TextBlock">
+    <Style Selector="Border.badge.local > TextBlock, Border.badge.local > StackPanel > TextBlock">
       <Setter Property="Foreground" Value="{DynamicResource RefLocalForeground}" />
     </Style>
     <Style Selector="Border.badge.remote">
       <Setter Property="Background" Value="{DynamicResource RefRemoteBackground}" />
       <Setter Property="BorderBrush" Value="{DynamicResource RefRemoteBorder}" />
     </Style>
-    <Style Selector="Border.badge.remote > TextBlock">
+    <Style Selector="Border.badge.remote > TextBlock, Border.badge.remote > StackPanel > TextBlock">
       <Setter Property="Foreground" Value="{DynamicResource RefRemoteForeground}" />
     </Style>
     <Style Selector="Border.badge.tag">
       <Setter Property="Background" Value="{DynamicResource RefTagBackground}" />
       <Setter Property="BorderBrush" Value="{DynamicResource RefTagBorder}" />
+      <Setter Property="BorderThickness" Value="0,1,1,1" />
+      <Setter Property="CornerRadius" Value="0,3,3,0" />
     </Style>
-    <Style Selector="Border.badge.tag > TextBlock">
+    <Style Selector="Border.badge.tag > TextBlock, Border.badge.tag > StackPanel > TextBlock">
       <Setter Property="Foreground" Value="{DynamicResource RefTagForeground}" />
+    </Style>
+    <!-- Hovering a label outlines it a little stronger, like the original. A shadow ring instead of a thicker border, so the label keeps its size and stays aligned with its neighbours. -->
+    <Style Selector="Border.badge.local:pointerover"><Setter Property="BoxShadow" Value="0 0 0 1 #3C9A3C" /></Style>
+    <Style Selector="Border.badge.remote:pointerover"><Setter Property="BoxShadow" Value="0 0 0 1 #C25B5B" /></Style>
+    <Style Selector="Border.badge.tag:pointerover"><Setter Property="BoxShadow" Value="0 0 0 1 #7B7BC8" /></Style>
+    <Style Selector="Border.badge.stash:pointerover"><Setter Property="BoxShadow" Value="0 0 0 1 #888888" /></Style>
+    <Style Selector="Border.badge.stash">
+      <Setter Property="Background" Value="{DynamicResource RefOverflowBackground}" />
+      <Setter Property="BorderBrush" Value="{DynamicResource RefOverflowForeground}" />
+    </Style>
+    <Style Selector="Border.badge.stash > StackPanel > TextBlock">
+      <Setter Property="Foreground" Value="{DynamicResource RefOverflowForeground}" />
     </Style>
     <Style Selector="Border.badge.overflow">
       <Setter Property="Background" Value="{DynamicResource RefOverflowBackground}" />
       <Setter Property="BorderBrush" Value="Transparent" />
     </Style>
-    <Style Selector="Border.badge.overflow > TextBlock">
+    <Style Selector="Border.badge.overflow > TextBlock, Border.badge.overflow > StackPanel > TextBlock">
       <Setter Property="Foreground" Value="{DynamicResource RefOverflowForeground}" />
     </Style>
     <Style Selector="Border.badge.bisect">
@@ -149,11 +181,24 @@
     <Style Selector="Border.badge.bisect.skip">
       <Setter Property="BorderBrush" Value="{DynamicResource SubtleBorderBrush}" />
     </Style>
-    <Style Selector="Border.badge.current > TextBlock">
+    <Style Selector="Border.badge.current > TextBlock, Border.badge.current > StackPanel > TextBlock">
       <Setter Property="FontWeight" Value="Bold" />
     </Style>
-    <Style Selector="Border.badge.current">
-      <Setter Property="BorderThickness" Value="2" />
+    <!-- A local branch joined to its remote-tracking branch: "develop" + "origin" side by side with one shared edge. -->
+    <Style Selector="Border.badge.joined">
+      <Setter Property="MaxWidth" Value="360" />
+      <Setter Property="CornerRadius" Value="3,0,0,3" />
+      <Setter Property="VerticalAlignment" Value="Stretch" />
+      <Setter Property="BorderThickness" Value="1,1,0,1" />
+      <Setter Property="Margin" Value="0" />
+    </Style>
+    <!-- The remote part starts under the pointed end of the local part: the triangle is drawn over its left side. -->
+    <Style Selector="Border.badge.joinedRemote">
+      <Setter Property="CornerRadius" Value="0,3,3,0" />
+      <Setter Property="VerticalAlignment" Value="Stretch" />
+      <Setter Property="BorderThickness" Value="0,1,1,1" />
+      <Setter Property="Padding" Value="9,0,5,0" />
+      <Setter Property="Margin" Value="0" />
     </Style>
 
     <!-- Responsive row: the date, then the author and avatar, give way to the subject as the grid narrows. -->
@@ -171,9 +216,17 @@
       <Setter Property="Padding" Value="0" />
       <Setter Property="MinHeight" Value="26" />
     </Style>
-    <Style Selector="ListBoxItem:selected /template/ ContentPresenter, ListBoxItem:selected:pointerover /template/ ContentPresenter, ListBoxItem:selected:focus /template/ ContentPresenter">
+    <Style Selector="ListBoxItem:selected /template/ ContentPresenter#PART_ContentPresenter, ListBoxItem:selected:pointerover /template/ ContentPresenter#PART_ContentPresenter, ListBoxItem:selected:focus /template/ ContentPresenter#PART_ContentPresenter, ListBoxItem:selected /template/ ContentPresenter, ListBoxItem:selected:pointerover /template/ ContentPresenter, ListBoxItem:selected:focus /template/ ContentPresenter">
       <Setter Property="Background" Value="{DynamicResource RowSelectedBackground}" />
       <Setter Property="Foreground" Value="{DynamicResource RowSelectedForeground}" />
+    </Style>
+    <!-- The text of a selected row is white, like the original (ref labels keep their own colours). -->
+    <Style Selector="ListBoxItem:selected TextBlock.subject, ListBoxItem:selected TextBlock.author, ListBoxItem:selected TextBlock.date, ListBoxItem:selected TextBlock.hash">
+      <Setter Property="Foreground" Value="{DynamicResource RowSelectedForeground}" />
+      <Setter Property="Opacity" Value="1" />
+    </Style>
+    <Style Selector="ListBoxItem:selected Run.body">
+      <Setter Property="Foreground" Value="#D6E6FA" />
     </Style>
     <Style Selector="ListBoxItem:selected Border.row">
       <Setter Property="Background" Value="Transparent" />
@@ -197,7 +250,7 @@
 
     <!-- Header row: the same columns as the rows (widths come from the shared Columns object). -->
     <Border x:Name="HeaderRow" DockPanel.Dock="Top" Background="{DynamicResource GridHeaderBackground}"
-            BorderThickness="0,0,0,1" BorderBrush="{DynamicResource SubtleBorderBrush}" Height="24">
+            BorderThickness="0,0,0,1" BorderBrush="{DynamicResource SubtleBorderBrush}" MinHeight="24" TextElement.FontSize="{DynamicResource HistoryFontSize}">
       <DockPanel>
         <Border x:Name="HeaderStatus" DockPanel.Dock="Right" Classes="headerCell" Width="{Binding Columns.StatusColumnWidth}" IsVisible="{Binding Columns.ShowStatus}">
           <Grid><Border Classes="grip" Tag="Status" /></Grid>
@@ -222,7 +275,7 @@
 
     <!-- The working tree row: "Uncommitted changes (N)". -->
     <Border x:Name="UncommittedRow" DockPanel.Dock="Top" Classes="row working" Classes.selected="{Binding IsWorkingTreeSelected}"
-            IsVisible="{Binding ShowUncommittedRow}" Height="26" Cursor="Hand"
+            IsVisible="{Binding ShowUncommittedRow}" MinHeight="26" TextElement.FontSize="{DynamicResource HistoryFontSize}" Cursor="Hand"
             BorderThickness="0,0,0,1" BorderBrush="{DynamicResource SubtleBorderBrush}">
       <DockPanel>
         <Border DockPanel.Dock="Right" Width="{Binding Columns.StatusColumnWidth}" IsVisible="{Binding Columns.ShowStatus}" />
@@ -241,7 +294,7 @@
       </DockPanel>
     </Border>
 
-    <ListBox x:Name="CommitList" MinHeight="100" ItemsSource="{Binding Commits}" SelectedItem="{Binding SelectedCommit}" BorderThickness="0">
+    <ListBox x:Name="CommitList" MinHeight="100" ItemsSource="{Binding Commits}" SelectedItem="{Binding SelectedCommit}" BorderThickness="0" FontSize="{DynamicResource HistoryFontSize}">
       <ListBox.Styles>
         <Style Selector="ListBoxItem" x:DataType="vm:CommitItemViewModel">
           <Setter Property="(AutomationProperties.Name)" Value="{Binding AccessibleName}" />
@@ -249,7 +302,7 @@
       </ListBox.Styles>
       <ListBox.ItemTemplate>
         <DataTemplate x:DataType="vm:CommitItemViewModel">
-          <Border Classes="row" Classes.alt="{Binding IsAlternate}" Classes.merge="{Binding IsMerge}" Classes.mine="{Binding IsMine}">
+          <Border Classes="row" Classes.alt="{Binding IsAlternate}" Classes.merge="{Binding IsMerge}" Classes.mine="{Binding IsMine}" Classes.head="{Binding IsCurrentHead}">
             <DockPanel>
               <Border DockPanel.Dock="Right" Classes="cell statusCell" Width="{Binding $parent[views:RevisionGridView].Columns.StatusColumnWidth}"
                       IsVisible="{Binding $parent[views:RevisionGridView].Columns.ShowStatus}">
@@ -273,13 +326,13 @@
               </Border>
               <Border DockPanel.Dock="Right" Classes="cell avatarCell" Width="{Binding $parent[views:RevisionGridView].Columns.AvatarColumnWidth}"
                       IsVisible="{Binding $parent[views:RevisionGridView].Columns.ShowAuthor}" ClipToBounds="True">
-                <Border Width="20" Height="20" CornerRadius="10" Background="{Binding AvatarBrush}" HorizontalAlignment="Center" VerticalAlignment="Center">
+                <Border Width="20" Height="20" CornerRadius="4" Background="{Binding AvatarBrush}" HorizontalAlignment="Center" VerticalAlignment="Center">
                   <TextBlock Classes="avatarText" Text="{Binding Initials}" FontSize="9" Foreground="White" HorizontalAlignment="Center" VerticalAlignment="Center" />
                 </Border>
               </Border>
               <!-- Message: graph lanes, ref badges, subject. -->
               <DockPanel Classes="message" ClipToBounds="True">
-                <views:CommitGraphCell DockPanel.Dock="Left" Row="{Binding Graph}" IsMerge="{Binding IsMerge}" IsHead="{Binding IsCurrentHead}"
+                <views:CommitGraphCell DockPanel.Dock="Left" Row="{Binding Graph}" IsMerge="{Binding IsGraphSquare}" IsHead="{Binding IsCurrentHead}" IsDimmed="{Binding IsDimmed}"
                                        LaneCount="{Binding $parent[ListBox].((vm:MainWindowViewModel)DataContext).GraphLaneCount}" />
                 <Border DockPanel.Dock="Left" Classes="badge bisect" Classes.good="{Binding IsBisectGood}" Classes.bad="{Binding IsBisectBad}" Classes.skip="{Binding IsBisectSkip}"
                         IsVisible="{Binding HasBisectMark}" ToolTip.Tip="Bisect: marked as {Binding BisectText}">
@@ -293,14 +346,41 @@
                   </ItemsControl.ItemsPanel>
                   <ItemsControl.ItemTemplate>
                     <DataTemplate x:DataType="hist:RefBadge">
-                      <Border Classes="badge ref" Classes.local="{Binding IsLocal}" Classes.remote="{Binding IsRemote}" Classes.tag="{Binding IsTag}"
-                              Classes.overflow="{Binding IsOverflow}" Classes.current="{Binding IsCurrent}" ToolTip.Tip="{Binding ToolTip}">
-                        <TextBlock Text="{Binding Text}" />
-                      </Border>
+                      <StackPanel Orientation="Horizontal" VerticalAlignment="Center">
+                        <!-- Tags are pointed on the left like a price tag; the chevron joins the top and bottom lines of the box. -->
+                        <Path Data="M1,0 L0,0.5 L1,1" Stretch="Fill" Width="7" VerticalAlignment="Stretch" IsVisible="{Binding IsTag}" IsHitTestVisible="False"
+                              Fill="{DynamicResource RefTagBackground}" Stroke="{DynamicResource RefTagBorder}" StrokeThickness="1" />
+                        <Border Classes="badge ref" Classes.local="{Binding IsLocal}" Classes.remote="{Binding IsRemote}" Classes.tag="{Binding IsTag}"
+                                Classes.overflow="{Binding IsOverflow}" Classes.current="{Binding IsCurrent}" Classes.joined="{Binding HasRemoteSuffix}" Classes.stash="{Binding IsStash}" ToolTip.Tip="{Binding ToolTip}">
+                          <StackPanel Orientation="Horizontal" Spacing="4">
+                            <Path Data="M0.5,0.5 L4.5,4 L0.5,7.5 Z" Fill="Transparent" Stroke="{DynamicResource RefRemoteForeground}" StrokeThickness="1" Width="6" Height="9" Stretch="Fill" VerticalAlignment="Center" Margin="0,1,0,0" IsVisible="{Binding IsCurrentUpstream}" />
+                            <Path Data="M0,0 L5,3.5 L0,7 Z" Fill="{DynamicResource RefLocalForeground}" Width="5" Height="7" Stretch="Fill" VerticalAlignment="Center" Margin="0,1,0,0" IsVisible="{Binding IsCurrent}" />
+                            <TextBlock Text="{Binding Text}" VerticalAlignment="Center" />
+                          </StackPanel>
+                        </Border>
+                        <Panel IsVisible="{Binding HasRemoteSuffix}" Margin="-1,0,6,0">
+                          <Border Classes="badge ref remote joinedRemote">
+                            <TextBlock Text="{Binding RemoteSuffix}" VerticalAlignment="Center" />
+                          </Border>
+                          <!-- The pointed boundary: a filled arrow in the local colour over the start of the remote part, outlined green above and red below. -->
+                          <Path Data="M0,0 L1,0.5 L0,1 Z" Stretch="Fill" Width="6" HorizontalAlignment="Left" VerticalAlignment="Stretch" IsHitTestVisible="False"
+                                Fill="{DynamicResource RefLocalBackground}" />
+                          <Path Data="M0,0 L1,0.5 L0,1" Stretch="Fill" Width="6" HorizontalAlignment="Left" VerticalAlignment="Stretch" IsHitTestVisible="False" StrokeThickness="1" StrokeLineCap="Round">
+                            <Path.Stroke>
+                              <LinearGradientBrush StartPoint="0%,0%" EndPoint="0%,100%">
+                                <GradientStop Color="{DynamicResource RefLocalBorderColor}" Offset="0.5" />
+                                <GradientStop Color="{DynamicResource RefRemoteBorderColor}" Offset="0.5" />
+                              </LinearGradientBrush>
+                            </Path.Stroke>
+                          </Path>
+                        </Panel>
+                      </StackPanel>
                     </DataTemplate>
                   </ItemsControl.ItemTemplate>
                 </ItemsControl>
-                <TextBlock Classes="subject" Text="{Binding Subject}" TextTrimming="CharacterEllipsis" VerticalAlignment="Center" />
+                <TextBlock Classes="subject" TextTrimming="CharacterEllipsis" VerticalAlignment="Center">
+                  <Run Text="{Binding Subject}" /><Run Classes="body" Text="{Binding BodyPreview}" FontWeight="Normal" />
+                </TextBlock>
               </DockPanel>
             </DockPanel>
           </Border>

@@ -8,7 +8,21 @@
         Width="1000" Height="700" MinWidth="720" MinHeight="480"
         WindowStartupLocation="CenterOwner">
 
+  <Window.Resources>
+    <TreeDataTemplate x:Key="ChangeTreeTemplate" ItemsSource="{Binding Children}" x:DataType="vm:ChangeTreeNode">
+      <StackPanel Orientation="Horizontal" Spacing="6" Background="Transparent" ToolTip.Tip="{Binding Description}">
+        <views:AppIcon IconName="{Binding StatusIcon}" />
+        <TextBlock Text="{Binding Label}" VerticalAlignment="Center" />
+      </StackPanel>
+    </TreeDataTemplate>
+  </Window.Resources>
+
   <Window.Styles>
+    <Style Selector="TreeViewItem" x:DataType="vm:ChangeTreeNode">
+      <Setter Property="IsExpanded" Value="{Binding IsExpanded, Mode=TwoWay}" />
+      <Setter Property="MinHeight" Value="24" />
+      <Setter Property="Padding" Value="0" />
+    </Style>
     <Style Selector="TextBlock.glyph">
       <Setter Property="FontFamily" Value="Cascadia Mono, Consolas, DejaVu Sans Mono, monospace" />
       <Setter Property="FontWeight" Value="Bold" />
@@ -50,6 +64,9 @@
             <StackPanel Orientation="Horizontal" Spacing="4"><views:AppIcon IconName="ReloadRevisions" /><AccessText Text="Refresh" VerticalAlignment="Center" /></StackPanel>
           </Button>
           <ToggleButton x:Name="UntrackedToggle" Classes="tool" Content="Show untracked files" IsChecked="{Binding ShowUntracked}" />
+          <ToggleButton x:Name="TreeToggle" Classes="tool" IsChecked="{Binding ShowTree}" ToolTip.Tip="Tree view: group the changed files by folder" AutomationProperties.Name="Tree view">
+            <views:AppIcon IconName="FileTree" />
+          </ToggleButton>
           <Border Width="1" Margin="4,2" Background="{DynamicResource SubtleBorderBrush}" />
           <Button x:Name="EditGitIgnoreButton" Classes="tool" Content="Edit .gitignore" Command="{Binding EditGitIgnoreCommand}" ToolTip.Tip="Open the .gitignore of the repository in your editor" />
           <Border Width="1" Margin="4,2" Background="{DynamicResource SubtleBorderBrush}" />
@@ -111,15 +128,15 @@
             </Grid>
           </Border>
           <Panel>
-            <ListBox x:Name="UnstagedList" ItemsSource="{Binding Unstaged}" SelectedItem="{Binding SelectedUnstaged}" SelectionMode="Multiple"
+            <TreeView x:Name="UnstagedTreeView" ItemsSource="{Binding UnstagedTree}" SelectionMode="Multiple" IsVisible="{Binding ShowTree}"
+                      SelectionChanged="OnUnstagedTreeSelectionChanged" DoubleTapped="OnUnstagedDoubleTapped" BorderThickness="0"
+                      ItemTemplate="{StaticResource ChangeTreeTemplate}" />
+            <ListBox x:Name="UnstagedList" ItemsSource="{Binding Unstaged}" SelectedItem="{Binding SelectedUnstaged}" SelectionMode="Multiple" IsVisible="{Binding ShowList}"
                      SelectionChanged="OnUnstagedSelectionChanged" DoubleTapped="OnUnstagedDoubleTapped" BorderThickness="0">
               <ListBox.ItemTemplate>
                 <DataTemplate x:DataType="vm:ChangedFileViewModel">
                   <Grid ColumnDefinitions="20,Auto,*" ColumnSpacing="6" ToolTip.Tip="{Binding Description}">
-                    <TextBlock Classes="glyph" Text="{Binding Status}"
-                               Classes.added="{Binding Status, Converter={x:Static ObjectConverters.Equal}, ConverterParameter=A}"
-                               Classes.deleted="{Binding Status, Converter={x:Static ObjectConverters.Equal}, ConverterParameter=D}"
-                               Classes.conflict="{Binding IsConflicted}" />
+                    <views:AppIcon IconName="{Binding StatusIcon}" HorizontalAlignment="Center" />
                     <TextBlock Grid.Column="1" Text="{Binding FileName}" />
                     <TextBlock Grid.Column="2" Text="{Binding Directory}" Opacity="0.6" FontSize="11" TextTrimming="CharacterEllipsis" VerticalAlignment="Center" />
                   </Grid>
@@ -141,15 +158,15 @@
             </Grid>
           </Border>
           <Panel>
-            <ListBox x:Name="StagedList" ItemsSource="{Binding Staged}" SelectedItem="{Binding SelectedStaged}" SelectionMode="Multiple"
+            <TreeView x:Name="StagedTreeView" ItemsSource="{Binding StagedTree}" SelectionMode="Multiple" IsVisible="{Binding ShowTree}"
+                      SelectionChanged="OnStagedTreeSelectionChanged" DoubleTapped="OnStagedDoubleTapped" BorderThickness="0"
+                      ItemTemplate="{StaticResource ChangeTreeTemplate}" />
+            <ListBox x:Name="StagedList" ItemsSource="{Binding Staged}" SelectedItem="{Binding SelectedStaged}" SelectionMode="Multiple" IsVisible="{Binding ShowList}"
                      SelectionChanged="OnStagedSelectionChanged" DoubleTapped="OnStagedDoubleTapped" BorderThickness="0">
               <ListBox.ItemTemplate>
                 <DataTemplate x:DataType="vm:ChangedFileViewModel">
                   <Grid ColumnDefinitions="20,Auto,*" ColumnSpacing="6" ToolTip.Tip="{Binding Description}">
-                    <TextBlock Classes="glyph" Text="{Binding Status}"
-                               Classes.added="{Binding Status, Converter={x:Static ObjectConverters.Equal}, ConverterParameter=A}"
-                               Classes.deleted="{Binding Status, Converter={x:Static ObjectConverters.Equal}, ConverterParameter=D}"
-                               Classes.conflict="{Binding IsConflicted}" />
+                    <views:AppIcon IconName="{Binding StatusIcon}" HorizontalAlignment="Center" />
                     <TextBlock Grid.Column="1" Text="{Binding FileName}" />
                     <TextBlock Grid.Column="2" Text="{Binding Directory}" Opacity="0.6" FontSize="11" TextTrimming="CharacterEllipsis" VerticalAlignment="Center" />
                   </Grid>

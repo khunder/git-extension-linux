@@ -3,6 +3,7 @@
   <ItemGroup Label="Solution dependencies">
     <PackageVersion Include="AdysTech.CredentialManager" Version="2.3.0" />
     <PackageVersion Include="Avalonia" Version="12.1.6" />
+    <PackageVersion Include="Avalonia.Controls.ColorPicker" Version="12.1.6" />
     <PackageVersion Include="Avalonia.Desktop" Version="12.1.6" />
     <PackageVersion Include="Avalonia.Headless" Version="12.1.6" />
     <PackageVersion Include="Avalonia.Headless.NUnit" Version="12.1.6" />
