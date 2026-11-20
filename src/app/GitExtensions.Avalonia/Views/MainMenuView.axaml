@@ -171,6 +171,9 @@
       </MenuItem>
       </MenuItem>
       <MenuItem x:Name="SplitLayoutMenuItem" Header="Tabs _beside the revision grid" ToggleType="CheckBox" IsChecked="{Binding ViewOptions.SideBySide, Mode=TwoWay}" />
+      <MenuItem x:Name="ShowChangesTabMenuItem" Header="Changes ta_b in the sidebar (GitHub Desktop style)" ToggleType="CheckBox"
+                IsChecked="{Binding ViewOptions.ShowChangesTab, Mode=TwoWay}"
+                ToolTip.Tip="Changes | History tabs on top of the sidebar: stage with check boxes, commit, stash and discard without the Commit window" />
       <MenuItem x:Name="ShowTabsMenu" Header="Show _tabs">
         <MenuItem x:Name="ShowCommitTabMenuItem" Header="_Commit" ToggleType="CheckBox" IsChecked="{Binding ViewOptions.ShowCommitTab, Mode=TwoWay}" />
         <MenuItem x:Name="ShowDiffTabMenuItem" Header="_Diff" ToggleType="CheckBox" IsChecked="{Binding ViewOptions.ShowDiffTab, Mode=TwoWay}" />
@@ -301,6 +304,11 @@
         <MenuItem x:Name="ThemeSystemMenuItem" Header="_System" Tag="System" ToggleType="Radio" GroupName="Theme" Click="OnThemeClick" />
         <MenuItem x:Name="ThemeLightMenuItem" Header="_Light" Tag="Light" ToggleType="Radio" GroupName="Theme" Click="OnThemeClick" />
         <MenuItem x:Name="ThemeDarkMenuItem" Header="_Dark" Tag="Dark" ToggleType="Radio" GroupName="Theme" Click="OnThemeClick" />
+        <Separator />
+        <MenuItem x:Name="ThemeGraphiteMenuItem" Header="_Graphite (dark grey)" Tag="Graphite" ToggleType="Radio" GroupName="Theme" Click="OnThemeClick" />
+        <MenuItem x:Name="ThemeMistMenuItem" Header="_Mist (light grey)" Tag="Mist" ToggleType="Radio" GroupName="Theme" Click="OnThemeClick" />
+        <MenuItem x:Name="ThemeDuskMenuItem" Header="D_usk (blue-grey dark)" Tag="Dusk" ToggleType="Radio" GroupName="Theme" Click="OnThemeClick" />
+        <MenuItem x:Name="ThemeSandMenuItem" Header="S_and (warm light)" Tag="Sand" ToggleType="Radio" GroupName="Theme" Click="OnThemeClick" />
       </MenuItem>
     </MenuItem>
 

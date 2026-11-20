@@ -69,6 +69,7 @@ public sealed partial class MainWindowViewModel : ObservableObject
         InitializeMenu();
         InitializeDashboard();
         InitializeNavigation();
+        InitializeChangesTab();
     }
 
     public RecentRepositoriesViewModel Recent { get; }
@@ -138,6 +139,7 @@ public sealed partial class MainWindowViewModel : ObservableObject
             if (module is null)
             {
                 Status = $"{path} is not inside a Git repository.";
+                ResetChangesTab();
                 return;
             }
 
@@ -146,6 +148,8 @@ public sealed partial class MainWindowViewModel : ObservableObject
             Diff = new FileDiffViewModel(module, RefreshChangesAsync, message => ErrorMessage = message);
             Commit = CreateCommitViewModel(module);
             HasOpenedRepository = true;
+            ResetChangesTab(module.WorkingDir);
+            EnsureChangesTab();
             _ = RecordRecentAsync(module.WorkingDir);
 
             // The git calls block, so keep them off the UI thread.
@@ -235,6 +239,11 @@ public sealed partial class MainWindowViewModel : ObservableObject
         if (SelectedChangedFile is null && Diff is { } diff)
         {
             await diff.ShowAsync(null);
+        }
+
+        if (IsChangesTabSelected && ChangesTab is { } changesTab)
+        {
+            await changesTab.RefreshAsync();
         }
     }
 

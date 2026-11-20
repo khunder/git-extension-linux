@@ -95,8 +95,10 @@ public sealed partial class MainMenuView : UserControl
 
     private void SyncTheme()
     {
-        ThemeSystemMenuItem.IsChecked = ThemeService.Current.Choice == ThemeChoice.System;
-        ThemeLightMenuItem.IsChecked = ThemeService.Current.Choice == ThemeChoice.Light;
-        ThemeDarkMenuItem.IsChecked = ThemeService.Current.Choice == ThemeChoice.Dark;
+        string current = ThemeService.Current.Choice.ToString();
+        foreach (MenuItem item in ThemeMenu.Items.OfType<MenuItem>())
+        {
+            item.IsChecked = item.Tag is string tag && tag == current;
+        }
     }
 }

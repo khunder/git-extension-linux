@@ -108,7 +108,7 @@ public sealed partial class MainWindow : Window
         column.MinWidth = visible ? LayoutSettings.MinSidebarWidth : 0;
         column.MaxWidth = visible ? double.PositiveInfinity : 0;
         column.Width = new GridLength(visible ? width : 0);
-        this.FindControl<Control>("SidebarPanel")!.IsVisible = visible;
+        this.FindControl<Control>("SidebarHost")!.IsVisible = visible;
         this.FindControl<Control>("SidebarSplitter")!.IsVisible = visible;
     }
 

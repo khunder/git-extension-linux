@@ -29,6 +29,7 @@ public sealed class ThemeService
     {
         ThemeChoice.Light => ThemeVariant.Light,
         ThemeChoice.Dark => ThemeVariant.Dark,
+        _ when ThemePalettes.All.TryGetValue(choice, out (ThemeVariant Variant, ThemePalette Palette) named) => named.Variant,
         _ => ThemeVariant.Default
     };
 

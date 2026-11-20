@@ -24,6 +24,34 @@
     <Style Selector="Border.ref > TextBlock">
       <Setter Property="Foreground" Value="{DynamicResource RefBadgeForeground}" />
     </Style>
+
+    <!-- Changes | History tabs of the sidebar: compact, half the width each, like GitHub Desktop. -->
+    <Style Selector="TabStrip#SidebarTabs">
+      <Setter Property="BorderThickness" Value="0,0,0,1" />
+      <Setter Property="BorderBrush" Value="{DynamicResource SubtleBorderBrush}" />
+    </Style>
+    <Style Selector="TabStrip#SidebarTabs TabStripItem">
+      <Setter Property="FontSize" Value="13" />
+      <Setter Property="MinHeight" Value="34" />
+      <Setter Property="Padding" Value="8,0" />
+      <Setter Property="HorizontalContentAlignment" Value="Center" />
+      <Setter Property="VerticalContentAlignment" Value="Center" />
+    </Style>
+    <Style Selector="TabStrip#SidebarTabs TabStripItem:selected">
+      <Setter Property="FontWeight" Value="SemiBold" />
+    </Style>
+    <Style Selector="Border.countBadge">
+      <Setter Property="Background" Value="{DynamicResource SubtleBorderBrush}" />
+      <Setter Property="CornerRadius" Value="9" />
+      <Setter Property="Padding" Value="6,0" />
+      <Setter Property="MinWidth" Value="18" />
+      <Setter Property="VerticalAlignment" Value="Center" />
+    </Style>
+    <Style Selector="Border.countBadge > TextBlock">
+      <Setter Property="FontSize" Value="11" />
+      <Setter Property="FontWeight" Value="SemiBold" />
+      <Setter Property="HorizontalAlignment" Value="Center" />
+    </Style>
   </Window.Styles>
 
   <DockPanel>
@@ -58,19 +86,86 @@
     <!-- DASHBOARD page: no repository open (at startup and after Repository > Close). -->
     <views:DashboardView x:Name="DashboardPage" DataContext="{Binding Dashboard}" IsVisible="{Binding $parent[Window].((vm:MainWindowViewModel)DataContext).ShowStartView}" />
 
-    <!-- BROWSE page: left panel | splitter | revision grid over the tabs. -->
+    <!-- BROWSE page: left panel | splitter | revision grid over the tabs. The left panel has Changes | History tabs
+         (like GitHub Desktop): History shows the branches with the revision grid, Changes the working tree files
+         with a commit box and the diff of the selected file. -->
     <Grid x:Name="MainColumns" ColumnDefinitions="220,Auto,*" IsVisible="{Binding HasOpenedRepository}">
-      <views:RefsTreeView x:Name="SidebarPanel" Grid.Column="0" DataContext="{Binding Refs}" />
+      <DockPanel x:Name="SidebarHost" Grid.Column="0" Background="{DynamicResource SidebarBackground}">
+        <TabStrip x:Name="SidebarTabs" DockPanel.Dock="Top" HorizontalAlignment="Stretch" SelectedIndex="{Binding SidebarTabIndex, Mode=TwoWay}"
+                  IsVisible="{Binding IsChangesTabEnabled}">
+          <TabStrip.Template>
+            <ControlTemplate>
+              <Border BorderThickness="{TemplateBinding BorderThickness}" BorderBrush="{TemplateBinding BorderBrush}">
+                <ItemsPresenter x:Name="PART_ItemsPresenter" ItemsPanel="{TemplateBinding ItemsPanel}" HorizontalAlignment="Stretch" />
+              </Border>
+            </ControlTemplate>
+          </TabStrip.Template>
+          <TabStrip.ItemsPanel>
+            <ItemsPanelTemplate>
+              <UniformGrid Rows="1" HorizontalAlignment="Stretch" />
+            </ItemsPanelTemplate>
+          </TabStrip.ItemsPanel>
+          <TabStripItem x:Name="ChangesTabHeader" HorizontalContentAlignment="Center" ToolTip.Tip="Uncommitted changes (Ctrl+1)">
+            <StackPanel Orientation="Horizontal" Spacing="6">
+              <TextBlock Text="Changes" VerticalAlignment="Center" />
+              <Border x:Name="ChangesCountBadge" Classes="countBadge" IsVisible="{Binding HasChangesTabCount}">
+                <TextBlock Text="{Binding ChangesTabCountText}" />
+              </Border>
+            </StackPanel>
+          </TabStripItem>
+          <TabStripItem x:Name="HistoryTabHeader" HorizontalContentAlignment="Center" ToolTip.Tip="Branches and commit history (Ctrl+2)">
+            <TextBlock Text="History" VerticalAlignment="Center" />
+          </TabStripItem>
+        </TabStrip>
+        <Panel>
+          <Panel IsVisible="{Binding IsHistoryTabSelected}">
+            <views:RefsTreeView x:Name="SidebarPanel" DataContext="{Binding Refs}" />
+          </Panel>
+          <Panel IsVisible="{Binding IsChangesTabSelected}">
+            <views:ChangesSidebarView x:Name="ChangesSidebar" DataContext="{Binding ChangesTab}" />
+          </Panel>
+        </Panel>
+      </DockPanel>
 
       <GridSplitter x:Name="SidebarSplitter" Grid.Column="1" Width="5" Background="Transparent" />
 
-      <DockPanel Grid.Column="2">
-        <Grid x:Name="BrowseRows" RowDefinitions="330*,Auto,270*">
+      <Panel Grid.Column="2">
+        <!-- The rows have the same minimum as their panes, so neither the splitter nor a stored layout can squeeze the
+             tabs below their headers (they would overflow onto the history). -->
+        <Grid x:Name="BrowseRows" IsVisible="{Binding IsHistoryTabSelected}">
+          <Grid.RowDefinitions>
+            <RowDefinition Height="330*" MinHeight="120" />
+            <RowDefinition Height="Auto" />
+            <RowDefinition Height="270*" MinHeight="120" />
+          </Grid.RowDefinitions>
           <views:RevisionGridView x:Name="RevisionGrid" Grid.Row="0" MinHeight="120" />
           <GridSplitter x:Name="TabsSplitter" Grid.Row="1" Height="5" Background="Transparent" HorizontalAlignment="Stretch" />
           <views:RevisionTabsView x:Name="RevisionTabs" Grid.Row="2" MinHeight="120" />
         </Grid>
-      </DockPanel>
+
+        <!-- Changes tab: the diff of the selected file, or the merge conflict resolver for a conflicted one. -->
+        <Border x:Name="ChangesDiffArea" IsVisible="{Binding IsChangesTabSelected}" BorderThickness="1,0,0,0" BorderBrush="{DynamicResource SubtleBorderBrush}">
+          <Panel DataContext="{Binding ChangesTab}" x:DataType="vm:WorkingChangesViewModel">
+            <Panel IsVisible="{Binding !IsShowingStash}">
+              <Border IsVisible="{Binding !Resolver.IsActive}">
+                <views:DiffView x:Name="ChangesDiff" DataContext="{Binding Diff}" />
+              </Border>
+              <views:ConflictResolverView x:Name="ChangesConflictResolver" DataContext="{Binding Resolver}" IsVisible="{Binding IsActive}" />
+
+              <!-- Several files selected: no single diff, like GitHub Desktop. -->
+              <Border x:Name="MultipleSelectionPanel" IsVisible="{Binding HasMultipleSelection}" Background="{DynamicResource SystemControlBackgroundAltHighBrush}">
+                <StackPanel HorizontalAlignment="Center" VerticalAlignment="Center" Spacing="6">
+                  <TextBlock Text="{Binding MultipleSelectionText}" FontSize="18" FontWeight="SemiBold" HorizontalAlignment="Center" />
+                  <TextBlock Text="Right-click for the actions on the selection, Space to include or exclude them." Opacity="0.65" HorizontalAlignment="Center" />
+                </StackPanel>
+              </Border>
+            </Panel>
+
+            <!-- The stashed changes of the branch: its files and their diff, with Restore and Discard. -->
+            <views:StashedChangesView x:Name="StashedChangesPanel" IsVisible="{Binding IsShowingStash}" />
+          </Panel>
+        </Border>
+      </Panel>
     </Grid>
     <views:FileHistoryView x:Name="FileHistoryOverlay" DataContext="{Binding FileHistory}" IsVisible="{Binding IsOpen}" />
     <views:CommandPaletteView x:Name="PaletteOverlay" DataContext="{Binding Palette}" />

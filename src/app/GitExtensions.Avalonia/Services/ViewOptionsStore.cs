@@ -27,7 +27,8 @@ public sealed record ViewOptionsSettings(
     bool ShowBuildReportTab = false,
     bool ShowRemoteBranches = true,
     bool ShowTags = true,
-    bool ShowFilterBar = true);
+    bool ShowFilterBar = true,
+    bool ShowChangesTab = false);
 
 /// <summary>Persists the <see cref="ViewOptionsSettings"/> in a small JSON file; the instance can be replaced for tests.</summary>
 public sealed class ViewOptionsStore

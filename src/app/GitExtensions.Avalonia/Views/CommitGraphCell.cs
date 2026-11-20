@@ -117,7 +117,7 @@ public sealed class CommitGraphCell : Control
         double middle = height / 2;
         double nodeX = X(row.Lane);
 
-        bool dark = ActualThemeVariant == ThemeVariant.Dark;
+        bool dark = Services.ThemePalettes.IsDark(ActualThemeVariant);
         IPen[] pens = dark ? DarkPens : Pens;
         IBrush[] brushes = dark ? DarkBrushes : Brushes;
         foreach (GraphSegment segment in row.Segments)

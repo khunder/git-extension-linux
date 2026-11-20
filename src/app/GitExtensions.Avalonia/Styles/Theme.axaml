@@ -24,6 +24,10 @@
       <SolidColorBrush x:Key="SubtleBorderBrush" Color="#1F000000" />
       <SolidColorBrush x:Key="CommitMessageBackground" Color="#F2F2F2" />
       <SolidColorBrush x:Key="LinkForeground" Color="#0066CC" />
+      <!-- The status boxes of changed files (added / modified / deleted). -->
+      <SolidColorBrush x:Key="FileStatusAddedBrush" Color="#1A7F37" />
+      <SolidColorBrush x:Key="FileStatusModifiedBrush" Color="#9A6700" />
+      <SolidColorBrush x:Key="FileStatusDeletedBrush" Color="#CF222E" />
     </ResourceDictionary>
     <ResourceDictionary x:Key="Dark">
       <SolidColorBrush x:Key="ScrimBrush" Color="#99000000" />
@@ -66,6 +70,9 @@
       <SolidColorBrush x:Key="SubtleBorderBrush" Color="#33FFFFFF" />
       <SolidColorBrush x:Key="CommitMessageBackground" Color="#2D2D30" />
       <SolidColorBrush x:Key="LinkForeground" Color="#6CB6FF" />
+      <SolidColorBrush x:Key="FileStatusAddedBrush" Color="#3FB950" />
+      <SolidColorBrush x:Key="FileStatusModifiedBrush" Color="#D29922" />
+      <SolidColorBrush x:Key="FileStatusDeletedBrush" Color="#F85149" />
       <SolidColorBrush x:Key="SystemControlBackgroundAltHighBrush" Color="#FF1E1E1E" />
       <SolidColorBrush x:Key="SystemControlBackgroundAltMediumHighBrush" Color="#CC1E1E1E" />
       <SolidColorBrush x:Key="SystemControlBackgroundAltMediumBrush" Color="#991E1E1E" />

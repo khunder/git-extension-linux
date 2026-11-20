@@ -33,6 +33,10 @@ public sealed partial class ViewOptionsViewModel : ObservableObject
     [ObservableProperty]
     private bool _showFilterBar;
 
+    /// <summary>Changes | History tabs on top of the sidebar, with a GitHub Desktop style Changes tab (off: the classic sidebar).</summary>
+    [ObservableProperty]
+    private bool _showChangesTab;
+
     private bool _loading;
 
     public ViewOptionsViewModel(ViewOptionsStore store)
@@ -48,6 +52,7 @@ public sealed partial class ViewOptionsViewModel : ObservableObject
         ShowConsoleTab = Settings.ShowConsoleTab;
         ShowBuildReportTab = Settings.ShowBuildReportTab;
         ShowFilterBar = Settings.ShowFilterBar;
+        ShowChangesTab = Settings.ShowChangesTab;
         _loading = false;
     }
 
@@ -64,7 +69,7 @@ public sealed partial class ViewOptionsViewModel : ObservableObject
     public void Save(bool showRemoteBranches, bool showTags)
     {
         Settings = new ViewOptionsSettings(
-            CommitInfoPosition, SideBySide, ShowCommitTab, ShowDiffTab, ShowFileTreeTab, ShowConsoleTab, ShowBuildReportTab, showRemoteBranches, showTags, ShowFilterBar);
+            CommitInfoPosition, SideBySide, ShowCommitTab, ShowDiffTab, ShowFileTreeTab, ShowConsoleTab, ShowBuildReportTab, showRemoteBranches, showTags, ShowFilterBar, ShowChangesTab);
         _store.Save(Settings);
     }
 
