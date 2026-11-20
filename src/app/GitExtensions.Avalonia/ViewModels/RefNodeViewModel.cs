@@ -17,6 +17,9 @@ public enum RefNodeKind
     Tag,
     Submodule,
     Stash,
+
+    /// <summary>A working tree of the repository (<c>git worktree list</c>).</summary>
+    Worktree,
 }
 
 /// <summary>
@@ -62,5 +65,8 @@ public sealed partial class RefNodeViewModel : ObservableObject
 
     public string Marker => IsCurrent ? "●" : string.Empty;
 
-    public FontWeight FontWeight => IsCurrent || Kind is RefNodeKind.Group ? FontWeight.Bold : FontWeight.Normal;
+    /// <summary>For a worktree: the one this window shows (bold, like the original); not the current branch.</summary>
+    public bool IsCurrentWorktree { get; init; }
+
+    public FontWeight FontWeight => IsCurrent || IsCurrentWorktree || Kind is RefNodeKind.Group ? FontWeight.Bold : FontWeight.Normal;
 }

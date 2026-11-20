@@ -122,7 +122,7 @@ public class CommitViewModelTests
         }
         finally
         {
-            Directory.Delete(path, recursive: true);
+            TestFiles.DeleteTree(path);
         }
     }
 

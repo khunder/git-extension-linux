@@ -64,7 +64,7 @@ public class SettingsTests
         BehaviorSettings.Current = _previousBehavior;
         try
         {
-            Directory.Delete(_directory, recursive: true);
+            TestFiles.DeleteTree(_directory);
         }
         catch (IOException)
         {

@@ -25,7 +25,7 @@ public class RobustnessTests
         {
             try
             {
-                Directory.Delete(folder, recursive: true);
+                TestFiles.DeleteTree(folder);
             }
             catch (Exception ex) when (ex is IOException or UnauthorizedAccessException)
             {
@@ -237,7 +237,7 @@ public class RobustnessTests
         MainWindowViewModel viewModel = CreateViewModel();
         await viewModel.OpenAsync(folder);
         ChangedFileViewModel file = viewModel.ChangedFiles.Single();
-        Directory.Delete(folder, recursive: true);
+        TestFiles.DeleteTree(folder);
 
         Func<Task> act = async () =>
         {
@@ -254,7 +254,7 @@ public class RobustnessTests
     public async Task Opening_a_vanished_path_reports_a_message()
     {
         string folder = CommittedRepository();
-        Directory.Delete(folder, recursive: true);
+        TestFiles.DeleteTree(folder);
         MainWindowViewModel viewModel = CreateViewModel();
 
         await viewModel.OpenAsync(folder);

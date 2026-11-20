@@ -3,6 +3,7 @@ using CommunityToolkit.Mvvm.ComponentModel;
 using CommunityToolkit.Mvvm.Input;
 using GitCommands;
 using GitCommands.Git;
+using GitExtensions.Desktop.Services;
 using GitExtensions.Extensibility;
 using GitExtensions.Extensibility.Git;
 
@@ -17,6 +18,7 @@ public sealed partial class RefsTreeViewModel : ObservableObject
     private readonly Action<ObjectId> _selectCommit;
     private readonly Func<Task> _refreshAll;
     private GitModule? _module;
+    private IReadOnlyDictionary<string, string> _remoteHosts = new Dictionary<string, string>();
     private IReadOnlyList<RefEntry> _entries = [];
     private string? _currentBranch;
     private CancellationTokenSource? _filterDebounce;
@@ -57,6 +59,7 @@ public sealed partial class RefsTreeViewModel : ObservableObject
     public async Task LoadAsync(GitModule module)
     {
         _module = module;
+        _remoteHosts = RemoteHosts.Read(module.WorkingDirGitDir);
         Task<Dictionary<string, UpstreamTrack>> tracking = Task.Run(() => ReadTracking(module));
         (IReadOnlyList<RefEntry> entries, string current) = await Task.Run(() =>
         {
@@ -160,13 +163,68 @@ public sealed partial class RefsTreeViewModel : ObservableObject
     private void Rebuild()
     {
         Roots.Clear();
-        foreach (RefNodeViewModel root in RefsTreeBuilder.Build(_entries, _currentBranch, Filter))
+        foreach (RefNodeViewModel root in RefsTreeBuilder.Build(_entries, _currentBranch, Filter, _remoteHosts))
         {
             Roots.Add(root);
         }
     }
 
     // Cheap lookups for the "Submodules" and "Stashes" groups: .gitmodules (top level only) and the stash list.
+    // "git-extensions-linux (main)" for every working tree, like the original; the one this window shows is the current one (bold).
+    private static List<RefEntry> ReadWorktrees(GitModule module)
+    {
+        List<RefEntry> worktrees = [];
+        ExecutionResult result = module.GitExecutable.Execute("worktree list --porcelain", throwOnErrorExit: false);
+        if (!result.ExitedSuccessfully)
+        {
+            return worktrees;
+        }
+
+        static string Normalize(string path) => Path.GetFullPath(path.Replace('/', Path.DirectorySeparatorChar)).TrimEnd(Path.DirectorySeparatorChar);
+        string current = Normalize(module.WorkingDir);
+        StringComparison comparison = OperatingSystem.IsWindows() ? StringComparison.OrdinalIgnoreCase : StringComparison.Ordinal;
+        string? path = null;
+        string? head = null;
+
+        void Flush()
+        {
+            if (path is null)
+            {
+                return;
+            }
+
+            string name = Path.GetFileName(Normalize(path));
+            worktrees.Add(new RefEntry(RefNodeKind.Worktree, head is null ? name : $"{name} ({head})", IsCurrent: string.Equals(Normalize(path), current, comparison)));
+            path = null;
+            head = null;
+        }
+
+        foreach (string raw in result.StandardOutput.Split('\n'))
+        {
+            string line = raw.TrimEnd('\r');
+            if (line.StartsWith("worktree ", StringComparison.Ordinal))
+            {
+                Flush();
+                path = line["worktree ".Length..];
+            }
+            else if (line.StartsWith("branch refs/heads/", StringComparison.Ordinal))
+            {
+                head = line["branch refs/heads/".Length..];
+            }
+            else if (line == "detached")
+            {
+                head = "detached HEAD";
+            }
+            else if (line == "bare")
+            {
+                head = "bare";
+            }
+        }
+
+        Flush();
+        return worktrees;
+    }
+
     private static List<RefEntry> ReadSubmodulesAndStashes(GitModule module)
     {
         List<RefEntry> entries = [];
@@ -184,6 +242,8 @@ public sealed partial class RefsTreeViewModel : ObservableObject
                     }
                 }
             }
+
+            entries.AddRange(ReadWorktrees(module));
 
             ExecutionResult stashes = module.GitExecutable.Execute("stash list", throwOnErrorExit: false);
             if (stashes.ExitedSuccessfully)

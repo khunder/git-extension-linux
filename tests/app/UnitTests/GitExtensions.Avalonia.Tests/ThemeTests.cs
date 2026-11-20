@@ -295,7 +295,7 @@ public class ThemeTests
         finally
         {
             await RepositoryHistoryManager.Locals.SaveRecentHistoryAsync([]);
-            Directory.Delete(root, recursive: true);
+            TestFiles.DeleteTree(root);
         }
     }
 }

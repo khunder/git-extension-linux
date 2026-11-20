@@ -37,7 +37,7 @@ public class RevisionGridTests
     public void Restore()
     {
         GridColumnStore.Current = _previousStore;
-        Directory.Delete(_directory, recursive: true);
+        TestFiles.DeleteTree(_directory);
     }
 
     // ---- pure pieces ----

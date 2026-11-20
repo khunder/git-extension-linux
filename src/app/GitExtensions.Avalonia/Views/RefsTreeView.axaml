@@ -4,28 +4,62 @@
              xmlns:mgmt="using:GitExtensions.Desktop.Views"
              x:Class="GitExtensions.Desktop.Views.RefsTreeView"
              x:DataType="vm:RefsTreeViewModel">
+  <UserControl.Resources>
+    <!--
+      The rows of the branches tree, drawn like the original's tree view: an indent per level with the dotted connector lines
+      and the small expander arrow in it (all painted by RefTreeLines at fixed positions), then the icon and the name.
+      The template is our own, so nothing has to be measured from the theme's layout.
+    -->
+    <ControlTheme x:Key="RefTreeItemTheme" TargetType="TreeViewItem">
+      <Setter Property="Background" Value="Transparent" />
+      <Setter Property="Template">
+        <ControlTemplate>
+          <StackPanel>
+            <Border Name="PART_Header" Background="{TemplateBinding Background}" MinHeight="20">
+              <DockPanel>
+                <mgmt:RefTreeLines DockPanel.Dock="Left" />
+                <ContentPresenter Name="PART_HeaderPresenter" Content="{TemplateBinding Header}" ContentTemplate="{TemplateBinding HeaderTemplate}"
+                                  VerticalAlignment="Center" Margin="1,0,4,0" />
+              </DockPanel>
+            </Border>
+            <ItemsPresenter Name="PART_ItemsPresenter" IsVisible="{TemplateBinding IsExpanded}" ItemsPanel="{TemplateBinding ItemsPanel}" />
+          </StackPanel>
+        </ControlTemplate>
+      </Setter>
+      <Style Selector="^:pointerover /template/ Border#PART_Header">
+        <Setter Property="Background" Value="{DynamicResource SystemControlHighlightListLowBrush}" />
+      </Style>
+      <Style Selector="^:selected /template/ Border#PART_Header">
+        <Setter Property="Background" Value="{DynamicResource SystemControlHighlightListAccentLowBrush}" />
+      </Style>
+      <Style Selector="^:selected:focus-within /template/ Border#PART_Header">
+        <Setter Property="Background" Value="{DynamicResource SystemControlHighlightListAccentMediumBrush}" />
+      </Style>
+    </ControlTheme>
+  </UserControl.Resources>
+
   <DockPanel Background="{DynamicResource SidebarBackground}">
     <Grid DockPanel.Dock="Top" ColumnDefinitions="Auto,*,Auto" Margin="6,4" ColumnSpacing="4">
       <TextBlock Text="Search:" VerticalAlignment="Center" />
       <TextBox x:Name="FilterBox" Grid.Column="1" Text="{Binding Filter}" PlaceholderText="Filter…" MinHeight="24" Padding="4,2" />
       <Button x:Name="NewBranchButton" Grid.Column="2" MinHeight="24" Content="+" FontWeight="Bold" Padding="8,2" Command="{Binding RequestNewBranchCommand}" ToolTip.Tip="New branch…" AutomationProperties.Name="New branch" AutomationProperties.HelpText="Create a new branch from the selected commit or HEAD" />
     </Grid>
-    <TreeView x:Name="RefsTree" ItemsSource="{Binding Roots}" SelectedItem="{Binding SelectedNode, Mode=TwoWay}">
+    <TreeView x:Name="RefsTree" ItemsSource="{Binding Roots}" SelectedItem="{Binding SelectedNode, Mode=TwoWay}" FontSize="12" Padding="2"
+              ItemContainerTheme="{StaticResource RefTreeItemTheme}">
       <TreeView.Styles>
         <Style Selector="TreeViewItem" x:DataType="vm:RefNodeViewModel">
           <Setter Property="IsExpanded" Value="{Binding IsExpanded, Mode=TwoWay}" />
+          <!-- The children of every node use the same row theme. -->
+          <Setter Property="ItemContainerTheme" Value="{StaticResource RefTreeItemTheme}" />
         </Style>
       </TreeView.Styles>
       <TreeView.ItemTemplate>
         <TreeDataTemplate ItemsSource="{Binding Children}" x:DataType="vm:RefNodeViewModel">
-          <StackPanel Orientation="Horizontal" Spacing="4" Background="Transparent">
-            <TextBlock Text="{Binding Marker}" Width="10" Foreground="{DynamicResource AccentTextForeground}" VerticalAlignment="Center" />
+          <StackPanel Orientation="Horizontal" Spacing="3" Background="Transparent">
             <mgmt:AppIcon IconName="{Binding IconName}" />
             <TextBlock Text="{Binding Header}" FontWeight="{Binding FontWeight}" VerticalAlignment="Center" />
-            <TextBlock Text="{Binding TrackText}" IsVisible="{Binding ShowTrack}" ToolTip.Tip="{Binding TrackToolTip}" FontSize="11" VerticalAlignment="Center"
-                       Foreground="{DynamicResource AccentTextForeground}" />
-            <TextBlock Text="{Binding TrackText}" IsVisible="{Binding ShowGone}" ToolTip.Tip="{Binding TrackToolTip}" FontSize="11" VerticalAlignment="Center"
-                       Foreground="{DynamicResource ErrorTextForeground}" />
+            <!-- The counts after the name like the original: (0↑↓) in sync, (2↑ 1↓) otherwise; remote branches show the mirrored view. -->
+            <TextBlock Text="{Binding CountsText}" IsVisible="{Binding HasCounts}" ToolTip.Tip="{Binding TrackToolTip}" FontWeight="{Binding FontWeight}" VerticalAlignment="Center" />
           </StackPanel>
         </TreeDataTemplate>
       </TreeView.ItemTemplate>

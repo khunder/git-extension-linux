@@ -6,12 +6,20 @@ public sealed partial class RefNodeViewModel
     /// <summary>Set for the node of a remote (e.g. <c>origin</c>) below the Remotes group.</summary>
     public bool IsRemoteRoot { get; init; }
 
+    /// <summary>For a remote: the hosting service its URL points to ("github", "gitlab"), or null; picks the icon.</summary>
+    public string? RemoteHost { get; init; }
+
     /// <summary>Relation to the upstream branch; <see langword="null"/> for branches without one.</summary>
     public UpstreamTrack? Track { get; init; }
 
     public bool HasTrack => Kind == RefNodeKind.LocalBranch && Track is not null;
 
     public string TrackText => Track?.Text ?? string.Empty;
+
+    /// <summary>The counts shown after the name like in the original ("(0↑↓)"); empty for nodes without an upstream relation.</summary>
+    public string CountsText => Track is not null && Kind is RefNodeKind.LocalBranch or RefNodeKind.RemoteBranch ? Track.CountsText(remoteSide: Kind == RefNodeKind.RemoteBranch) : string.Empty;
+
+    public bool HasCounts => CountsText.Length > 0;
 
     public string TrackToolTip => Track?.ToolTip ?? string.Empty;
 

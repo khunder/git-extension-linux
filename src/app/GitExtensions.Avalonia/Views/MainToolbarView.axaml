@@ -156,7 +156,7 @@
       <ProgressBar Width="48" Height="4" IsIndeterminate="True" IsVisible="{Binding Remote.IsRunning}" VerticalAlignment="Center" Margin="2,0" />
       <Button x:Name="CommitButton" Classes="tb" Command="{Binding ShowCommitWindowCommand}" ToolTip.Tip="Commit… (Ctrl+K)">
         <StackPanel Orientation="Horizontal" Spacing="4">
-          <views:AppIcon IconName="RepoStateClean" />
+          <views:AppIcon IconName="{Binding CommitButtonIcon}" />
           <TextBlock x:Name="CommitText" Text="{Binding CommitButtonText}" VerticalAlignment="Center" />
         </StackPanel>
       </Button>

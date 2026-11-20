@@ -7,8 +7,11 @@
              x:DataType="vm:FileDiffViewModel">
 
   <UserControl.Styles>
-    <Style Selector="Border.added"><Setter Property="Background" Value="{DynamicResource DiffAddedBackground}" /></Style>
-    <Style Selector="Border.removed"><Setter Property="Background" Value="{DynamicResource DiffRemovedBackground}" /></Style>
+    <!-- Like the original: the line number columns are a light tint, the text of the line has the strong colour. -->
+    <Style Selector="Border.added"><Setter Property="Background" Value="{DynamicResource DiffAddedGutterBackground}" /></Style>
+    <Style Selector="Border.added StackPanel.text"><Setter Property="Background" Value="{DynamicResource DiffAddedBackground}" /></Style>
+    <Style Selector="Border.removed"><Setter Property="Background" Value="{DynamicResource DiffRemovedGutterBackground}" /></Style>
+    <Style Selector="Border.removed StackPanel.text"><Setter Property="Background" Value="{DynamicResource DiffRemovedBackground}" /></Style>
     <Style Selector="Button.hunkAction">
       <Setter Property="Margin" Value="8,0,0,0" />
       <Setter Property="Padding" Value="6,0" />
@@ -76,7 +79,7 @@
               <Grid ColumnDefinitions="44,44,*" Opacity="{Binding Kind, Converter={x:Static views:DiffLineBrushes.TextOpacity}}">
                 <TextBlock Text="{Binding OldNumber}" FontFamily="Cascadia Mono, Consolas, DejaVu Sans Mono, monospace" FontSize="{DynamicResource EditorFontSize}" Opacity="0.5" TextAlignment="Right" Margin="0,0,6,0" />
                 <TextBlock Grid.Column="1" Text="{Binding NewNumber}" FontFamily="Cascadia Mono, Consolas, DejaVu Sans Mono, monospace" FontSize="{DynamicResource EditorFontSize}" Opacity="0.5" TextAlignment="Right" Margin="0,0,6,0" />
-                <StackPanel Grid.Column="2" Orientation="Horizontal">
+                <StackPanel Grid.Column="2" Classes="text" Orientation="Horizontal">
                   <TextBlock Text="{Binding DisplayText}" FontFamily="Cascadia Mono, Consolas, DejaVu Sans Mono, monospace" FontSize="{DynamicResource EditorFontSize}" TextWrapping="NoWrap" VerticalAlignment="Center" />
                   <Button Classes="hunkAction" Content="Stage hunk" Tag="stage" Click="OnHunkAction" IsVisible="{Binding CanStageHunk}" />
                   <Button Classes="hunkAction" Content="Unstage hunk" Tag="unstage" Click="OnHunkAction" IsVisible="{Binding CanUnstageHunk}" />

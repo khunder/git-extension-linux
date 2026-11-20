@@ -15,8 +15,10 @@
       <SolidColorBrush x:Key="ErrorBannerForeground" Color="#7A1212" />
       <SolidColorBrush x:Key="ErrorTextForeground" Color="#B3261E" />
       <SolidColorBrush x:Key="SuccessTextForeground" Color="#1B6E2E" />
-      <SolidColorBrush x:Key="DiffAddedBackground" Color="#D5F0DA" />
-      <SolidColorBrush x:Key="DiffRemovedBackground" Color="#F9D6D6" />
+      <SolidColorBrush x:Key="DiffAddedBackground" Color="#C8FFC8" />
+      <SolidColorBrush x:Key="DiffAddedGutterBackground" Color="#F3FFF3" />
+      <SolidColorBrush x:Key="DiffRemovedBackground" Color="#FFC8C8" />
+      <SolidColorBrush x:Key="DiffRemovedGutterBackground" Color="#FFF3F3" />
       <SolidColorBrush x:Key="DiffHunkBackground" Color="#DAE6FA" />
       <SolidColorBrush x:Key="DiffSelectionOverlay" Color="#59308FE0" />
       <SolidColorBrush x:Key="RefBadgeBackground" Color="#CFE3FA" />
@@ -62,7 +64,9 @@
       <SolidColorBrush x:Key="ErrorTextForeground" Color="#FF8A80" />
       <SolidColorBrush x:Key="SuccessTextForeground" Color="#7FD99A" />
       <SolidColorBrush x:Key="DiffAddedBackground" Color="#1B3D27" />
+      <SolidColorBrush x:Key="DiffAddedGutterBackground" Color="#142B1C" />
       <SolidColorBrush x:Key="DiffRemovedBackground" Color="#4A2127" />
+      <SolidColorBrush x:Key="DiffRemovedGutterBackground" Color="#331A1E" />
       <SolidColorBrush x:Key="DiffHunkBackground" Color="#1F3556" />
       <SolidColorBrush x:Key="DiffSelectionOverlay" Color="#665AA9FF" />
       <SolidColorBrush x:Key="RefBadgeBackground" Color="#1B4474" />

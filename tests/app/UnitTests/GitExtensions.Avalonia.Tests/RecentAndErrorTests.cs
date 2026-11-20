@@ -181,7 +181,7 @@ public class RecentAndErrorTests
         }
         finally
         {
-            Directory.Delete(root, recursive: true);
+            TestFiles.DeleteTree(root);
         }
     }
 

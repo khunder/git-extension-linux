@@ -99,7 +99,7 @@ public class DashboardTests
     {
         try
         {
-            Directory.Delete(_root, recursive: true);
+            TestFiles.DeleteTree(_root);
         }
         catch (IOException)
         {

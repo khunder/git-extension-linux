@@ -23,7 +23,7 @@ public class LayoutTests
     public void CreateDirectory() => _directory = Directory.CreateTempSubdirectory("ge-layout-").FullName;
 
     [TearDown]
-    public void DeleteDirectory() => Directory.Delete(_directory, recursive: true);
+    public void DeleteDirectory() => TestFiles.DeleteTree(_directory);
 
     [AvaloniaTest]
     public void Store_round_trips()

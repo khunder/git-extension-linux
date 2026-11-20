@@ -50,6 +50,9 @@ public sealed partial class MainWindowViewModel
     /// <summary>The toolbar's Commit button: "Commit (3)" with the number of changed files.</summary>
     public string CommitButtonText => ChangedFiles.Count == 0 ? "Commit" : $"Commit ({ChangedFiles.Count})";
 
+    /// <summary>The toolbar Commit icon: the green tick when the working tree is clean, the orange-red one when there are changes (like the original).</summary>
+    public string CommitButtonIcon => ChangedFiles.Count == 0 ? "RepoStateClean" : "RepoStateDirty";
+
     public bool IsDefaultPullMerge => DefaultPullAction == PullAction.Merge;
 
     public bool IsDefaultPullRebase => DefaultPullAction == PullAction.Rebase;
@@ -98,7 +101,11 @@ public sealed partial class MainWindowViewModel
                     break;
             }
         };
-        ChangedFiles.CollectionChanged += (_, _) => OnPropertyChanged(nameof(CommitButtonText));
+        ChangedFiles.CollectionChanged += (_, _) =>
+        {
+            OnPropertyChanged(nameof(CommitButtonText));
+            OnPropertyChanged(nameof(CommitButtonIcon));
+        };
         Refs.PropertyChanged += (_, e) =>
         {
             if (e.PropertyName == nameof(RefsTreeViewModel.SelectedNode))

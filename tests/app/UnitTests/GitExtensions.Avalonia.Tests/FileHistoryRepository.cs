@@ -59,7 +59,7 @@ internal sealed class FileHistoryRepository : IDisposable
     {
         try
         {
-            Directory.Delete(Path, recursive: true);
+            TestFiles.DeleteTree(Path);
         }
         catch (IOException)
         {

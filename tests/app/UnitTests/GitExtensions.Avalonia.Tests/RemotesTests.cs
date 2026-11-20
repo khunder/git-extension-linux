@@ -147,7 +147,7 @@ public class RemotesTests
         {
             try
             {
-                Directory.Delete(bare, recursive: true);
+                TestFiles.DeleteTree(bare);
             }
             catch (IOException)
             {

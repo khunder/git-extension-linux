@@ -115,7 +115,7 @@ internal static class ToolsTestSupport
                 File.SetAttributes(file, FileAttributes.Normal);
             }
 
-            Directory.Delete(path, recursive: true);
+            TestFiles.DeleteTree(path);
         }
         catch (Exception ex) when (ex is IOException or UnauthorizedAccessException)
         {

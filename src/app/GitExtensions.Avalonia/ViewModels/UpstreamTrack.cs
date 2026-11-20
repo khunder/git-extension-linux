@@ -9,6 +9,14 @@ public sealed record UpstreamTrack(string Upstream, int Ahead, int Behind, bool 
 {
     public bool InSync => !Gone && Ahead == 0 && Behind == 0;
 
+    /// <summary>
+    ///  The counts as the original shows them after a branch name: <c>(0↑↓)</c> in sync, otherwise <c>(2↑ 1↓)</c> with only
+    ///  the counts that are not zero. A remote branch shows the mirrored view (<c>(0↓↑)</c> in sync).
+    /// </summary>
+    public string CountsText(bool remoteSide = false) => Gone ? "(gone)"
+        : InSync ? (remoteSide ? "(0↓↑)" : "(0↑↓)")
+        : "(" + string.Join(' ', new[] { Ahead > 0 ? $"{Ahead}↑" : null, Behind > 0 ? $"{Behind}↓" : null }.OfType<string>()) + ")";
+
     /// <summary>Compact marker such as <c>↑2 ↓1</c>, <c>✓</c> (in sync) or <c>gone</c>.</summary>
     public string Text => Gone ? "gone"
         : InSync ? "✓"

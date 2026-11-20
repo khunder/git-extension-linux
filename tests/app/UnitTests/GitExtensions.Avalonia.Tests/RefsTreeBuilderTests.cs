@@ -46,6 +46,7 @@ public class RefsTreeBuilderTests
               release
                 2.0
               v1.0
+            Stashes
 
             """.ReplaceLineEndings("\n"));
     }
@@ -86,8 +87,8 @@ public class RefsTreeBuilderTests
         => RefsTreeBuilder.Build(Entries, "main", "nope").Should().BeEmpty();
 
     [Test]
-    public void Build_without_entries_still_shows_the_three_groups()
-        => RefsTreeBuilder.Build([], null, null).Select(n => n.Name).Should().Equal("Branches", "Remotes", "Tags");
+    public void Build_without_entries_still_shows_the_main_groups_and_stashes()
+        => RefsTreeBuilder.Build([], null, null).Select(n => n.Name).Should().Equal("Branches", "Remotes", "Tags", "Stashes");
 
     [Test]
     public void Only_the_current_local_branch_is_marked()

@@ -3,7 +3,7 @@ using GitExtensions.Extensibility.Git;
 namespace GitExtensions.Desktop.ViewModels;
 
 /// <summary>A branch or tag as read from the repository.</summary>
-public sealed record RefEntry(RefNodeKind Kind, string Name, ObjectId? ObjectId = null, UpstreamTrack? Track = null);
+public sealed record RefEntry(RefNodeKind Kind, string Name, ObjectId? ObjectId = null, UpstreamTrack? Track = null, bool IsCurrent = false);
 
 /// <summary>
 ///  Pure grouping/filter logic for the refs sidebar: no git, no UI thread.
@@ -11,7 +11,7 @@ public sealed record RefEntry(RefNodeKind Kind, string Name, ObjectId? ObjectId 
 /// </summary>
 public static class RefsTreeBuilder
 {
-    public static IReadOnlyList<RefNodeViewModel> Build(IEnumerable<RefEntry> entries, string? currentBranch, string? filter)
+    public static IReadOnlyList<RefNodeViewModel> Build(IEnumerable<RefEntry> entries, string? currentBranch, string? filter, IReadOnlyDictionary<string, string>? remoteHosts = null)
     {
         string text = filter?.Trim() ?? string.Empty;
         bool filtering = text.Length > 0;
@@ -19,34 +19,46 @@ public static class RefsTreeBuilder
             .Where(entry => !filtering || entry.Name.Contains(text, StringComparison.OrdinalIgnoreCase))
             .ToList();
 
+        // A remote branch shows the counts of the local branch that tracks it, seen from the other side (ahead and behind swap).
+        Dictionary<string, UpstreamTrack> mirrors = entries
+            .Where(e => e.Kind == RefNodeKind.LocalBranch && e.Track is { Gone: false, Upstream.Length: > 0 })
+            .GroupBy(e => e.Track!.Upstream, StringComparer.Ordinal)
+            .ToDictionary(group => group.Key, group => group.First().Track!, StringComparer.Ordinal);
+        matching = [.. matching.Select(e => e.Kind == RefNodeKind.RemoteBranch && mirrors.TryGetValue(e.Name, out UpstreamTrack? local)
+            ? e with { Track = new UpstreamTrack(e.Name, local.Behind, local.Ahead, Gone: false) }
+            : e)];
+
         List<RefNodeViewModel> roots = [];
         AddGroup(roots, "Branches", matching.Where(e => e.Kind == RefNodeKind.LocalBranch), currentBranch, filtering, splitRemote: false);
-        AddGroup(roots, "Remotes", matching.Where(e => e.Kind == RefNodeKind.RemoteBranch), currentBranch, filtering, splitRemote: true);
+        AddGroup(roots, "Remotes", matching.Where(e => e.Kind == RefNodeKind.RemoteBranch), currentBranch, filtering, splitRemote: true, remoteHosts);
+
+        // Like the original: Worktrees after the remotes, and the Stashes group even when there is no stash.
+        AddFlatGroup(roots, "Worktrees", matching.Where(e => e.Kind == RefNodeKind.Worktree), RefNodeKind.Worktree);
         AddGroup(roots, "Tags", matching.Where(e => e.Kind == RefNodeKind.Tag), currentBranch, filtering, splitRemote: false);
         AddFlatGroup(roots, "Submodules", matching.Where(e => e.Kind == RefNodeKind.Submodule), RefNodeKind.Submodule);
-        AddFlatGroup(roots, "Stashes", matching.Where(e => e.Kind == RefNodeKind.Stash), RefNodeKind.Stash);
+        AddFlatGroup(roots, "Stashes", matching.Where(e => e.Kind == RefNodeKind.Stash), RefNodeKind.Stash, alwaysShow: !filtering);
         return roots;
     }
 
     // Submodules and stashes: shown only when there are some, as a flat list in the given order.
-    private static void AddFlatGroup(List<RefNodeViewModel> roots, string title, IEnumerable<RefEntry> entries, RefNodeKind kind)
+    private static void AddFlatGroup(List<RefNodeViewModel> roots, string title, IEnumerable<RefEntry> entries, RefNodeKind kind, bool alwaysShow = false)
     {
         List<RefEntry> list = entries.ToList();
-        if (list.Count == 0)
+        if (list.Count == 0 && !alwaysShow)
         {
             return;
         }
 
-        RefNodeViewModel group = new(title, RefNodeKind.Group) { Count = list.Count };
+        RefNodeViewModel group = new(title, RefNodeKind.Group) { Count = list.Count > 0 ? list.Count : null };
         foreach (RefEntry entry in list)
         {
-            group.Children.Add(new RefNodeViewModel(entry.Name, kind, entry.Name));
+            group.Children.Add(new RefNodeViewModel(entry.Name, kind, entry.Name) { IsCurrentWorktree = entry.IsCurrent && kind == RefNodeKind.Worktree });
         }
 
         roots.Add(group);
     }
 
-    private static void AddGroup(List<RefNodeViewModel> roots, string title, IEnumerable<RefEntry> entries, string? currentBranch, bool filtering, bool splitRemote)
+    private static void AddGroup(List<RefNodeViewModel> roots, string title, IEnumerable<RefEntry> entries, string? currentBranch, bool filtering, bool splitRemote, IReadOnlyDictionary<string, string>? remoteHosts = null)
     {
         List<RefEntry> list = entries.ToList();
 
@@ -63,7 +75,7 @@ public static class RefsTreeBuilder
                 .GroupBy(e => e.Name[..Math.Max(e.Name.IndexOf('/'), 0)])
                 .OrderBy(g => g.Key, StringComparer.OrdinalIgnoreCase))
             {
-                RefNodeViewModel remoteNode = new(remote.Key, RefNodeKind.Folder) { IsRemoteRoot = true };
+                RefNodeViewModel remoteNode = new(remote.Key, RefNodeKind.Folder) { IsRemoteRoot = true, RemoteHost = remoteHosts is not null && remoteHosts.TryGetValue(remote.Key, out string? host) ? host : null };
                 AddTree(remoteNode, remote, currentBranch: null, prefixLength: remote.Key.Length + 1);
                 group.Children.Add(remoteNode);
             }

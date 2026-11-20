@@ -125,6 +125,8 @@
     <Style Selector="Border.badge > TextBlock, Border.badge > StackPanel > TextBlock">
       <Setter Property="FontSize" Value="{DynamicResource EditorFontSize}" />
       <Setter Property="TextTrimming" Value="CharacterEllipsis" />
+      <!-- The glyphs sit a little low in their line: nudge the text up one pixel so it is centred in the box. -->
+      <Setter Property="Margin" Value="0,-1,0,1" />
     </Style>
     <Style Selector="Border.badge.local">
       <Setter Property="Background" Value="{DynamicResource RefLocalBackground}" />

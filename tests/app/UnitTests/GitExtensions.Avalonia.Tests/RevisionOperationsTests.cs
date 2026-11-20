@@ -226,7 +226,7 @@ public class RevisionOperationsTests
             }
             finally
             {
-                Directory.Delete(remote, recursive: true);
+                TestFiles.DeleteTree(remote);
             }
         }
     }
@@ -269,7 +269,7 @@ public class RevisionOperationsTests
             }
             finally
             {
-                Directory.Delete(folder, recursive: true);
+                TestFiles.DeleteTree(folder);
             }
         }
     }

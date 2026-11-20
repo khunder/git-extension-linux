@@ -24,7 +24,7 @@ public sealed class IsolatedConfig
     {
         try
         {
-            System.IO.Directory.Delete(_directory!, recursive: true);
+            TestFiles.DeleteTree(_directory!);
         }
         catch (IOException)
         {
