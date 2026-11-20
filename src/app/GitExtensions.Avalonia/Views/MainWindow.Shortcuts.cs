@@ -210,6 +210,16 @@ public sealed partial class MainWindow
                 }
 
                 break;
+            case UiTarget.RevisionFilter:
+                if (DataContext is MainWindowViewModel main)
+                {
+                    // Ctrl+F searches the commit messages: show the filter bar, in the commit message mode, with its text selected.
+                    main.ViewOptions.ShowFilterBar = true;
+                    main.FilterMode = GitExtensions.Desktop.History.TextFilterMode.CommitMessage;
+                    RevisionGrid.FocusFilter();
+                }
+
+                break;
             case UiTarget.CommitMessage:
                 // The commit message lives in the Changes tab while it is shown, otherwise in the Commit window.
                 if (DataContext is MainWindowViewModel { IsChangesTabSelected: true })
@@ -260,7 +270,7 @@ public sealed partial class MainWindow
         }
 
         Name(this.FindControl<Button>("SidebarToggle"), "Toggle branches sidebar", "Hide or show the branches sidebar (Ctrl+B)");
-        Name(SidebarPanel.FindControl<TextBox>("FilterBox"), "Filter branches and tags", "Ctrl+F focuses this box");
+        Name(SidebarPanel.FindControl<TextBox>("FilterBox"), "Filter branches and tags", "Ctrl+Alt+F focuses this box");
         Name(SidebarPanel.FindControl<TreeView>("RefsTree"), "Branches, remotes and tags");
         Name(this.FindControl<Control>("SettingsOverlay"), "Settings");
         Name(this.FindControl<Control>("FileHistoryOverlay"), "File history and blame");

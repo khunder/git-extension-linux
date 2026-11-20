@@ -23,9 +23,19 @@ public sealed partial class FileTreeNode : ObservableObject
             return;
         }
 
-        Name = entry.Name;
-        FullPath = entry.Path;
-        IsFolder = entry.IsFolder;
+        // Like the original, a folder whose only child is a folder is shown as one node (".github/workflows").
+        string name = entry.Name;
+        TreeEntry shown = entry;
+        while (shown.IsFolder && shown.ChildCount == 1 && shown.Children.First() is { IsFolder: true } only)
+        {
+            name += "/" + only.Name;
+            shown = only;
+        }
+
+        _entry = shown;
+        Name = name;
+        FullPath = shown.Path;
+        IsFolder = shown.IsFolder;
         if (IsFolder)
         {
             if (eager)
@@ -33,7 +43,7 @@ public sealed partial class FileTreeNode : ObservableObject
                 Populate(eager: true);
                 _isExpanded = true;
             }
-            else if (entry.ChildCount > 0)
+            else if (shown.ChildCount > 0)
             {
                 Children.Add(new FileTreeNode(null, eager: false));
             }
@@ -48,8 +58,8 @@ public sealed partial class FileTreeNode : ObservableObject
 
     public bool IsPlaceholder => _entry is null;
 
-    /// <summary>Gets a glyph for the kind of entry.</summary>
-    public string Glyph => IsFolder ? "▪" : "·";
+    /// <summary>The icon of the entry: an open or closed folder, or a file.</summary>
+    public string Icon => IsFolder ? (IsExpanded ? "FolderOpen" : "FolderClosed") : "ext:" + System.IO.Path.GetExtension(Name);
 
     public RangeObservableCollection<FileTreeNode> Children { get; } = [];
 
@@ -59,6 +69,7 @@ public sealed partial class FileTreeNode : ObservableObject
 
     partial void OnIsExpandedChanged(bool value)
     {
+        OnPropertyChanged(nameof(Icon));
         if (value)
         {
             Populate(eager: false);

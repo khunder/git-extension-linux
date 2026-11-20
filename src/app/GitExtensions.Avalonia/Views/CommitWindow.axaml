@@ -115,17 +115,12 @@
     </Border>
 
     <!-- Lists and diff -->
-    <Grid x:Name="MainArea" Grid.Row="3" ColumnDefinitions="300,Auto,*" MinHeight="150">
-      <Grid RowDefinitions="*,Auto,*">
+    <Grid x:Name="MainArea" Grid.Row="3" ColumnDefinitions="380,Auto,*" MinHeight="150">
+      <!-- Like the original: the unstaged files on top, a bar with the unstage (up) and stage (down) buttons between the lists, the staged files below and the committer at the bottom. -->
+      <Grid RowDefinitions="*,Auto,*,Auto">
         <DockPanel>
           <Border DockPanel.Dock="Top" Classes="sectionHeader">
-            <Grid ColumnDefinitions="*,Auto">
-              <TextBlock x:Name="UnstagedHeader" Text="{Binding UnstagedHeader}" FontWeight="SemiBold" VerticalAlignment="Center" />
-              <Button x:Name="StageSelectedButton" Grid.Column="1" Classes="tool" MinHeight="22" Padding="6,1"
-                      Command="{Binding StageSelectedCommand}" ToolTip.Tip="Stage the selected files (S, or double-click a file)">
-            <StackPanel Orientation="Horizontal" Spacing="4"><views:AppIcon IconName="Stage" /><AccessText Text="Stage ▾" VerticalAlignment="Center" /></StackPanel>
-          </Button>
-            </Grid>
+            <TextBlock x:Name="UnstagedHeader" Text="{Binding UnstagedHeader}" FontWeight="SemiBold" VerticalAlignment="Center" />
           </Border>
           <Panel>
             <TreeView x:Name="UnstagedTreeView" ItemsSource="{Binding UnstagedTree}" SelectionMode="Multiple" IsVisible="{Binding ShowTree}"
@@ -146,16 +141,30 @@
             <TextBlock x:Name="NoUnstagedText" Text="There are no unstaged changes" Opacity="0.55" Margin="10" IsHitTestVisible="False" IsVisible="{Binding HasNoUnstaged}" />
           </Panel>
         </DockPanel>
-        <GridSplitter Grid.Row="1" Height="5" Background="Transparent" HorizontalAlignment="Stretch" ResizeDirection="Rows" />
+        <GridSplitter Grid.Row="1" Height="4" Background="Transparent" HorizontalAlignment="Stretch" ResizeDirection="Rows" />
         <DockPanel Grid.Row="2">
-          <Border DockPanel.Dock="Top" Classes="sectionHeader" BorderThickness="0,1,0,1">
-            <Grid ColumnDefinitions="*,Auto">
-              <TextBlock x:Name="StagedHeader" Text="{Binding StagedHeader}" FontWeight="SemiBold" VerticalAlignment="Center" />
-              <Button x:Name="UnstageSelectedButton" Grid.Column="1" Classes="tool" MinHeight="22" Padding="6,1"
+          <Border x:Name="StageBar" DockPanel.Dock="Top" Classes="sectionHeader" BorderThickness="0,1,0,1">
+            <Grid ColumnDefinitions="Auto,Auto,Auto,*,Auto,Auto,Auto">
+              <Button x:Name="UnstageAllBarButton" Classes="tool" MinHeight="22" Padding="4,1" Command="{Binding UnstageAllCommand}" ToolTip.Tip="Unstage all" AutomationProperties.Name="Unstage all">
+                <views:AppIcon IconName="UnstageAll" />
+              </Button>
+              <Border Grid.Column="1" Width="1" Margin="3,2" Background="{DynamicResource SubtleBorderBrush}" />
+              <Button x:Name="UnstageSelectedButton" Grid.Column="2" Classes="tool" MinHeight="22" Padding="6,1"
                       Command="{Binding UnstageSelectedCommand}" ToolTip.Tip="Unstage the selected files (U, or double-click a file)">
-            <StackPanel Orientation="Horizontal" Spacing="4"><views:AppIcon IconName="Unstage" /><AccessText Text="Unstage ▴" VerticalAlignment="Center" /></StackPanel>
-          </Button>
+                <StackPanel Orientation="Horizontal" Spacing="4"><views:AppIcon IconName="Unstage" /><AccessText Text="Unstage" VerticalAlignment="Center" /></StackPanel>
+              </Button>
+              <Button x:Name="StageSelectedButton" Grid.Column="4" Classes="tool" MinHeight="22" Padding="6,1"
+                      Command="{Binding StageSelectedCommand}" ToolTip.Tip="Stage the selected files (S, or double-click a file)">
+                <StackPanel Orientation="Horizontal" Spacing="4"><AccessText Text="Stage" VerticalAlignment="Center" /><views:AppIcon IconName="Stage" /></StackPanel>
+              </Button>
+              <Border Grid.Column="5" Width="1" Margin="3,2" Background="{DynamicResource SubtleBorderBrush}" />
+              <Button x:Name="StageAllBarButton" Grid.Column="6" Classes="tool" MinHeight="22" Padding="4,1" Command="{Binding StageAllCommand}" ToolTip.Tip="Stage all" AutomationProperties.Name="Stage all">
+                <views:AppIcon IconName="StageAll" />
+              </Button>
             </Grid>
+          </Border>
+          <Border DockPanel.Dock="Top" Classes="sectionHeader">
+            <TextBlock x:Name="StagedHeader" Text="{Binding StagedHeader}" FontWeight="SemiBold" VerticalAlignment="Center" />
           </Border>
           <Panel>
             <TreeView x:Name="StagedTreeView" ItemsSource="{Binding StagedTree}" SelectionMode="Multiple" IsVisible="{Binding ShowTree}"
@@ -176,6 +185,9 @@
             <TextBlock x:Name="NoStagedText" Text="There are no staged changes" Opacity="0.55" Margin="10" IsHitTestVisible="False" IsVisible="{Binding HasNoStaged}" />
           </Panel>
         </DockPanel>
+        <Border Grid.Row="3" Padding="6,3" BorderThickness="0,1,0,0" BorderBrush="{DynamicResource SubtleBorderBrush}" IsVisible="{Binding HasCommitter}">
+          <TextBlock x:Name="CommitterText" Text="{Binding CommitterText}" Foreground="{DynamicResource AccentTextForeground}" TextTrimming="CharacterEllipsis" ToolTip.Tip="The identity the commit is made with" />
+        </Border>
       </Grid>
       <GridSplitter Grid.Column="1" Width="5" Background="Transparent" VerticalAlignment="Stretch" ResizeDirection="Columns" />
       <Border Grid.Column="2" BorderThickness="1,0,0,0" BorderBrush="{DynamicResource SubtleBorderBrush}">

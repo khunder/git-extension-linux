@@ -43,4 +43,15 @@ public class ChangeTreeNodeTests
         second[0].IsExpanded.Should().BeFalse();
         ChangeTreeNode.Build([File("src/a.cs")], collapsed, "staged")[0].IsExpanded.Should().BeTrue("the staged tree remembers separately");
     }
+
+    [Test]
+    public void A_folder_whose_only_child_is_a_folder_is_shown_as_one_node()
+    {
+        List<ChangeTreeNode> roots = ChangeTreeNode.Build([File("src/app/Core/a.cs"), File("src/app/Core/b.cs"), File("top.txt")]);
+
+        roots.Select(n => n.Name).Should().Equal("src/app/Core", "top.txt");
+        roots[0].FullPath.Should().Be("src/app/Core");
+        roots[0].Children.Select(n => n.Name).Should().Equal("a.cs", "b.cs");
+        roots[0].Label.Should().Be("src/app/Core (2)");
+    }
 }

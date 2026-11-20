@@ -8,6 +8,7 @@ public enum UiTarget
 {
     PathBox,
     SidebarFilter,
+    RevisionFilter,
     CommitMessage,
     ToggleSidebar,
     ShowRecent,
@@ -160,7 +161,8 @@ public sealed partial class MainWindowViewModel
             Make("view.settings", "Settings", "View", () => _ = Settings.OpenAsync(), gestures: Keys(CommandGesture.Of(Key.OemComma, Ctrl))),
 
             // Navigation
-            Make("focus.filter", "Filter branches and tags", "Navigation", () => UiRequested?.Invoke(UiTarget.SidebarFilter), HasRepo, Keys(CommandGesture.Of(Key.F, Ctrl))),
+            Make("focus.revisionfilter", "Search commit messages", "Navigation", () => UiRequested?.Invoke(UiTarget.RevisionFilter), HasRepo, Keys(CommandGesture.Of(Key.F, Ctrl))),
+            Make("focus.filter", "Filter branches and tags", "Navigation", () => UiRequested?.Invoke(UiTarget.SidebarFilter), HasRepo, Keys(CommandGesture.Of(Key.F, KeyModifiers.Control | KeyModifiers.Alt))),
             Make("focus.path", "Focus the repository path", "Navigation", () => UiRequested?.Invoke(UiTarget.PathBox), gestures: Keys(CommandGesture.Of(Key.L, Ctrl))),
 
             // Help

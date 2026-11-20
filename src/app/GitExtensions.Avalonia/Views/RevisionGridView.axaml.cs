@@ -4,6 +4,7 @@ using Avalonia.Controls;
 using Avalonia.Input;
 using Avalonia.Interactivity;
 using Avalonia.LogicalTree;
+using Avalonia.VisualTree;
 using GitExtensions.Desktop.Services;
 using GitExtensions.Desktop.ViewModels;
 using GitExtensions.Desktop.Views.ContextMenus;
@@ -26,6 +27,7 @@ public sealed partial class RevisionGridView : UserControl
     private MainWindowViewModel? _filterFocusSource;
     private string? _resizing;
     private double _resizeStart;
+    private object? _contextSource;
 
     public RevisionGridView()
     {
@@ -42,9 +44,13 @@ public sealed partial class RevisionGridView : UserControl
             }
         };
         AddHandler(KeyDownEvent, OnListKeyDown, RoutingStrategies.Tunnel);
+
+        // A right click on a ref label lands on the label (its data is the ref, not the commit): remember where it came from
+        // so the menu of the commit behind the label can be built.
+        CommitList.AddHandler(ContextRequestedEvent, (_, e) => _contextSource = e.Source, RoutingStrategies.Tunnel);
         MenuKit.AttachBuilt(
             CommitList,
-            row => row is CommitItemViewModel commit && DataContext is MainWindowViewModel viewModel
+            row => CommitOf(row) is { } commit && DataContext is MainWindowViewModel viewModel
                 ? RevisionGridContextMenu.Build(viewModel, commit, viewModel.Actions.Clipboard ?? new TopLevelClipboardService(TopLevel.GetTopLevel(this)))
                 : null);
         UncommittedRow.Focusable = true;
@@ -58,6 +64,18 @@ public sealed partial class RevisionGridView : UserControl
         {
             AttachGrip(grip);
         }
+    }
+
+    private CommitItemViewModel? CommitOf(object? row)
+    {
+        if (row is CommitItemViewModel commit)
+        {
+            return commit;
+        }
+
+        return row is History.RefBadge && _contextSource is Avalonia.Visual visual
+            ? visual.GetSelfAndVisualAncestors().OfType<StyledElement>().Select(element => element.DataContext).OfType<CommitItemViewModel>().FirstOrDefault()
+            : null;
     }
 
     private void OnRowColorsChanged() => Avalonia.Threading.Dispatcher.UIThread.Post(UpdateStripes);
@@ -78,6 +96,13 @@ public sealed partial class RevisionGridView : UserControl
 
     /// <summary>The "Filter:" text box of the filter bar.</summary>
     public TextBox FilterTextBox => FilterBar.Box;
+
+    /// <summary>Puts the cursor into the revision filter and selects its text, so typing replaces the last search.</summary>
+    public void FocusFilter()
+    {
+        FilterBar.Box.Focus();
+        FilterBar.Box.SelectAll();
+    }
 
     public RevisionGridColumns? Columns => (DataContext as MainWindowViewModel)?.Columns;
 

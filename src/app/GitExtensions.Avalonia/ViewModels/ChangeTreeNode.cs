@@ -97,7 +97,27 @@ public sealed partial class ChangeTreeNode : ObservableObject
         }
 
         Sort(root);
+        Compact(root, collapsed, side);
         return root.Children;
+    }
+
+    // Like the original, a folder whose only child is another folder is shown as one node ("src/app/Core" instead of three levels).
+    private static void Compact(ChangeTreeNode node, ISet<string>? collapsed, string side)
+    {
+        for (int i = 0; i < node.Children.Count; i++)
+        {
+            ChangeTreeNode child = node.Children[i];
+            while (child.IsFolder && child.Children.Count == 1 && child.Children[0].IsFolder)
+            {
+                ChangeTreeNode only = child.Children[0];
+                ChangeTreeNode merged = new(child.Name + "/" + only.Name, only.FullPath, null, collapsed, side + ":" + only.FullPath);
+                merged.Children.AddRange(only.Children);
+                child = merged;
+            }
+
+            node.Children[i] = child;
+            Compact(child, collapsed, side);
+        }
     }
 
     partial void OnIsExpandedChanged(bool value)

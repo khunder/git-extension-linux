@@ -44,6 +44,13 @@ public static class IconCache
 
     private static Bitmap? Load(string name, bool dark)
     {
+        // "ext:.md" is the icon the operating system shows for that file type (Windows); elsewhere the generic file icon.
+        if (name.StartsWith("ext:", StringComparison.Ordinal))
+        {
+            Bitmap? system = OperatingSystem.IsWindows() ? SystemIcons.ForExtension(name[4..]) : null;
+            return system ?? Load("File", dark);
+        }
+
         try
         {
             using Stream stream = AssetLoader.Open(new Uri($"avares://{typeof(IconCache).Assembly.GetName().Name}/Assets/Icons/{name}.png"));

@@ -287,8 +287,12 @@ public class KeyboardTests
         window.FindControl<MainToolbarView>("MainToolbar")!.RepoPath.Flyout!.IsOpen.Should().BeTrue();
         HideFlyouts(window);
 
-        Press(window, Key.F, KeyModifiers.Control);
+        Press(window, Key.F, KeyModifiers.Control | KeyModifiers.Alt);
         window.FocusManager!.GetFocusedElement().Should().BeSameAs(window.FindControl<RefsTreeView>("SidebarPanel")!.FindControl<TextBox>("FilterBox"));
+
+        // Ctrl+F searches the commit messages: the revision filter gets the focus.
+        Press(window, Key.F, KeyModifiers.Control);
+        window.FocusManager!.GetFocusedElement().Should().BeSameAs(window.FindControl<RevisionGridView>("RevisionGrid")!.FilterTextBox);
 
         // The commit message lives in the Commit window now: Ctrl+M asks for it.
         RecordingWindowService windows = new();

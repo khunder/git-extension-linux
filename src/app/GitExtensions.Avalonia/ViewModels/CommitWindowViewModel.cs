@@ -97,6 +97,7 @@ public sealed partial class CommitWindowViewModel : ObservableObject, IDisposabl
         Resolver = new ConflictResolverViewModel(() => _module, AfterIndexChangeAsync, ReportError);
         LoadRecent();
         BuildTemplates();
+        CommitterText = ReadCommitter(module);
         UpdateStatus();
         _main.PropertyChanged += OnMainPropertyChanged;
     }
@@ -110,6 +111,11 @@ public sealed partial class CommitWindowViewModel : ObservableObject, IDisposabl
 
     /// <summary>The working directory of the repository this window commits to.</summary>
     public string WorkingDir => _workingDir;
+
+    /// <summary>"Committer Name (email)" shown like the original, read from the git configuration, shown at the bottom of the file lists like the original.</summary>
+    public string CommitterText { get; }
+
+    public bool HasCommitter => CommitterText.Length > 0;
 
     public bool HasNoUnstaged => Unstaged.Count == 0;
 
@@ -642,6 +648,26 @@ public sealed partial class CommitWindowViewModel : ObservableObject, IDisposabl
     {
         RecentMessages.ReplaceAll(_store.RecentMessages);
         OnPropertyChanged(nameof(HasRecentMessages));
+    }
+
+    private static string ReadCommitter(GitModule module)
+    {
+        try
+        {
+            string Read(string key)
+            {
+                ExecutionResult result = module.GitExecutable.Execute(new GitArgumentBuilder("config") { "--get", key }, throwOnErrorExit: false);
+                return result.ExitedSuccessfully ? result.StandardOutput.Trim() : string.Empty;
+            }
+
+            string name = Read("user.name");
+            string email = Read("user.email");
+            return name.Length == 0 && email.Length == 0 ? string.Empty : $"Committer {name} <{email}>";
+        }
+        catch (Exception ex) when (ex is InvalidOperationException or System.ComponentModel.Win32Exception)
+        {
+            return string.Empty;
+        }
     }
 
     private void BuildTemplates()
