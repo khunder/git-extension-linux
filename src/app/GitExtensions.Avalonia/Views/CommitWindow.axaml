@@ -20,8 +20,9 @@
   <Window.Styles>
     <Style Selector="TreeViewItem" x:DataType="vm:ChangeTreeNode">
       <Setter Property="IsExpanded" Value="{Binding IsExpanded, Mode=TwoWay}" />
-      <Setter Property="MinHeight" Value="24" />
+      <Setter Property="MinHeight" Value="20" />
       <Setter Property="Padding" Value="0" />
+      <Setter Property="FontSize" Value="12" />
     </Style>
     <Style Selector="TextBlock.glyph">
       <Setter Property="FontFamily" Value="Cascadia Mono, Consolas, DejaVu Sans Mono, monospace" />
@@ -48,9 +49,11 @@
       <Setter Property="BorderThickness" Value="0,0,0,1" />
       <Setter Property="BorderBrush" Value="{DynamicResource SubtleBorderBrush}" />
     </Style>
+    <!-- Compact rows like the original's file lists. -->
     <Style Selector="ListBoxItem">
-      <Setter Property="MinHeight" Value="24" />
-      <Setter Property="Padding" Value="6,1" />
+      <Setter Property="MinHeight" Value="20" />
+      <Setter Property="Padding" Value="4,0" />
+      <Setter Property="FontSize" Value="12" />
     </Style>
   </Window.Styles>
 
@@ -193,7 +196,7 @@
       <Border Grid.Column="2" BorderThickness="1,0,0,0" BorderBrush="{DynamicResource SubtleBorderBrush}">
         <Panel>
           <Border x:Name="DiffHost" IsVisible="{Binding !Resolver.IsActive}">
-            <views:DiffView x:Name="DiffPanel" DataContext="{Binding Diff}" />
+            <views:DiffView x:Name="DiffPanel" Classes="compact" DataContext="{Binding Diff}" />
           </Border>
           <views:ConflictResolverView x:Name="ConflictPanel" DataContext="{Binding Resolver}" IsVisible="{Binding IsActive}" />
         </Panel>
@@ -212,8 +215,9 @@
           </Button>
           <Button x:Name="RecentButton" Grid.Column="3" Classes="tool" Content="Recent messages ▾" Click="OnRecentClick" IsEnabled="{Binding HasRecentMessages}" />
         </Grid>
-        <Grid DockPanel.Dock="Bottom" ColumnDefinitions="Auto,*" RowDefinitions="Auto,Auto" Margin="0,6,0,0">
-          <WrapPanel Grid.ColumnSpan="2" Orientation="Horizontal" VerticalAlignment="Center">
+        <!-- Like the original: the options sit left of the commit buttons on one line; "Reset all changes" is in the toolbar only. -->
+        <Grid DockPanel.Dock="Bottom" ColumnDefinitions="*,Auto" Margin="0,6,0,0">
+          <WrapPanel Orientation="Horizontal" VerticalAlignment="Center" HorizontalAlignment="Right" Margin="0,0,12,0">
             <CheckBox x:Name="AmendBox" Content="_Amend commit" IsChecked="{Binding Commit.Amend}" IsEnabled="{Binding Commit.HasHead}" Margin="0,0,12,0" />
             <CheckBox x:Name="ResetAuthorBox" Content="Reset author" IsChecked="{Binding Commit.ResetAuthor}" IsVisible="{Binding Commit.Amend}" Margin="0,0,12,0"
                       ToolTip.Tip="Also overwrite the author and the date of the amended commit" />
@@ -223,10 +227,7 @@
             <CheckBox x:Name="PushBox" Content="Push after commit" IsChecked="{Binding PushAfterCommit}" Margin="0,0,12,0" />
             <CheckBox x:Name="CloseBox" Content="Close after commit" IsChecked="{Binding CloseAfterCommit}" />
           </WrapPanel>
-          <Button x:Name="ResetAllButton" Grid.Row="1" Command="{Binding ResetAllCommand}" VerticalAlignment="Center">
-            <StackPanel Orientation="Horizontal" Spacing="4"><views:AppIcon IconName="ResetWorkingDirChanges" /><AccessText Text="_Reset all changes…" VerticalAlignment="Center" /></StackPanel>
-          </Button>
-          <StackPanel Grid.Row="1" Grid.Column="1" Orientation="Horizontal" Spacing="6" HorizontalAlignment="Right">
+          <StackPanel Grid.Column="1" Orientation="Horizontal" Spacing="6" VerticalAlignment="Center">
             <Button x:Name="CommitAndPushButton" Command="{Binding CommitAndPushCommand}">
             <StackPanel Orientation="Horizontal" Spacing="4"><views:AppIcon IconName="ArrowUp" /><AccessText Text="Commit &amp; _push" VerticalAlignment="Center" /></StackPanel>
           </Button>

@@ -38,8 +38,13 @@ public sealed record RevisionFilter
 
     public bool HasText => !string.IsNullOrWhiteSpace(Text);
 
+    /// <summary>Only the commits that changed this repository-relative path ("Filter file in grid"), or null.</summary>
+    public string? Path { get; init; }
+
+    public bool HasPath => !string.IsNullOrWhiteSpace(Path);
+
     /// <summary>True when something narrows the list (the "Uncommitted changes" row is hidden then).</summary>
-    public bool IsFiltering => HasText || !ShowMergeCommits || Branches == BranchFilterMode.SpecificBranch;
+    public bool IsFiltering => HasText || HasPath || !ShowMergeCommits || Branches == BranchFilterMode.SpecificBranch;
 }
 
 /// <summary>Maps a <see cref="RevisionFilter"/> to the revision part of the <c>git log</c> command line.</summary>
@@ -90,6 +95,9 @@ public static class RevisionFilterArgs
 
         return args.ToString();
     }
+
+    /// <summary>The path part of the command line (after git's <c>--</c>, which the reader adds), empty for no path filter.</summary>
+    public static string PathSpec(RevisionFilter filter) => filter.HasPath ? Quote(filter.Path!.Trim()) : string.Empty;
 
     private static string Revisions(RevisionFilter filter)
     {

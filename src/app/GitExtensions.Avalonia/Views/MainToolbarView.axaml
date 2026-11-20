@@ -150,6 +150,9 @@
             </MenuFlyout>
           </SplitButton.Flyout>
       </SplitButton>
+      <Button x:Name="FetchButton" Classes="tb" Command="{Binding FetchOnlyCommand}" IsEnabled="{Binding Remote.HasRepository}" ToolTip.Tip="Fetch (Ctrl+Shift+F)" ToolTip.ShowOnDisabled="True">
+        <views:AppIcon IconName="PullFetch" />
+      </Button>
       <Button x:Name="PushButton" Classes="tb" Command="{Binding ShowPushDialogCommand}" ToolTip.Tip="Push the current branch (Ctrl+Shift+K)" ToolTip.ShowOnDisabled="True">
         <views:AppIcon IconName="Push" />
       </Button>

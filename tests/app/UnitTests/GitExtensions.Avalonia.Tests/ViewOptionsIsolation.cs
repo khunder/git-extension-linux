@@ -15,6 +15,10 @@ public class ViewOptionsIsolation
         _previous = ViewOptionsStore.Current;
         _file = Path.Combine(Path.GetTempPath(), "ge-avalonia-view-options-" + Guid.NewGuid().ToString("N") + ".json");
         ViewOptionsStore.Current = new ViewOptionsStore(_file);
+
+        // The tests find the Diff tab's files in its flat list.
+        DiffListLayout.UseFile(_file + ".diff-layout.txt");
+        DiffListLayout.Grouping = DiffGrouping.None;
     }
 
     [OneTimeTearDown]
@@ -22,5 +26,6 @@ public class ViewOptionsIsolation
     {
         ViewOptionsStore.Current = _previous;
         File.Delete(_file);
+        File.Delete(_file + ".diff-layout.txt");
     }
 }

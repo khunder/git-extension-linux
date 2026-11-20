@@ -199,6 +199,39 @@ public class RevisionTabsTests
     }
 
     [AvaloniaTest]
+    public async Task Diff_tab_groups_the_files_as_a_tree_by_path_or_extension()
+    {
+        using RevisionTabsRepository repository = new();
+        MainWindowViewModel main = await OpenAsync(repository.Path);
+        main.SelectedCommit = Commit(main, "Rework files");
+        RevisionDiffViewModel diff = main.RevisionTabs.Diff;
+        await WaitUntilAsync(() => diff.Files.Count == 5);
+        diff.Tree.Should().BeEmpty("the tests use the flat list");
+
+        try
+        {
+            diff.GroupByPath = true;
+            diff.ShowTree.Should().BeTrue();
+            ChangeTreeNode header = diff.Tree.Single();
+            header.PlainLabel.Should().StartWith("(5) Diff with A ").And.EndWith(": Rework files");
+            header.Files().Should().HaveCount(5);
+
+            diff.GroupByExtension = true;
+            diff.Tree.Single().Children.Select(n => n.PlainLabel).Should().Equal(".dat", ".txt");
+
+            diff.FilterText = "cc.";
+            diff.Tree.Single().PlainLabel.Should().StartWith("(1) ");
+        }
+        finally
+        {
+            diff.GroupByNone = true;
+        }
+
+        diff.Tree.Should().BeEmpty();
+        await QuiesceAsync(main);
+    }
+
+    [AvaloniaTest]
     public async Task Diff_tab_diffs_a_merge_commit_against_its_first_parent_with_a_notice()
     {
         using RevisionTabsRepository repository = new();

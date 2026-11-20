@@ -179,6 +179,12 @@ public sealed partial class PushDialogViewModel : ObservableObject
         if (args is not null)
         {
             await _remote.RunGitAsync("Push", args);
+
+            // Like the original: the dialog goes away once the push went through; on failure it stays to show git's output.
+            if (_remote.LastRunSucceeded)
+            {
+                IsOpen = false;
+            }
         }
     }
 

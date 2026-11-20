@@ -54,4 +54,27 @@ public class ChangeTreeNodeTests
         roots[0].Children.Select(n => n.Name).Should().Equal("a.cs", "b.cs");
         roots[0].Label.Should().Be("src/app/Core (2)");
     }
+
+    [Test]
+    public void BuildByExtension_groups_by_extension_with_the_folder_tree_inside()
+    {
+        List<ChangeTreeNode> groups = ChangeTreeNode.BuildByExtension([File("src/app/Views/A.axaml"), File("src/app/B.cs"), File("README"), File("src/app/Views/C.axaml")]);
+
+        groups.Select(g => g.PlainLabel).Should().Equal(".axaml", ".cs", "(no extension)");
+        groups[0].StatusIcon.Should().Be("ext:.axaml");
+        groups[0].Children.Single().PlainLabel.Should().Be("src/app/Views", "single-child folders are compacted below the group");
+        groups[0].Children.Single().Children.Select(n => n.Name).Should().Equal("A.axaml", "C.axaml");
+        groups[2].Children.Single().Name.Should().Be("README");
+    }
+
+    [Test]
+    public void Header_holds_the_nodes_and_shows_its_text()
+    {
+        ChangeTreeNode header = ChangeTreeNode.Header("(2) Diff with A 1234abcd: subject", ChangeTreeNode.Build([File("a.txt"), File("b.txt")]));
+
+        header.PlainLabel.Should().Be("(2) Diff with A 1234abcd: subject");
+        header.StatusIcon.Should().Be("Diff");
+        header.IsExpanded.Should().BeTrue();
+        header.Files().Should().HaveCount(2);
+    }
 }

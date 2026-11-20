@@ -20,17 +20,5 @@ public sealed partial class RevisionFileTreeView : UserControl
     private string? Revision => (DataContext as RevisionFileTreeViewModel)?.Revision;
 
     private FileMenuContext MenuContext(FileTreeNode node)
-    {
-        MainWindowViewModel? main = this.FindAncestorOfType<Window>()?.DataContext as MainWindowViewModel;
-        string? revision = Revision;
-        return new FileMenuContext
-        {
-            Paths = [node.FullPath],
-            WorkingDir = main?.RepositoryPath ?? string.Empty,
-            Revision = revision,
-            IsFolder = node.IsFolder,
-            OpenHistory = (path, blame) => _ = main?.RevisionTabs.OpenFileHistoryAsync(path, blame, revision),
-            Clipboard = new TopLevelClipboardService(TopLevel.GetTopLevel(this)),
-        };
-    }
+        => FileMenus.Context(this, this.FindAncestorOfType<Window>()?.DataContext as MainWindowViewModel, node.FullPath, Revision, null, node.IsFolder, offerFileTree: false);
 }

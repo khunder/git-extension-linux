@@ -12,9 +12,30 @@
     <Style Selector="Border.hunk"><Setter Property="Background" Value="{DynamicResource DiffHunkBackground}" /></Style>
     <Style Selector="TextBlock.added"><Setter Property="Foreground" Value="{DynamicResource SuccessTextForeground}" /></Style>
     <Style Selector="TextBlock.deleted"><Setter Property="Foreground" Value="{DynamicResource ErrorTextForeground}" /></Style>
-    <Style Selector="ListBoxItem">
-      <Setter Property="MinHeight" Value="22" />
-      <Setter Property="Padding" Value="6,1" />
+    <!-- Compact rows like the original's file list. -->
+    <Style Selector="ListBox#FileList ListBoxItem">
+      <Setter Property="MinHeight" Value="20" />
+      <Setter Property="Padding" Value="4,0" />
+      <Setter Property="FontSize" Value="12" />
+    </Style>
+    <Style Selector="TreeView#FileTree">
+      <Setter Property="FontSize" Value="12" />
+    </Style>
+    <Style Selector="TreeView#FileTree TreeViewItem" x:DataType="vm:ChangeTreeNode">
+      <Setter Property="IsExpanded" Value="{Binding IsExpanded, Mode=TwoWay}" />
+      <Setter Property="ItemContainerTheme" Value="{StaticResource DottedTreeItemTheme}" />
+    </Style>
+    <Style Selector="ToggleButton.layout">
+      <Setter Property="Padding" Value="3" />
+      <Setter Property="MinHeight" Value="0" />
+      <Setter Property="MinWidth" Value="0" />
+      <Setter Property="Background" Value="Transparent" />
+      <Setter Property="BorderThickness" Value="1" />
+      <Setter Property="BorderBrush" Value="Transparent" />
+    </Style>
+    <Style Selector="ToggleButton.layout:checked /template/ ContentPresenter">
+      <Setter Property="Background" Value="{DynamicResource SystemControlHighlightListAccentLowBrush}" />
+      <Setter Property="BorderBrush" Value="{DynamicResource SystemAccentColor}" />
     </Style>
   </UserControl.Styles>
 
@@ -27,18 +48,43 @@
       </Grid>
     </Border>
     <DockPanel Grid.Row="1" Grid.Column="0">
-      <TextBox x:Name="FilterBox" DockPanel.Dock="Top" Margin="4" MinHeight="24" Padding="6,2" FontSize="12" PlaceholderText="Filter files…" Text="{Binding FilterText}" />
-      <ListBox x:Name="FileList" ItemsSource="{Binding Files}" SelectedItem="{Binding SelectedFile}" Padding="0">
-        <ListBox.ItemTemplate>
-          <DataTemplate x:DataType="vm:ChangedFileViewModel">
-            <Grid ColumnDefinitions="16,*,Auto" ColumnSpacing="6" Background="Transparent">
-              <views:AppIcon IconName="{Binding StatusIcon}" HorizontalAlignment="Center" />
-              <TextBlock Grid.Column="1" Text="{Binding DisplayName}" TextTrimming="CharacterEllipsis" ToolTip.Tip="{Binding DisplayName}" />
-              <TextBlock Grid.Column="2" Text="staged" FontSize="11" Opacity="0.6" IsVisible="{Binding IsStaged}" />
-            </Grid>
-          </DataTemplate>
-        </ListBox.ItemTemplate>
-      </ListBox>
+      <!-- How the files are listed, like the original's "Sort and group by": flat, by folder, by extension. -->
+      <StackPanel DockPanel.Dock="Top" Orientation="Horizontal" Spacing="2" Margin="4,3,4,0">
+        <ToggleButton x:Name="ListLayoutButton" Classes="layout" IsChecked="{Binding GroupByNone}" ToolTip.Tip="Flat list of paths">
+          <views:AppIcon IconName="File" />
+        </ToggleButton>
+        <ToggleButton x:Name="TreeLayoutButton" Classes="layout" IsChecked="{Binding GroupByPath}" ToolTip.Tip="Group by path (folder tree)">
+          <views:AppIcon IconName="FileTree" />
+        </ToggleButton>
+        <ToggleButton x:Name="ExtensionLayoutButton" Classes="layout" IsChecked="{Binding GroupByExtension}" ToolTip.Tip="Group by file extension">
+          <views:AppIcon IconName="SortBy" />
+        </ToggleButton>
+      </StackPanel>
+      <TextBox x:Name="FilterBox" DockPanel.Dock="Top" Margin="4,3,4,2" MinHeight="22" Padding="5,1" FontSize="12" PlaceholderText="Filter files…" Text="{Binding FilterText}" />
+      <Panel>
+        <ListBox x:Name="FileList" ItemsSource="{Binding Files}" SelectedItem="{Binding SelectedFile}" Padding="0" IsVisible="{Binding !ShowTree}">
+          <ListBox.ItemTemplate>
+            <DataTemplate x:DataType="vm:ChangedFileViewModel">
+              <Grid ColumnDefinitions="16,*,Auto" ColumnSpacing="5" Background="Transparent">
+                <views:AppIcon IconName="{Binding StatusIcon}" HorizontalAlignment="Center" VerticalAlignment="Center" />
+                <TextBlock Grid.Column="1" Text="{Binding DisplayName}" TextTrimming="CharacterEllipsis" ToolTip.Tip="{Binding DisplayName}" VerticalAlignment="Center" />
+                <TextBlock Grid.Column="2" Text="staged" FontSize="11" Opacity="0.6" IsVisible="{Binding IsStaged}" VerticalAlignment="Center" />
+              </Grid>
+            </DataTemplate>
+          </ListBox.ItemTemplate>
+        </ListBox>
+        <TreeView x:Name="FileTree" ItemsSource="{Binding Tree}" IsVisible="{Binding ShowTree}" Padding="2,0"
+                  ItemContainerTheme="{StaticResource DottedTreeItemTheme}">
+          <TreeView.ItemTemplate>
+            <TreeDataTemplate ItemsSource="{Binding Children}" x:DataType="vm:ChangeTreeNode">
+              <StackPanel Orientation="Horizontal" Spacing="3" Background="Transparent" ToolTip.Tip="{Binding File.Name}">
+                <views:AppIcon IconName="{Binding StatusIcon}" VerticalAlignment="Center" />
+                <TextBlock Text="{Binding PlainLabel}" VerticalAlignment="Center" />
+              </StackPanel>
+            </TreeDataTemplate>
+          </TreeView.ItemTemplate>
+        </TreeView>
+      </Panel>
     </DockPanel>
 
     <GridSplitter Grid.Row="1" Grid.Column="1" Width="4" Background="Transparent" />

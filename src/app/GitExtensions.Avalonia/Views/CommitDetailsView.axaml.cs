@@ -15,15 +15,5 @@ public sealed partial class CommitDetailsView : UserControl
     }
 
     private FileMenuContext MenuContext(ChangedFileViewModel file)
-    {
-        MainWindowViewModel? main = this.FindAncestorOfType<Window>()?.DataContext as MainWindowViewModel;
-        return new FileMenuContext
-        {
-            Paths = [file.Name],
-            WorkingDir = main?.RepositoryPath ?? string.Empty,
-            Revision = (DataContext as CommitDetailsViewModel)?.Hash,
-            OpenHistory = (_, blame) => (blame ? main?.ShowFileBlameCommand : main?.ShowFileHistoryCommand)?.Execute(file),
-            Clipboard = new TopLevelClipboardService(TopLevel.GetTopLevel(this)),
-        };
-    }
+        => FileMenus.Context(this, this.FindAncestorOfType<Window>()?.DataContext as MainWindowViewModel, file.Name, (DataContext as CommitDetailsViewModel)?.Hash, null, isFolder: false);
 }

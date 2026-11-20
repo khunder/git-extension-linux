@@ -582,7 +582,7 @@ public class ContextMenuTests
         ListBoxItem row = files.GetVisualDescendants().OfType<ListBoxItem>().First();
 
         row.RaiseEvent(new ContextRequestedEventArgs());
-        Outline(files.ContextMenu!.Items.OfType<Control>()).Should().StartWith("Open|Open with…|Edit file|Show in folder|-|File history|Blame");
+        Outline(files.ContextMenu!.Items.OfType<Control>()).Should().StartWith("Reset file(s) to|Cherry pick changes|-|Open with difftool|Open working directory file");
         window.Close();
     }
 

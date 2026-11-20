@@ -19,6 +19,13 @@
       <Setter Property="MinHeight" Value="20" />
     </Style>
     <Style Selector="Border.hunk"><Setter Property="Background" Value="{DynamicResource DiffHunkBackground}" /></Style>
+
+    <!-- "compact" (the Commit window, like the original): no file name and stage buttons above the diff; the bar only appears for a line selection. -->
+    <Style Selector="views|DiffView.compact Border#FileHeader">
+      <Setter Property="IsVisible" Value="{Binding HasSelection}" />
+    </Style>
+    <Style Selector="views|DiffView.compact TextBlock#FileNameText"><Setter Property="IsVisible" Value="False" /></Style>
+    <Style Selector="views|DiffView.compact WrapPanel#FileActions"><Setter Property="IsVisible" Value="False" /></Style>
   </UserControl.Styles>
 
   <DockPanel>
@@ -31,10 +38,10 @@
       </Grid>
     </Border>
 
-    <Border DockPanel.Dock="Top" Padding="8,4" BorderThickness="0,1,0,1" BorderBrush="{DynamicResource SubtleBorderBrush}">
+    <Border x:Name="FileHeader" DockPanel.Dock="Top" Padding="8,4" BorderThickness="0,1,0,1" BorderBrush="{DynamicResource SubtleBorderBrush}">
       <Grid ColumnDefinitions="*,Auto" RowDefinitions="Auto,Auto,Auto" RowSpacing="4">
         <TextBlock x:Name="FileNameText" Text="{Binding File.Name}" FontWeight="SemiBold" VerticalAlignment="Center" TextTrimming="CharacterEllipsis" />
-        <WrapPanel Grid.Row="1" Grid.ColumnSpan="2" Orientation="Horizontal">
+        <WrapPanel x:Name="FileActions" Grid.Row="1" Grid.ColumnSpan="2" Orientation="Horizontal">
           <Button Content="Stage" Command="{Binding StageCommand}" Margin="0,0,6,0" />
           <Button Content="Unstage" Command="{Binding UnstageCommand}" Margin="0,0,6,0" />
           <Button Content="Stage all" Command="{Binding StageAllCommand}" Margin="0,0,6,0" />

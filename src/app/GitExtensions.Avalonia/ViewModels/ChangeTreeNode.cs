@@ -7,12 +7,16 @@ public sealed partial class ChangeTreeNode : ObservableObject
 {
     private readonly ISet<string>? _collapsed;
     private readonly string _stateKey;
+    private readonly string? _label;
+    private readonly string? _icon;
 
     [ObservableProperty]
     private bool _isExpanded = true;
 
-    private ChangeTreeNode(string name, string fullPath, ChangedFileViewModel? file, ISet<string>? collapsed, string stateKey)
+    private ChangeTreeNode(string name, string fullPath, ChangedFileViewModel? file, ISet<string>? collapsed, string stateKey, string? label = null, string? icon = null)
     {
+        _label = label;
+        _icon = icon;
         Name = name;
         FullPath = fullPath;
         File = file;
@@ -37,14 +41,20 @@ public sealed partial class ChangeTreeNode : ObservableObject
     public string Status => File?.Status ?? string.Empty;
 
     /// <summary>The icon of the change for files; folders use the folder icon.</summary>
-    public string StatusIcon => File?.StatusIcon ?? "FolderClosed";
+    public string StatusIcon => File?.StatusIcon ?? _icon ?? "FolderClosed";
 
     public string Description => File?.Description ?? string.Empty;
 
     public bool IsConflicted => File?.IsConflicted ?? false;
 
     /// <summary>Folders show how many changed files they contain.</summary>
-    public string Label => IsFolder ? $"{Name} ({Files().Count()})" : Name;
+    public string Label => _label ?? (IsFolder ? $"{Name} ({Files().Count()})" : Name);
+
+    /// <summary>The name without the count of files, as the Diff tab shows folders.</summary>
+    public string PlainLabel => _label ?? Name;
+
+    /// <summary>Gets a value indicating whether this is a group of the tree (the header, an extension) rather than a folder of the repository.</summary>
+    public bool IsGroup => _label is not null || _icon is not null;
 
     public List<ChangeTreeNode> Children { get; } = [];
 
@@ -101,13 +111,43 @@ public sealed partial class ChangeTreeNode : ObservableObject
         return root.Children;
     }
 
+    /// <summary>
+    ///  Like the original's "group by extension": one node per extension (".cs", ".axaml", ...; files without one last),
+    ///  each holding the folder tree of its files.
+    /// </summary>
+    public static List<ChangeTreeNode> BuildByExtension(IEnumerable<ChangedFileViewModel> files, ISet<string>? collapsed = null, string side = "")
+    {
+        List<ChangeTreeNode> groups = [];
+        foreach (IGrouping<string, ChangedFileViewModel> group in files
+            .GroupBy(file => System.IO.Path.GetExtension(file.Name).ToLowerInvariant())
+            .OrderBy(group => group.Key.Length == 0 ? 1 : 0)
+            .ThenBy(group => group.Key, StringComparer.Ordinal))
+        {
+            string name = group.Key.Length == 0 ? "(no extension)" : group.Key;
+            string key = side + ":ext:" + name;
+            ChangeTreeNode node = new(name, string.Empty, null, collapsed, key, name, group.Key.Length == 0 ? "File" : "ext:" + group.Key);
+            node.Children.AddRange(Build(group, collapsed, key));
+            groups.Add(node);
+        }
+
+        return groups;
+    }
+
+    /// <summary>The top node of the original's diff list: "(35) Diff with A f698c68f: subject", holding the other nodes.</summary>
+    public static ChangeTreeNode Header(string text, IEnumerable<ChangeTreeNode> children)
+    {
+        ChangeTreeNode header = new(text, string.Empty, null, null, ":header", text, "Diff");
+        header.Children.AddRange(children);
+        return header;
+    }
+
     // Like the original, a folder whose only child is another folder is shown as one node ("src/app/Core" instead of three levels).
     private static void Compact(ChangeTreeNode node, ISet<string>? collapsed, string side)
     {
         for (int i = 0; i < node.Children.Count; i++)
         {
             ChangeTreeNode child = node.Children[i];
-            while (child.IsFolder && child.Children.Count == 1 && child.Children[0].IsFolder)
+            while (child.IsFolder && !child.IsGroup && child.Children.Count == 1 && child.Children[0].IsFolder && !child.Children[0].IsGroup)
             {
                 ChangeTreeNode only = child.Children[0];
                 ChangeTreeNode merged = new(child.Name + "/" + only.Name, only.FullPath, null, collapsed, side + ":" + only.FullPath);

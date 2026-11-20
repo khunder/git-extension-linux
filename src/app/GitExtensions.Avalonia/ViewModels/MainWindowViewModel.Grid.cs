@@ -52,6 +52,13 @@ public sealed partial class MainWindowViewModel
     [ObservableProperty]
     private bool _showMergeCommits = true;
 
+    /// <summary>"Filter file in grid": the history lists only the commits that changed this path (null: all commits).</summary>
+    [ObservableProperty]
+    [NotifyPropertyChangedFor(nameof(HasPathFilter))]
+    private string? _pathFilter;
+
+    public bool HasPathFilter => !string.IsNullOrEmpty(PathFilter);
+
     public RevisionGridColumns Columns { get; } = new();
 
     /// <summary>How long typing in the filter box waits before the history is reloaded.</summary>
@@ -81,7 +88,20 @@ public sealed partial class MainWindowViewModel
         ShowMergeCommits = ShowMergeCommits,
         Text = FilterText,
         TextMode = FilterMode,
+        Path = PathFilter,
     };
+
+    /// <summary>Shows only the commits that changed <paramref name="path"/> (and the filter bar, which tells so and clears it).</summary>
+    public void FilterHistoryByPath(string path)
+    {
+        ViewOptions.ShowFilterBar = true;
+        PathFilter = path;
+    }
+
+    [RelayCommand]
+    private void ClearPathFilter() => PathFilter = null;
+
+    partial void OnPathFilterChanged(string? value) => ScheduleReload(TimeSpan.Zero);
 
     private void InitializeGrid()
     {
@@ -136,6 +156,7 @@ public sealed partial class MainWindowViewModel
     {
         _suppressFilterReload = true;
         FilterText = string.Empty;
+        PathFilter = null;
         _suppressFilterReload = false;
         ScheduleReload(TimeSpan.Zero);
     }
@@ -163,6 +184,7 @@ public sealed partial class MainWindowViewModel
         if (!sameRepository)
         {
             FilterText = string.Empty;
+            PathFilter = null;
         }
 
         _suppressFilterReload = false;

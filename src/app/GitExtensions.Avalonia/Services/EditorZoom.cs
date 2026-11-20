@@ -98,7 +98,7 @@ public static class EditorZoom
         if (Application.Current?.Resources is { } resources)
         {
             resources[ResourceKey] = Size;
-            resources["HistoryFontSize"] = Size + 2;
+            resources["HistoryFontSize"] = Size;
         }
     }
 

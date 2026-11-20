@@ -76,6 +76,16 @@ public sealed partial class RevisionFileTreeViewModel : ObservableObject
         }
     }
 
+    /// <summary>Selects (and opens) <paramref name="path"/> in the tree, now or once the tree is listed.</summary>
+    public void Reveal(string path)
+    {
+        _openFilePath = path;
+        if (_root is not null && _pendingRevision is null && !IsLoading)
+        {
+            ReopenFile();
+        }
+    }
+
     public void Clear()
     {
         _pendingRevision = null;

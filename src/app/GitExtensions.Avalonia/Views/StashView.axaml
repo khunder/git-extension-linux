@@ -10,6 +10,13 @@
     <Style Selector="Border.added"><Setter Property="Background" Value="{DynamicResource DiffAddedBackground}" /></Style>
     <Style Selector="Border.removed"><Setter Property="Background" Value="{DynamicResource DiffRemovedBackground}" /></Style>
     <Style Selector="Border.hunk"><Setter Property="Background" Value="{DynamicResource DiffHunkBackground}" /></Style>
+
+    <!-- Compact rows in both lists, like the original's list views. -->
+    <Style Selector="ListBox#StashList ListBoxItem, ListBox#StashFiles ListBoxItem">
+      <Setter Property="Padding" Value="6,1" />
+      <Setter Property="MinHeight" Value="20" />
+      <Setter Property="FontSize" Value="12" />
+    </Style>
   </UserControl.Styles>
 
   <DockPanel x:Name="Card" Margin="12">
@@ -52,15 +59,16 @@
       <ListBox x:Name="StashList" ItemsSource="{Binding Items}" SelectedItem="{Binding SelectedStash}">
         <ListBox.ItemTemplate>
           <DataTemplate x:DataType="vm:StashItemViewModel">
-            <StackPanel>
-              <StackPanel Orientation="Horizontal" Spacing="6">
-                <TextBlock Text="{Binding IndexText}" FontFamily="Cascadia Mono, Consolas, DejaVu Sans Mono, monospace" Opacity="0.65" />
-                <TextBlock Text="{Binding Message}" TextTrimming="CharacterEllipsis" MaxWidth="200" />
-              </StackPanel>
-              <TextBlock FontSize="11" Opacity="0.6">
-                <Run Text="{Binding Branch}" /><Run Text=" · " /><Run Text="{Binding DateText}" />
-              </TextBlock>
-            </StackPanel>
+            <!-- One line per stash; the branch and date are in the tooltip. -->
+            <Grid ColumnDefinitions="Auto,*" ColumnSpacing="6" Background="Transparent">
+              <ToolTip.Tip>
+                <TextBlock>
+                  <Run Text="{Binding Branch}" /><Run Text=" · " /><Run Text="{Binding DateText}" />
+                </TextBlock>
+              </ToolTip.Tip>
+              <TextBlock Text="{Binding IndexText}" FontFamily="Cascadia Mono, Consolas, DejaVu Sans Mono, monospace" Opacity="0.65" VerticalAlignment="Center" />
+              <TextBlock Grid.Column="1" Text="{Binding Message}" TextTrimming="CharacterEllipsis" VerticalAlignment="Center" />
+            </Grid>
           </DataTemplate>
         </ListBox.ItemTemplate>
       </ListBox>
@@ -72,9 +80,9 @@
         <ListBox x:Name="StashFiles" ItemsSource="{Binding Files}" SelectedItem="{Binding SelectedFile}">
           <ListBox.ItemTemplate>
             <DataTemplate x:DataType="vm:ChangedFileViewModel">
-              <Grid ColumnDefinitions="22,*" ColumnSpacing="8">
-                <views:AppIcon IconName="{Binding StatusIcon}" HorizontalAlignment="Center" />
-                <TextBlock Grid.Column="1" Text="{Binding Name}" TextTrimming="CharacterEllipsis" />
+              <Grid ColumnDefinitions="16,*" ColumnSpacing="5">
+                <views:AppIcon IconName="{Binding StatusIcon}" HorizontalAlignment="Center" VerticalAlignment="Center" />
+                <TextBlock Grid.Column="1" Text="{Binding Name}" TextTrimming="CharacterEllipsis" VerticalAlignment="Center" />
               </Grid>
             </DataTemplate>
           </ListBox.ItemTemplate>

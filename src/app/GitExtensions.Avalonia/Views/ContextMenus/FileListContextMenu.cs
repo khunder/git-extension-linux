@@ -37,6 +37,21 @@ public sealed class FileMenuContext
 
     /// <summary>Refreshes the list after a command changed the working directory or the index; null when the list shows no working directory files.</summary>
     public Func<Task>? Changed { get; init; }
+
+    /// <summary>The other side of the diff of a commit's files (null: the first parent of <see cref="Revision"/>).</summary>
+    public string? BaseRevision { get; init; }
+
+    /// <summary>Selects the path in the File tree tab.</summary>
+    public Action<string>? ShowInFileTree { get; init; }
+
+    /// <summary>Shows only the commits that touch the path in the history.</summary>
+    public Action<string>? FilterInGrid { get; init; }
+
+    /// <summary>Refreshes the working directory changes after a command of a commit's file menu changed them (reset, cherry-pick, rename).</summary>
+    public Func<Task>? WorkingTreeChanged { get; init; }
+
+    /// <summary>Asks where to save a file (title, suggested name, extension); null when cancelled.</summary>
+    public Func<string, string, string, Task<string?>>? PickSaveFile { get; init; }
 }
 
 /// <summary>
@@ -47,6 +62,11 @@ public static class FileListContextMenu
 {
     public static List<Control> Build(FileMenuContext context)
     {
+        if (context.Revision is not null && !context.IsFolder)
+        {
+            return RevisionFileContextMenu.Build(context);
+        }
+
         string first = context.Paths[0];
         bool single = context.Paths.Count == 1;
         string full = Path.Combine(context.WorkingDir, first);
@@ -152,7 +172,7 @@ public static class FileListContextMenu
         return MenuKit.Tidy(items);
     }
 
-    private static void OpenWith(FileMenuContext context, string full)
+    internal static void OpenWith(FileMenuContext context, string full)
     {
         if (FileCommands.OwnerOf(context) is not { } owner)
         {
@@ -194,7 +214,7 @@ public static class FileListContextMenu
             destructive: true);
     }
 
-    private static async Task StopTrackingAsync(FileMenuContext context)
+    internal static async Task StopTrackingAsync(FileMenuContext context)
     {
         string? error = await FileCommands.StopTrackingAsync(context.WorkingDir, context.Paths);
         ReportFailure(context, "Stop tracking", error);
@@ -204,7 +224,7 @@ public static class FileListContextMenu
         }
     }
 
-    private static void ReportFailure(FileMenuContext context, string title, string? error)
+    internal static void ReportFailure(FileMenuContext context, string title, string? error)
     {
         if (!string.IsNullOrEmpty(error) && FileCommands.OwnerOf(context) is { } owner)
         {

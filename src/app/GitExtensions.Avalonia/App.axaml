@@ -6,7 +6,7 @@
     <ResourceDictionary>
       <!-- The size of the monospaced text of the diff, blame, file and patch views; Ctrl +/- and Ctrl+wheel change it. -->
       <x:Double x:Key="EditorFontSize">12</x:Double>
-      <x:Double x:Key="HistoryFontSize">14</x:Double>
+      <x:Double x:Key="HistoryFontSize">12</x:Double>
       <ResourceDictionary.MergedDictionaries>
         <ResourceInclude Source="avares://GitExtensions.Avalonia/Styles/Theme.axaml" />
       </ResourceDictionary.MergedDictionaries>

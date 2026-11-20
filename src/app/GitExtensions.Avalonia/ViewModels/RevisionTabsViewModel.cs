@@ -109,6 +109,18 @@ public sealed partial class RevisionTabsViewModel : ObservableObject
     public Task OpenFileHistoryAsync(string path, bool blame, string? revision)
         => _openFileHistory(path, blame, revision);
 
+    /// <summary>Switches to the File tree tab and selects <paramref name="path"/> there.</summary>
+    public void ShowInFileTree(string path)
+    {
+        if (!ShowFileTreeTab)
+        {
+            return;
+        }
+
+        FileTree.Reveal(path);
+        SelectedTabIndex = FileTreeTab;
+    }
+
     partial void OnSelectedTabIndexChanged(int value)
         => FileTree.IsActive = value == FileTreeTab;
 

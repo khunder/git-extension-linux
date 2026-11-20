@@ -370,7 +370,7 @@ public sealed partial class MainWindowViewModel : ObservableObject
             });
         });
 
-        reader.GetLog(observer, RevisionFilterArgs.Build(filter, EffectiveHistoryLimit, stashes.Select(s => s.Id)), pathFilter: string.Empty, hasNotes: false, autostashLabel: "autostash", cancellationToken);
+        reader.GetLog(observer, RevisionFilterArgs.Build(filter, EffectiveHistoryLimit, stashes.Select(s => s.Id)), pathFilter: RevisionFilterArgs.PathSpec(filter), hasNotes: false, autostashLabel: "autostash", cancellationToken);
     }
 
     private static List<(string Id, string Name)> ReadStashCommits(GitModule module)
